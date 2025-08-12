@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate, Link  } from 'react-router-dom';
+import { useNavigate  } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 
@@ -50,9 +50,6 @@ const LoginPage = () => {
           {error && <p style={{ color: 'red' }}>{error}</p>}
           <Button type="submit" label="Se connecter" className="mt-2" />
         </form>
-        <div className="mt-3 text-center">
-            <Link to="/register">Pas encore de compte ? S'inscrire</Link>
-        </div>
       </Card>
     </div>
   );
