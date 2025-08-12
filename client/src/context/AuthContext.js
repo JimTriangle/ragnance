@@ -1,21 +1,23 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode'; // On installe ce package juste après
+import { jwtDecode } from 'jwt-decode';
 
-// 1. Création du Contexte
 export const AuthContext = createContext();
 
-// 2. Création du "Fournisseur" de contexte
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [isLoading, setIsLoading] = useState(true); // <-- AJOUT 1 : L'état de chargement
 
-  // Au chargement de l'app, on vérifie si un token existe dans le localStorage
   useEffect(() => {
     const storedToken = localStorage.getItem('authToken');
+    
     if (storedToken) {
       authenticateUser(storedToken);
     }
+
+    // AJOUT 2 : On a fini de vérifier, on arrête le chargement
+    setIsLoading(false); 
   }, []);
 
   const storeToken = (receivedToken) => {
@@ -26,9 +28,14 @@ export const AuthProvider = ({ children }) => {
   const authenticateUser = (tokenToAuth) => {
     setToken(tokenToAuth);
     setIsLoggedIn(true);
-    // On décode le token pour avoir les infos de l'utilisateur (id, email, role)
-    const decodedUser = jwtDecode(tokenToAuth);
-    setUser(decodedUser);
+    try {
+        const decodedUser = jwtDecode(tokenToAuth);
+        setUser(decodedUser);
+    } catch (error) {
+        // En cas de token invalide, on déconnecte
+        console.error("Token invalide, déconnexion.", error);
+        logoutUser();
+    }
   };
 
   const logoutUser = () => {
@@ -39,7 +46,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, token, storeToken, logoutUser }}>
+    // AJOUT 3 : On donne 'isLoading' au reste de l'application
+    <AuthContext.Provider value={{ isLoggedIn, user, token, isLoading, storeToken, logoutUser }}>
       {children}
     </AuthContext.Provider>
   );
