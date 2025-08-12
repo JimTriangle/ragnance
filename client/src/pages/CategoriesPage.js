@@ -12,6 +12,12 @@ import { InputSwitch } from 'primereact/inputswitch';
 const CategoriesPage = () => {
     const [categories, setCategories] = useState([]);
     const [isDialogVisible, setIsDialogVisible] = useState(false);
+    
+    // AJOUT : États pour gérer l'édition
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+
+    // États pour le formulaire
     const [name, setName] = useState('');
     const [color, setColor] = useState('CCCCCC');
     const [isTracked, setIsTracked] = useState(false);
@@ -25,23 +31,50 @@ const CategoriesPage = () => {
     useEffect(() => { fetchCategories(); }, []);
 
     const openNew = () => {
+        setIsEditMode(false);
+        setSelectedCategoryId(null);
         setName('');
         setColor('CCCCCC');
         setIsTracked(false);
         setIsDialogVisible(true);
     };
 
-    const hideDialog = () => setIsDialogVisible(false);
+    // AJOUT : Fonction pour ouvrir le dialogue en mode édition
+    const editCategory = (category) => {
+        setIsEditMode(true);
+        setSelectedCategoryId(category.id);
+        setName(category.name);
+        setColor(category.color.substring(1)); // On retire le '#' pour le ColorPicker
+        setIsTracked(category.isTrackedMonthly);
+        setIsDialogVisible(true);
+    };
 
+    const hideDialog = () => {
+        setIsDialogVisible(false);
+        setIsEditMode(false);
+        setSelectedCategoryId(null);
+    };
+
+    // MODIFIÉ : La sauvegarde gère la création ET la modification
     const saveCategory = async () => {
         if (!name) return;
+        
+        const payload = { name, color: `#${color}`, isTrackedMonthly: isTracked };
+
         try {
-            await api.post('/categories', { name, color: `#${color}`, isTrackedMonthly: isTracked });
+            if (isEditMode) {
+                // Si on est en mode édition, on fait un PUT
+                await api.put(`/categories/${selectedCategoryId}`, payload);
+                toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Catégorie modifiée' });
+            } else {
+                // Sinon, on fait un POST pour créer
+                await api.post('/categories', payload);
+                toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Catégorie créée' });
+            }
             fetchCategories();
             hideDialog();
-            toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Catégorie créée' });
         } catch (error) {
-            toast.current.show({ severity: 'error', summary: 'Erreur', detail: 'La création a échoué' });
+            toast.current.show({ severity: 'error', summary: 'Erreur', detail: 'L\'opération a échoué' });
         }
     };
 
@@ -59,6 +92,7 @@ const CategoriesPage = () => {
         const updatedCategory = { ...category, isTrackedMonthly: e.value };
         try {
             await api.put(`/categories/${category.id}`, updatedCategory);
+            // On met à jour l'état local pour une réactivité immédiate
             let _categories = [...categories];
             const index = _categories.findIndex(c => c.id === category.id);
             _categories[index] = updatedCategory;
@@ -73,8 +107,14 @@ const CategoriesPage = () => {
         return <InputSwitch checked={rowData.isTrackedMonthly} onChange={(e) => onTrackedChange(e, rowData)} />;
     };
 
+    // MODIFIÉ : On ajoute le bouton Modifier
     const actionBodyTemplate = (rowData) => {
-        return <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-sm" onClick={() => deleteCategory(rowData.id)} />;
+        return (
+            <div className="flex gap-2">
+                <Button icon="pi pi-pencil" className="p-button-rounded p-button-success p-button-sm" onClick={() => editCategory(rowData)} />
+                <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-sm" onClick={() => deleteCategory(rowData.id)} />
+            </div>
+        );
     };
 
     const colorBodyTemplate = (rowData) => {
@@ -82,6 +122,9 @@ const CategoriesPage = () => {
     };
     
     const dialogFooter = (<div><Button label="Annuler" icon="pi pi-times" className="p-button-text" onClick={hideDialog} /><Button label="Sauvegarder" icon="pi pi-check" onClick={saveCategory} /></div>);
+
+    // MODIFIÉ : Le titre du dialogue est maintenant dynamique
+    const dialogTitle = isEditMode ? "Modifier la Catégorie" : "Nouvelle Catégorie";
 
     return (
         <div className="p-4">
@@ -93,11 +136,11 @@ const CategoriesPage = () => {
                     <Column field="name" header="Nom" sortable />
                     <Column header="Couleur" body={colorBodyTemplate} style={{width: '8rem', textAlign: 'center'}} />
                     <Column header="Suivi Mensuel" body={trackedBodyTemplate} style={{width: '10rem', textAlign: 'center'}} />
-                    <Column body={actionBodyTemplate} style={{width: '5rem', textAlign: 'center'}}/>
+                    <Column body={actionBodyTemplate} header="Actions" style={{width: '8rem', textAlign: 'center'}}/>
                 </DataTable>
             </div>
 
-            <Dialog visible={isDialogVisible} style={{ width: '450px' }} header="Nouvelle Catégorie" modal onHide={hideDialog} footer={dialogFooter}>
+            <Dialog visible={isDialogVisible} style={{ width: '450px' }} header={dialogTitle} modal onHide={hideDialog} footer={dialogFooter}>
                 <div className="field"><label htmlFor="name">Nom</label><InputText id="name" value={name} onChange={(e) => setName(e.target.value)} required autoFocus /></div>
                 <div className="field mt-4"><label htmlFor="color" className="block mb-2">Couleur</label><ColorPicker id="color" value={color} onChange={(e) => setColor(e.value)} /></div>
                 <div className="field flex align-items-center mt-4"><InputSwitch id="isTracked" checked={isTracked} onChange={(e) => setIsTracked(e.value)} /><label htmlFor="isTracked" className="ml-2">Suivre mensuellement dans les budgets</label></div>
