@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const baseURL = process.env.NODE_ENV === 'production'
-  ? 'https://ragnance-backend.onrender.com/api' // URL de production
+  ? 'https://ragnance-node.onrender.com/api' // URL de production
   : 'http://localhost:5000/api';               // URL de développement local
 
 const api = axios.create({
