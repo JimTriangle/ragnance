@@ -31,6 +31,7 @@ import ProfilePage from './pages/ProfilePage';
 import ProjectBudgetsPage from './pages/ProjectBudgetsPage';
 import ProjectBudgetTracker from './components/ProjectBudgetTracker';
 import BudgetAnalysisPage from './pages/BudgetAnalysisPage';
+import RegisterPage from './pages/RegisterPage';
 
 // CSS
 import 'primereact/resources/themes/vela-blue/theme.css';
@@ -287,6 +288,7 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
+                <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route element={<ProtectedRoute />}>
                     <Route element={<AppLayout />}>

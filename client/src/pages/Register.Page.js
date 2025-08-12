@@ -1,31 +1,37 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate, Link  } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { AuthContext } from '../context/AuthContext';
 
 // Composants PrimeReact
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
+import { Message } from 'primereact/message';
 
-const LoginPage = () => {
+const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   
-  const { storeToken } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
+
+    if (!email || !password) {
+        setError('Email et mot de passe sont requis.');
+        return;
+    }
 
     try {
-      // ON UTILISE L'INSTANCE 'api' AU LIEU DE 'axios'
-      const response = await api.post('/auth/login', { email, password });
-      storeToken(response.data.authToken);
-      navigate('/'); 
+      const response = await api.post('/auth/register', { email, password });
+      setSuccess(response.data.message + " Vous pouvez maintenant vous connecter.");
+      // Redirige vers la page de connexion après 3 secondes
+      setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
       setError(err.response?.data?.message || 'Une erreur est survenue.');
     }
@@ -33,8 +39,8 @@ const LoginPage = () => {
 
   return (
     <div className="flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-      <Card title="Connexion à Ragnance" style={{ width: '25rem' }}>
-        <form onSubmit={handleLogin} className="p-fluid">
+      <Card title="Créer un compte Ragnance" style={{ width: '25rem' }}>
+        <form onSubmit={handleRegister} className="p-fluid">
           <div className="field">
             <span className="p-float-label">
               <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -47,15 +53,16 @@ const LoginPage = () => {
               <label htmlFor="password">Mot de passe</label>
             </span>
           </div>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-          <Button type="submit" label="Se connecter" className="mt-2" />
+          {error && <Message severity="error" text={error} />}
+          {success && <Message severity="success" text={success} />}
+          <Button type="submit" label="S'inscrire" className="mt-2" />
         </form>
         <div className="mt-3 text-center">
-            <Link to="/register">Pas encore de compte ? S'inscrire</Link>
+            <Link to="/login">Déjà un compte ? Se connecter</Link>
         </div>
       </Card>
     </div>
   );
 };
 
-export default LoginPage;
+export default RegisterPage;
