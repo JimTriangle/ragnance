@@ -11,3 +11,44 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* NOUVEAUX STYLES POUR LE MENU DE NAVIGATION */
+
+/* Conteneur du lien */
+.main-header .p-button {
+    /* On le positionne en 'relative' pour que la barre de soulignement (qui sera en 'absolute') se place par rapport à lui */
+    position: relative; 
+    
+    /* On retire tous les styles par défaut non désirés */
+    text-decoration: none !important;
+    background-color: transparent !important;
+}
+
+/* Création de la barre de soulignement (initialement invisible) */
+.main-header .p-button::after {
+    content: ''; /* Obligatoire pour un pseudo-élément */
+    position: absolute;
+    bottom: 5px; /* Distance de la barre par rapport au texte */
+    left: 50%; /* On la positionne au centre */
+    
+    height: 2px; /* Épaisseur de la barre */
+    background-color: var(--primary-color); /* Couleur de la barre */
+
+    /* C'est la magie : la barre est initialement réduite à une largeur de 0 */
+    transform: translateX(-50%) scaleX(0);
+    
+    /* On définit une transition douce pour l'animation */
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Animation de la barre au survol de la souris (hover) */
+.main-header .p-button:hover::after {
+    /* On passe la largeur à 100%, ce qui déclenche l'animation de "remplissage" */
+    transform: translateX(-50%) scaleX(1);
+}
+
+/* Barre fixe pour le lien de la page active */
+.main-header .p-button.active::after {
+    /* On affiche directement la barre à 100% de sa largeur, sans animation */
+    transform: translateX(-50%) scaleX(1);
+}

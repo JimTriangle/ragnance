@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, NavLink, Outlet } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
 import { ToastContext } from './context/ToastContext';
 import api from './services/api';
@@ -54,16 +54,18 @@ const AppLayout = () => {
 const Header = () => {
     const { user } = useContext(AuthContext);
     return (
-        <div className="flex justify-content-between align-items-center p-3" style={{ background: '#242931', borderBottom: '1px solid #495057' }}>
+        // On ajoute la classe "main-header" pour cibler nos styles CSS
+        <div className="main-header flex justify-content-between align-items-center p-3" style={{ background: '#242931', borderBottom: '1px solid #495057' }}>
             <div className="flex align-items-center flex-wrap">
-                <Link to="/" className="p-button p-button-text mr-2">Dashboard</Link>
-                <Link to="/monthly" className="p-button p-button-text mr-2">Vue Mensuelle</Link>
-                <Link to="/categories" className="p-button p-button-text mr-2">Catégories</Link>
-                <Link to="/budgets" className="p-button p-button-text mr-2">Budgets Mensuels</Link>
-                <Link to="/project-budgets" className="p-button p-button-text mr-2">Budgets Projet</Link>
-                <Link to="/analysis" className="p-button p-button-text">Analyse</Link>
-                <Link to="/budget-analysis" className="p-button p-button-text">Analyse Budgets</Link>
-                {user?.role === 'admin' && <Link to="/admin" className="p-button p-button-text p-button-danger ml-2">Admin</Link>}
+                {/* On remplace tous les <Link> par des <NavLink> */}
+                <NavLink to="/" className="p-button p-button-text mr-2">Dashboard</NavLink>
+                <NavLink to="/monthly" className="p-button p-button-text mr-2">Vue Mensuelle</NavLink>
+                <NavLink to="/categories" className="p-button p-button-text mr-2">Catégories</NavLink>
+                <NavLink to="/budgets" className="p-button p-button-text mr-2">Budgets Mensuels</NavLink>
+                <NavLink to="/project-budgets" className="p-button p-button-text mr-2">Budgets Projet</NavLink>
+                <NavLink to="/analysis" className="p-button p-button-text">Dépenses</NavLink>
+                <NavLink to="/budget-analysis" className="p-button p-button-text">Analyse Budgets</NavLink>
+                {user?.role === 'admin' && <NavLink to="/admin" className="p-button p-button-text p-button-danger ml-2">Admin</NavLink>}
             </div>
             <div className="flex align-items-center">
                 <UserInfo />
@@ -76,9 +78,9 @@ const UserInfo = () => {
     const { user, logoutUser } = useContext(AuthContext);
     return (
         <>
-            <Link to="/profile" className="p-button p-button-text">
+            <NavLink to="/profile" className="p-button p-button-text">
                 <span className="mr-3">Bonjour, <strong>{user.email}</strong> !</span>
-            </Link>
+            </NavLink>
             <Button label="Déconnexion" icon="pi pi-sign-out" className="p-button-sm p-button-text" onClick={logoutUser} />
         </>
     );
