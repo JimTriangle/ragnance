@@ -26,11 +26,12 @@ jobs:
           npm ci || npm install
           npm run build
         env:
-          # REACT_APP_API_URL: https://ragnance.fr/api   # si besoin
+          # Laisse vide si tu utilises /api en relatif
+          # REACT_APP_API_URL: https://ragnance.fr/api
           CI: true
 
-      # ---------- PREP CÔTÉ SERVEUR ----------
-      - name: Prepare deploy dir permissions (SSH)
+      # ---------- PREP & BACKUP DB (NE JAMAIS ÉCRASER LA DB) ----------
+      - name: Prepare dirs & backup DB (SSH)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -40,10 +41,18 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             set -e
-            sudo mkdir -p /var/www/ragnance /var/www/ragnance/server/var/data
+            sudo mkdir -p /var/www/ragnance /var/www/ragnance/server/var/data /var/backups/ragnance
+            # Sauvegarde DB (server/var) avant toute modif
+            if [ -d /var/www/ragnance/server/var ] && [ "$(ls -A /var/www/ragnance/server/var)" ]; then
+              TS=$(date +%Y%m%d-%H%M%S)
+              sudo tar -czf /var/backups/ragnance/server-var-$TS.tgz -C /var/www/ragnance/server var
+              # Rotation: garde les 7 dernières
+              ls -1t /var/backups/ragnance/server-var-*.tgz 2>/dev/null | tail -n +8 | xargs -r sudo rm -f
+            fi
+            # Assure que l'user courant est owner du répertoire de déploiement
             sudo chown -R $USER:$USER /var/www/ragnance
 
-      # Nettoie le contenu du dossier front (pas le dossier lui-même)
+      # ---------- CLEAN FRONT (sans toucher à la DB) ----------
       - name: Clean frontend dir on server (SSH)
         uses: appleboy/ssh-action@master
         with:
@@ -54,7 +63,7 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             set -e
-            sudo find /var/www/ragnance -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+            sudo find /var/www/ragnance -mindepth 1 -maxdepth 1 ! -name 'server' -exec rm -rf {} +
             sudo chown -R $USER:$USER /var/www/ragnance
 
       # ---------- SCP FRONT ----------
@@ -70,12 +79,17 @@ jobs:
           target: "/var/www/ragnance"
           strip_components: 2
 
-      # On n’upload pas la DB: retire server/var côté runner
-      - name: Remove local server/var before upload (keeps DB on VPS)
-        run: rm -rf server/var
+      # ---------- ASSERT & PROTÈGE LA DB ----------
+      # On vérifie qu'on n'uploade PAS server/var depuis le runner
+      - name: Assert DB not in artifact
+        run: |
+          if [ -e server/var ]; then
+            echo "❌ server/var doit rester côté VPS (DB). Supprime-le du repo/artefact.";
+            exit 1;
+          fi
 
-      # Nettoie le dossier serveur (garde /var) et remet les droits
-      - name: Clean server dir on server (SSH)
+      # Nettoie le code serveur SANS toucher à server/var
+      - name: Clean server code on server (preserve DB)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -86,11 +100,12 @@ jobs:
           script: |
             set -e
             sudo mkdir -p /var/www/ragnance/server/var/data
+            # Supprime tout sauf 'var'
             sudo find /var/www/ragnance/server -mindepth 1 -maxdepth 1 ! -name 'var' -exec rm -rf {} +
             sudo chown -R $USER:$USER /var/www/ragnance/server
 
-      # ---------- SCP SERVER ----------
-      - name: Upload server code to VPS
+      # ---------- SCP SERVER (EXCLUSION DB) ----------
+      - name: Upload server code to VPS (without DB)
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -98,7 +113,11 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           port: ${{ secrets.VPS_SSH_PORT }}
-          source: "server/**"
+          source: |
+            server/**
+            !server/node_modules/**
+            !server/.env
+            !server/var/**          # <-- EXCLUSION FORCÉE DE LA DB
           target: "/var/www/ragnance/server"
           strip_components: 1
 
@@ -113,7 +132,6 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             set -e
-            # Node/pm2 même si nvm est utilisé
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
             if ! command -v node >/dev/null 2>&1; then
@@ -127,7 +145,7 @@ jobs:
             cd /var/www/ragnance/server
             npm ci --omit=dev || npm install --omit=dev
 
-            # Restart propre: met à jour les variables d'env au redémarrage
+            # (Re)start API
             if pm2 describe ragnance-api >/dev/null 2>&1; then
               pm2 restart ragnance-api --update-env
             else
