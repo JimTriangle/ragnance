@@ -8,71 +8,98 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      FRONT_BUILD_DIR: client/dist   # CRA: client/build  |  Vite: client/dist
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-    - name: Build Client
-      env:
-        REACT_APP_API_URL: ${{ secrets.VITE_API_URL }}/api
-      run: |
-        cd client
-        npm install
-        npm run build
+      # ===== Build FRONT =====
+      - name: Install & build frontend
+        working-directory: ./client
+        run: |
+          npm ci
+          npm run build
+        env:
+          # si tu as des variables pour le build front, ajoute-les ici
+          # VITE_API_URL: https://ragnance.fr/api
+          CI: true
 
-    - name: Install Server Dependencies
-      run: |
-        cd server
-        npm install --production
+      # ===== Upload FRONT (statique) =====
+      - name: Upload frontend build to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }} # retire si ta clé n'a pas de passphrase
+          port: ${{ secrets.VPS_SSH_PORT }}
+          source: "${{ env.FRONT_BUILD_DIR }}/*"
+          target: "/var/www/ragnance"
+          strip_components: 2   # enlève "client/dist" -> dépose directement les fichiers
+          rm: true              # nettoie les anciens fichiers (évite les restes)
 
-    - name: Deploy files to VPS via SCP
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USER }}
-        key: ${{ secrets.VPS_SSH_KEY }}
-        port: ${{ secrets.VPS_SSH_PORT }}
-        passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }} 
-        source: "client/build,server"
-        target: "/var/www/ragnance"
-        strip_components: 1
+      # ===== Upload SERVER (code) =====
+      - name: Upload server code to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          source: |
+            server/**
+            !server/node_modules/**
+            !server/.env
+          target: "/var/www/ragnance"
+          strip_components: 0
 
-    - name: Execute deployment script on VPS via SSH
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USER }}
-        key: ${{ secrets.VPS_SSH_KEY }}
-        passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
-        port: ${{ secrets.VPS_SSH_PORT }}
-        script: |
-          # 1) Si nvm existe, on le source pour récupérer node/npm/pm2 dans le PATH
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+      # ===== Post-deploy (serveur) =====
+      - name: Execute deployment script on VPS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script: |
+            set -e
 
-          # 2) S'assurer que node est dispo (installe si absent)
-          if ! command -v node >/dev/null 2>&1; then
-            # Debian/Ubuntu : installe Node 20 LTS
-            curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-          fi
+            # Assure l'environnement Node/pm2 (cas nvm & cas Node system)
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            if ! command -v node >/dev/null 2>&1; then
+              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+            if ! command -v pm2 >/dev/null 2>&1; then
+              sudo npm i -g pm2
+            fi
 
-          # 3) S'assurer que pm2 est dispo (installe si absent)
-          if ! command -v pm2 >/dev/null 2>&1; then
-            sudo npm i -g pm2
-          fi
+            # Dossiers
+            sudo mkdir -p /var/www/ragnance /var/www/ragnance/server /var/www/ragnance/database
+            sudo chown -R $USER:$USER /var/www/ragnance
 
-          # 4) Déploiement / (re)start
-          cd /var/www/ragnance/server
-          # si tu as un ecosystem.config.js, utilise startOrRestart, sinon garde server.js
-          if [ -f ecosystem.config.js ]; then
-            pm2 startOrRestart ecosystem.config.js
-          else
-            pm2 restart ragnance-api || pm2 start server.js --name ragnance-api
-          fi
-          pm2 save
+            # Install deps serveur si package-lock a changé (safe de refaire npm ci)
+            cd /var/www/ragnance/server
+            [ -f package.json ] && npm ci --omit=dev || true
+
+            # (Re)démarre l'API
+            if [ -f ecosystem.config.js ]; then
+              pm2 startOrRestart ecosystem.config.js
+            else
+              pm2 restart ragnance-api || pm2 start server.js --name ragnance-api
+            fi
+            pm2 save
+
+            # Nginx reload (au cas où le front a changé)
+            sudo nginx -t && sudo systemctl reload nginx
