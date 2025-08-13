@@ -27,7 +27,6 @@ jobs:
           npm run build
         env:
           # Laisse vide pour utiliser "/api" en relatif côté front
-          # REACT_APP_API_URL: https://ragnance.fr/api
           CI: true
 
       # ---------- PREP & BACKUP DB (NE JAMAIS ÉCRASER LA DB) ----------
@@ -42,14 +41,19 @@ jobs:
           script: |
             set -e
             sudo mkdir -p /var/www/ragnance /var/www/ragnance/server/var/data /var/backups/ragnance
-            # Sauvegarde server/var (DB) si non vide
+            # Backup DB ragnance.sqlite si elle existe
+            if [ -f /var/www/ragnance/server/ragnance.sqlite ]; then
+              TS=$(date +%Y%m%d-%H%M%S)
+              sudo cp /var/www/ragnance/server/ragnance.sqlite /var/backups/ragnance/ragnance.sqlite.$TS.bak
+              # Rotation: garde 7 backups
+              ls -1t /var/backups/ragnance/ragnance.sqlite.*.bak 2>/dev/null | tail -n +8 | xargs -r sudo rm -f
+            fi
+            # Backup server/var si non vide (au cas où tu stockes autre chose)
             if [ -d /var/www/ragnance/server/var ] && [ "$(ls -A /var/www/ragnance/server/var)" ]; then
               TS=$(date +%Y%m%d-%H%M%S)
               sudo tar -czf /var/backups/ragnance/server-var-$TS.tgz -C /var/www/ragnance/server var
-              # Rotation: garde 7 backups
               ls -1t /var/backups/ragnance/server-var-*.tgz 2>/dev/null | tail -n +8 | xargs -r sudo rm -f
             fi
-            # Assure la propriété au user déployeur
             sudo chown -R $USER:$USER /var/www/ragnance
 
       # ---------- CLEAN FRONT (sans toucher à /server) ----------
@@ -63,7 +67,6 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             set -e
-            # Supprime tout le contenu sauf le dossier 'server'
             sudo find /var/www/ragnance -mindepth 1 -maxdepth 1 ! -name 'server' -exec rm -rf {} +
             sudo chown -R $USER:$USER /var/www/ragnance
 
@@ -83,8 +86,8 @@ jobs:
       # ---------- ASSERT: ne jamais pousser la DB ni le .env ----------
       - name: Assert DB/.env not in artifact
         run: |
-          if [ -e server/var ] || [ -e server/.env ]; then
-            echo "❌ N'upload PAS server/var (DB) ni server/.env depuis le CI.";
+          if [ -e server/.env ] || ls server/*.sqlite >/dev/null 2>&1; then
+            echo "❌ N'upload PAS server/.env ni aucun *.sqlite depuis le CI.";
             exit 1;
           fi
 
@@ -100,11 +103,12 @@ jobs:
           script: |
             set -e
             sudo mkdir -p /var/www/ragnance/server/var/data
-            # Supprime tout SAUF 'var', '.env' et 'ecosystem.config.js'
+            # Supprime tout SAUF 'var', '.env', 'ecosystem.config.js' ET 'ragnance.sqlite'
             sudo find /var/www/ragnance/server -mindepth 1 -maxdepth 1 \
               ! -name 'var' \
               ! -name '.env' \
               ! -name 'ecosystem.config.js' \
+              ! -name 'ragnance.sqlite' \
               -exec rm -rf {} +
             sudo chown -R $USER:$USER /var/www/ragnance/server
 
@@ -121,6 +125,7 @@ jobs:
             server/**
             !server/node_modules/**
             !server/.env
+            !server/*.sqlite
             !server/var/**
           target: "/var/www/ragnance/server"
           strip_components: 1
@@ -136,7 +141,6 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             set -e
-            # Node/pm2 (compat nvm)
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
             if ! command -v node >/dev/null 2>&1; then
@@ -150,7 +154,7 @@ jobs:
             cd /var/www/ragnance/server
             npm ci --omit=dev || npm install --omit=dev
 
-            # Redémarrage API (update-env si le process existe)
+            # Redémarrage API (avec update-env si le process existe)
             if pm2 describe ragnance-api >/dev/null 2>&1; then
               pm2 restart ragnance-api --update-env
             else
