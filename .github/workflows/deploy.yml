@@ -43,7 +43,7 @@ jobs:
             sudo mkdir -p /var/www/ragnance /var/www/ragnance/server/var/data
             sudo chown -R $USER:$USER /var/www/ragnance
 
-      # Nettoie le CONTENU du dossier front et remet les droits à l'user
+      # Nettoie le contenu du dossier front (pas le dossier lui-même)
       - name: Clean frontend dir on server (SSH)
         uses: appleboy/ssh-action@master
         with:
@@ -68,23 +68,13 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           source: "client/build/**"
           target: "/var/www/ragnance"
-          strip_components: 2     # enlève "client/build/"
+          strip_components: 2
 
-      # ---------- DEBUG RUNNER (SERVER) ----------
-      - name: Debug workspace (server)
-        run: |
-          echo "PWD: $(pwd)"
-          ls -la
-          echo "---- server ----"
-          ls -la server || true
-          echo "---- first files ----"
-          find server -maxdepth 2 -type f | sed -n '1,120p'
-
-      # On n'upload pas la DB: retire server/var côté runner
+      # On n’upload pas la DB: retire server/var côté runner
       - name: Remove local server/var before upload (keeps DB on VPS)
         run: rm -rf server/var
 
-      # Nettoie le dossier serveur mais CONSERVE /var, et remet les droits
+      # Nettoie le dossier serveur (garde /var) et remet les droits
       - name: Clean server dir on server (SSH)
         uses: appleboy/ssh-action@master
         with:
@@ -96,9 +86,7 @@ jobs:
           script: |
             set -e
             sudo mkdir -p /var/www/ragnance/server/var/data
-            # garde "var" (DB sqlite, etc.), supprime le reste
             sudo find /var/www/ragnance/server -mindepth 1 -maxdepth 1 ! -name 'var' -exec rm -rf {} +
-            # très important: rendre le dossier au user pour que SCP puisse écrire
             sudo chown -R $USER:$USER /var/www/ragnance/server
 
       # ---------- SCP SERVER ----------
@@ -112,7 +100,7 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           source: "server/**"
           target: "/var/www/ragnance/server"
-          strip_components: 1     # enlève "server/"
+          strip_components: 1
 
       # ---------- POST-DEPLOY ----------
       - name: Post-deploy on VPS (install deps + pm2 + nginx reload)
@@ -139,8 +127,12 @@ jobs:
             cd /var/www/ragnance/server
             npm ci --omit=dev || npm install --omit=dev
 
-            # Démarre/Redémarre l'API (adapte le port si besoin)
-            PORT=3000 pm2 restart ragnance-api || PORT=3000 pm2 start server.js --name ragnance-api
+            # Restart propre: met à jour les variables d'env au redémarrage
+            if pm2 describe ragnance-api >/dev/null 2>&1; then
+              pm2 restart ragnance-api --update-env
+            else
+              PORT=3000 pm2 start server.js --name ragnance-api
+            fi
             pm2 save
 
             sudo nginx -t && sudo systemctl reload nginx
