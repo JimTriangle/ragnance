@@ -18,10 +18,11 @@ jobs:
         node-version: '20'
 
     - name: Build Client
+      env:
+        REACT_APP_API_URL: ${{ secrets.VITE_API_URL }}/api
       run: |
         cd client
         npm install
-        sed -i "s|baseURL: '.*'|baseURL: '${{ secrets.VITE_API_URL }}/api'|" src/services/api.js
         npm run build
 
     - name: Install Server Dependencies

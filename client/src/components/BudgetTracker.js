@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import api from '../services/api';
 import { ProgressBar } from 'primereact/progressbar';
 import { AuthContext } from '../context/AuthContext';
@@ -7,8 +7,8 @@ const BudgetTracker = () => {
     const [data, setData] = useState([]);
     const { user } = useContext(AuthContext);
 
-    const fetchData = async () => {
-        if (!user) return; // Ne rien faire si l'utilisateur n'est pas encore chargé
+    const fetchData = useCallback(async () => {
+        if (!user) return;
         const today = new Date();
         const year = today.getFullYear();
         const month = today.getMonth() + 1;
@@ -18,7 +18,7 @@ const BudgetTracker = () => {
         } catch (error) {
             console.error("Erreur fetch budget progress", error);
         }
-    };
+    }, [user]);
 
     useEffect(() => {
         fetchData();
@@ -27,7 +27,7 @@ const BudgetTracker = () => {
         return () => {
             window.removeEventListener('focus', fetchData);
         };
-    }, [user]); // Se relance si l'utilisateur change
+    }, [fetchData]); // Se relance si l'utilisateur change
 
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 

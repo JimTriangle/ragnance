@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useRef } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, NavLink, Outlet } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
 import { ToastContext } from './context/ToastContext';
@@ -13,6 +13,7 @@ import { Tag } from 'primereact/tag';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Dialog } from 'primereact/dialog';
 import { Chart } from 'primereact/chart';
+import { SelectButton } from 'primereact/selectbutton';
 import { InputText } from 'primereact/inputtext';
 
 // Pages et composants
@@ -54,18 +55,16 @@ const AppLayout = () => {
 const Header = () => {
     const { user } = useContext(AuthContext);
     return (
-        // On ajoute la classe "main-header" pour cibler nos styles CSS
         <div className="main-header flex justify-content-between align-items-center p-3" style={{ background: '#242931', borderBottom: '1px solid #495057' }}>
             <div className="flex align-items-center flex-wrap">
-                {/* On remplace tous les <Link> par des <NavLink> */}
-                <NavLink to="/" className="p-button p-button-text mr-2">Dashboard</NavLink>
-                <NavLink to="/monthly" className="p-button p-button-text mr-2">Vue Mensuelle</NavLink>
-                <NavLink to="/categories" className="p-button p-button-text mr-2">Catégories</NavLink>
-                <NavLink to="/budgets" className="p-button p-button-text mr-2">Budgets Mensuels</NavLink>
-                <NavLink to="/project-budgets" className="p-button p-button-text mr-2">Budgets Projet</NavLink>
-                <NavLink to="/analysis" className="p-button p-button-text">Dépenses</NavLink>
-                <NavLink to="/budget-analysis" className="p-button p-button-text">Analyse Budgets</NavLink>
-                {user?.role === 'admin' && <NavLink to="/admin" className="p-button p-button-text p-button-danger ml-2">Admin</NavLink>}
+                <NavLink to="/" className="p-button p-button-text mr-2"><span>Dashboard</span></NavLink>
+                <NavLink to="/monthly" className="p-button p-button-text mr-2"><span>Vue Mensuelle</span></NavLink>
+                <NavLink to="/categories" className="p-button p-button-text mr-2"><span>Catégories</span></NavLink>
+                <NavLink to="/budgets" className="p-button p-button-text mr-2"><span>Budgets Mensuels</span></NavLink>
+                <NavLink to="/project-budgets" className="p-button p-button-text mr-2"><span>Budgets Projet</span></NavLink>
+                <NavLink to="/analysis" className="p-button p-button-text"><span>Dépenses</span></NavLink>
+                <NavLink to="/budget-analysis" className="p-button p-button-text"><span>Analyse Budgets</span></NavLink>
+                {user?.role === 'admin' && <NavLink to="/admin" className="p-button p-button-text p-button-danger ml-2"><span>Admin</span></NavLink>}
             </div>
             <div className="flex align-items-center">
                 <UserInfo />
@@ -89,7 +88,7 @@ const UserInfo = () => {
 const DashboardPage = () => {
     const [transactions, setTransactions] = useState([]);
     const [summary, setSummary] = useState({ currentBalance: 0, projectedBalance: 0, totalProjectedIncome: 0, totalProjectedExpense: 0 });
-    const [barChartData, setBarChartData] = useState(null);
+    const [lineChartData, setLineChartData] = useState(null);
     const [categoryChartData, setCategoryChartData] = useState(null);
     const [budgetProgressData, setBudgetProgressData] = useState([]);
     const [chartPeriod, setChartPeriod] = useState('30d');
@@ -99,51 +98,41 @@ const DashboardPage = () => {
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [isNewTransactionModalVisible, setIsNewTransactionModalVisible] = useState(false);
+
+    const periodOptions = [{ label: '24h', value: '24h' }, { label: '7j', value: '7d' }, { label: '1m', value: '30d' }, { label: '3m', value: '90d' }, { label: '1a', value: 'year' }];
+    const lineChartOptions = { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } }, y: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } } } };
     const doughnutChartOptions = { maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#CCC', font: { size: 10 } } } } };
 
-   const fetchData = async () => {
+   const fetchData = useCallback(async () => {
         setLoading(true);
-        console.log("--- DÉBUT DU RECHARGEMENT DU DASHBOARD ---");
         const today = new Date();
         const year = today.getFullYear();
         const month = today.getMonth() + 1;
-
-        // On exécute les requêtes une par une pour isoler celle qui échoue.
         try {
-            console.log("1. Récupération de la liste des transactions...");
-            const transacResponse = await api.get('/transactions/dashboard-list');
+            const [transacResponse, summaryResponse, categoryStatsResponse, budgetProgressResponse] = await Promise.all([
+                api.get('/transactions/dashboard-list'),
+                api.get('/transactions/summary'),
+                api.get('/transactions/stats/expenses-by-category'),
+                api.get(`/budgets/progress/${year}/${month}`)
+            ]);
+
             setTransactions(transacResponse.data);
-            console.log("... Succès.");
-
-            console.log("2. Récupération du résumé des soldes...");
-            const summaryResponse = await api.get('/transactions/summary');
             setSummary(summaryResponse.data);
-            console.log("... Succès.");
-
-            console.log("3. Récupération des stats par catégorie...");
-            const categoryStatsResponse = await api.get('/transactions/stats/expenses-by-category');
-            const formattedCategoryData = {
+            setCategoryChartData({
                 labels: categoryStatsResponse.data.map(c => c.categoryName),
                 datasets: [{ data: categoryStatsResponse.data.map(c => c.total), backgroundColor: categoryStatsResponse.data.map(c => c.categoryColor) }]
-            };
-            setCategoryChartData(formattedCategoryData);
-            console.log("... Succès.");
-            
-            console.log("4. Récupération du suivi des budgets...");
-            const budgetProgressResponse = await api.get(`/budgets/progress/${year}/${month}`);
+            });
             setBudgetProgressData(budgetProgressResponse.data);
-            console.log("... Succès.");
 
         } catch (error) {
-            console.error("UNE ERREUR FATALE EST SURVENUE LORS DU RECHARGEMENT :", error);
+            console.error("Erreur fatale lors du chargement du dashboard :", error);
             showToast('error', 'Erreur Critique', 'Le rechargement des données a échoué.');
         } finally {
             setLoading(false);
-            console.log("--- FIN DU RECHARGEMENT DU DASHBOARD ---");
         }
-    };
+    }, [showToast]);
 
-    const fetchBarChartData = async (period) => {
+    const fetchLineChartData = useCallback(async (period) => {
         let startDate, endDate = new Date();
         const today = new Date();
         switch (period) {
@@ -155,23 +144,27 @@ const DashboardPage = () => {
         }
         try {
             const response = await api.get(`/transactions/stats/expenses-by-day?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
-            const formattedData = {
+            setLineChartData({
                 labels: response.data.map(item => new Date(item.day).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })),
                 datasets: [{ label: 'Dépenses Journalières', data: response.data.map(item => item.total), fill: true, backgroundColor: 'rgba(46, 204, 113, 0.2)', borderColor: '#2ECC71', tension: 0.4 }]
-            };
-            setBarChartData(formattedData);
-        } catch (error) { console.error("Erreur fetch bar chart data", error); }
-    };
+            });
+        } catch (error) { console.error("Erreur fetch line chart data", error); }
+    }, []);
 
-    useEffect(() => { fetchData(); fetchBarChartData(chartPeriod); }, []);
-    useEffect(() => { fetchBarChartData(chartPeriod); }, [chartPeriod]);
+    useEffect(() => { 
+        fetchData(); 
+    }, [fetchData]);
+
+    useEffect(() => { 
+        fetchLineChartData(chartPeriod); 
+    }, [chartPeriod, fetchLineChartData]);
 
     const handleComplete = () => {
         showToast('success', 'Succès', 'Opération réussie');
         setIsEditModalVisible(false);
         setIsNewTransactionModalVisible(false);
         fetchData();
-        fetchBarChartData(chartPeriod);
+        fetchLineChartData(chartPeriod);
     };
 
     const handleEditClick = (transaction) => { setSelectedTransaction(transaction); setIsEditModalVisible(true); };
@@ -182,7 +175,7 @@ const DashboardPage = () => {
                 await api.delete(`/transactions/${transactionId}`);
                 showToast('success', 'Succès', 'Transaction supprimée');
                 fetchData();
-                fetchBarChartData(chartPeriod);
+                fetchLineChartData(chartPeriod);
             } catch (error) { showToast('error', 'Erreur', 'La suppression a échoué'); }
         };
         confirmDialog({ message: 'Êtes-vous sûr ?', header: 'Confirmation', icon: 'pi pi-exclamation-triangle', acceptClassName: 'p-button-danger', accept: handleDelete, });
@@ -218,10 +211,7 @@ const DashboardPage = () => {
                 <div className="col-12 md:col-6 lg:col-3"><Card title="Dépenses du Mois (Prév.)"><h2 className="m-0 text-red-400">{formatCurrency(summary.totalProjectedExpense)}</h2></Card></div>
             </div>
 
-            {/* NOUVELLE ORGANISATION DE LA PAGE */}
             <div className="grid mt-4">
-
-
                 <div className="col-12 lg:col-3">
                     <Card title="Suivi des Budgets Mensuels" className="h-full">
                         <BudgetTracker data={budgetProgressData} />
@@ -298,7 +288,7 @@ function App() {
                         <Route path="/budgets" element={<BudgetsPage />} />
                         <Route path="/project-budgets" element={<ProjectBudgetsPage />} />
                         <Route path="/analysis" element={<AnalysisPage />} />
-                         <Route path="/budget-analysis" element={<BudgetAnalysisPage />} />
+                        <Route path="/budget-analysis" element={<BudgetAnalysisPage />} />
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route element={<AdminRoute />}><Route path="/admin" element={<AdminPage />} /></Route>
                     </Route>

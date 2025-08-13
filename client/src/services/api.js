@@ -1,20 +1,16 @@
 import axios from 'axios';
 
-const baseURL = process.env.NODE_ENV === 'production'
-  ? 'https://ragnance-node.onrender.com/api' // URL de production
-  : 'http://localhost:5000/api';               // URL de développement local
+// Si la variable d'environnement existe, on l'utilise, sinon on prend l'URL locale.
+const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
-   baseURL: baseURL
+  baseURL: baseURL
 });
 
-// Intercepteur : cette fonction s'exécute AVANT chaque requête envoyée par 'api'
+// ... (le reste du fichier interceptor est inchangé)
 api.interceptors.request.use(
   (config) => {
-    // On récupère le token depuis le localStorage
     const token = localStorage.getItem('authToken');
-
-    // Si le token existe, on l'ajoute dans les en-têtes (headers)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
