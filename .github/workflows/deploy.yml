@@ -48,10 +48,31 @@ jobs:
         host: ${{ secrets.VPS_HOST }}
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
-        passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }} 
+        passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
         port: ${{ secrets.VPS_SSH_PORT }}
         script: |
+          # 1) Si nvm existe, on le source pour récupérer node/npm/pm2 dans le PATH
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+          # 2) S'assurer que node est dispo (installe si absent)
+          if ! command -v node >/dev/null 2>&1; then
+            # Debian/Ubuntu : installe Node 20 LTS
+            curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+          fi
+
+          # 3) S'assurer que pm2 est dispo (installe si absent)
+          if ! command -v pm2 >/dev/null 2>&1; then
+            sudo npm i -g pm2
+          fi
+
+          # 4) Déploiement / (re)start
           cd /var/www/ragnance/server
-          mkdir -p /var/www/ragnance/database
-          pm2 restart ragnance-api || pm2 start server.js --name ragnance-api
+          # si tu as un ecosystem.config.js, utilise startOrRestart, sinon garde server.js
+          if [ -f ecosystem.config.js ]; then
+            pm2 startOrRestart ecosystem.config.js
+          else
+            pm2 restart ragnance-api || pm2 start server.js --name ragnance-api
+          fi
           pm2 save
