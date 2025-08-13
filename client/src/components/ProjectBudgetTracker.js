@@ -1,23 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import api from '../services/api';
+import React from 'react';
 import { Card } from 'primereact/card';
 import { ProgressBar } from 'primereact/progressbar';
 import { Link } from 'react-router-dom';
 
-const ProjectBudgetTracker = () => {
-    const [budgets, setBudgets] = useState([]);
-
-    useEffect(() => {
-        const fetchBudgets = async () => {
-            try {
-                const response = await api.get('/project-budgets');
-                setBudgets(response.data);
-            } catch (error) {
-                console.error("Erreur fetch project budgets", error);
-            }
-        };
-        fetchBudgets();
-    }, []);
+// Le composant reçoit maintenant les budgets en "props"
+const ProjectBudgetTracker = ({ budgets = [] }) => {
 
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
