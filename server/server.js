@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+
 const cors =require('cors');
 const sequelize = require('./config/database');
 
@@ -16,6 +17,11 @@ const app = express();
 // On utilise la variable d'environnement pour le port
 const PORT = process.env.PORT || 5000;
 
+const allowedOrigins = ['http://ragnance.fr', 'https://ragnance.fr', 'https://www.ragnance.fr'];
+if (process.env.NODE_ENV === 'development') {
+  allowedOrigins.push('http://localhost:3000');
+}
+
 sequelize.authenticate()
   .then(() => console.log('Connexion à la base de données SQLite réussie.'))
   .catch(err => console.error('Impossible de se connecter à la base de données:', err));
@@ -28,7 +34,7 @@ sequelize.sync({ force: false })
   .then(() => console.log('Tables de la BDD synchronisées.'));
 
 app.use(cors({
-  origin: ['http://ragnance.fr','https://ragnance.fr','https://www.ragnance.fr'],
+  origin: allowedOrigins,
   credentials: true
 }));
 
