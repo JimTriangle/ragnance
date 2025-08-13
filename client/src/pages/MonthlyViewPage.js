@@ -24,6 +24,8 @@ const MonthlyViewPage = () => {
   const [globalFilter, setGlobalFilter] = useState('');
   const { showToast } = useContext(ToastContext);
 
+  const [isNewModalVisible, setIsNewModalVisible] = useState(false);
+
   const chartOptions = {
     maintainAspectRatio: false,
     plugins: {
@@ -91,6 +93,7 @@ const MonthlyViewPage = () => {
   const handleComplete = () => {
     showToast('success', 'Succès', 'Opération réussie');
     if (isEditModalVisible) setIsEditModalVisible(false);
+    if (isNewModalVisible) setIsNewModalVisible(false); // On ferme aussi la nouvelle modale
     fetchData();
   };
 
@@ -148,7 +151,7 @@ const MonthlyViewPage = () => {
 
   const tableHeader = (
     <div className="flex justify-content-between align-items-center">
-      <h2 className="text-xl m-0">Détail des transactions du mois</h2>
+      <Button label="Ajouter une transaction" icon="pi pi-plus" className="p-button-success p-button-sm" onClick={() => setIsNewModalVisible(true)} />
       <span className="p-input-icon-left">
         <i className="pi pi-search" />
         <InputText value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder="Rechercher..." className="p-inputtext-sm" />
@@ -203,6 +206,10 @@ const MonthlyViewPage = () => {
       </div>
       <Dialog header="Modifier la Transaction" visible={isEditModalVisible} style={{ width: '50vw' }} onHide={() => setIsEditModalVisible(false)}>
         <TransactionForm transactionToEdit={selectedTransaction} onComplete={handleComplete} />
+      </Dialog>
+
+      <Dialog header="Ajouter une Transaction" visible={isNewModalVisible} style={{ width: '50vw' }} onHide={() => setIsNewModalVisible(false)}>
+        <TransactionForm onComplete={handleComplete} />
       </Dialog>
     </div>
   );
