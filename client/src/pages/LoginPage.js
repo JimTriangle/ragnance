@@ -25,7 +25,7 @@ const LoginPage = () => {
       // ON UTILISE L'INSTANCE 'api' AU LIEU DE 'axios'
       const response = await api.post('/auth/login', { email, password });
       storeToken(response.data.authToken);
-      navigate('/'); 
+      navigate('/dashboard'); 
     } catch (err) {
       setError(err.response?.data?.message || 'Une erreur est survenue.');
     }

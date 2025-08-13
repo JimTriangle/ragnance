@@ -26,7 +26,7 @@ import ProfilePage from './pages/ProfilePage';
 import ProjectBudgetsPage from './pages/ProjectBudgetsPage';
 import ProjectBudgetTracker from './components/ProjectBudgetTracker';
 import BudgetAnalysisPage from './pages/BudgetAnalysisPage';
-
+import LandingPage from './pages/LandingPage';
 
 const AppLayout = () => {
     return (
@@ -45,7 +45,7 @@ const Header = () => {
     return (
         <div className="main-header flex justify-content-between align-items-center p-3" style={{ background: '#242931', borderBottom: '1px solid #495057' }}>
             <div className="flex align-items-center flex-wrap">
-                <NavLink to="/" className="p-button p-button-text main-nav-link">Dashboard</NavLink>
+                <NavLink to="/dashboard" className="p-button p-button-text main-nav-link">Dashboard</NavLink>
                 <NavLink to="/monthly" className="p-button p-button-text main-nav-link">Vue Mensuelle</NavLink>
                 <NavLink to="/categories" className="p-button p-button-text main-nav-link">Catégories</NavLink>
                 <NavLink to="/budgets" className="p-button p-button-text main-nav-link">Budgets Mensuels</NavLink>
@@ -187,10 +187,11 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
+                <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route element={<ProtectedRoute />}>
                     <Route element={<AppLayout />}>
-                        <Route path="/" element={<DashboardPage />} />
+                        <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/monthly" element={<MonthlyViewPage />} />
                         <Route path="/categories" element={<CategoriesPage />} />
                         <Route path="/budgets" element={<BudgetsPage />} />

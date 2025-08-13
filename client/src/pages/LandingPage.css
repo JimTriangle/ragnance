@@ -1,0 +1,59 @@
+.landing-container {
+    color: #e0e0e0;
+}
+
+.landing-header {
+    background: linear-gradient(135deg, #2a2a3e 0%, #3b3b58 100%);
+    text-align: center;
+    padding: 4rem 1rem;
+}
+
+.logo {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    color: #b0b0d0;
+    margin-bottom: 2rem;
+}
+
+.landing-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.features, .tips {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.features h2, .tips h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+.feature-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.tips ul {
+    list-style: none;
+    padding: 0;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.tips li {
+    background: #2c2c3e;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--primary-color);
+}
