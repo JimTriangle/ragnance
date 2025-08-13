@@ -153,6 +153,9 @@ const DashboardPage = () => {
 
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
+    const categoryCount = categoryChartData?.labels?.length || 0;
+    const chartHeight = Math.max(250, categoryCount * 35);
+
     return (
         <div className="p-3">
             <div className="flex justify-content-between align-items-center">
@@ -179,7 +182,9 @@ const DashboardPage = () => {
                 <div className="col-12 lg:col-6">
                     <Card title="Dépenses par Catégorie" className="h-full">
                         {categoryChartData && categoryChartData.labels.length > 0 ? (
-                            <Chart type="bar" data={categoryChartData} options={barChartOptions} />
+                            <div style={{ position: 'relative', height: `${chartHeight}px` }}>
+                                <Chart type="bar" data={categoryChartData} options={barChartOptions} />
+                            </div>
                         ) : (<p className="text-center text-gray-500 mt-5">Aucune dépense catégorisée.</p>)}
                     </Card>
                 </div>
