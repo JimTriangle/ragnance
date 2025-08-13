@@ -26,7 +26,7 @@ jobs:
       - name: Install & build frontend
         working-directory: ./client
         run: |
-          npm ci
+          npm install
           npm run build
         env:
           # si tu as des variables pour le build front, ajoute-les ici
