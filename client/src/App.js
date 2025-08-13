@@ -197,7 +197,7 @@ const DashboardPage = () => {
         </div>
     );
 
-    return (
+        return (
         <div className="p-3">
             <div className="flex justify-content-between align-items-center">
                 <h1 className="text-2xl font-bold">Dashboard</h1>
@@ -212,14 +212,19 @@ const DashboardPage = () => {
             </div>
 
             <div className="grid mt-4">
-                <div className="col-12 lg:col-3">
-                    <Card title="Suivi des Budgets Mensuels" className="h-full">
-                        <BudgetTracker data={budgetProgressData} />
+                {/* BLOC GRAPHIQUE RÉINTÉGRÉ */}
+                <div className="col-12 lg:col-6">
+                    <Card>
+                        <div className="flex justify-content-between align-items-center mb-3">
+                            <h2 className="text-xl m-0">Dépenses journalières</h2>
+                            <SelectButton value={chartPeriod} options={periodOptions} onChange={(e) => setChartPeriod(e.value)} unselectable={false} />
+                        </div>
+                        <div style={{ height: '300px' }}>
+                            <Chart type="line" data={lineChartData} options={lineChartOptions} />
+                        </div>
                     </Card>
                 </div>
-                <div className="col-12 xl:col-3">
-                    <ProjectBudgetTracker />
-                </div>
+
                 <div className="col-12 lg:col-3">
                     <Card title="Dépenses par Catégorie" className="h-full">
                         {categoryChartData && categoryChartData.labels.length > 0 ? (
@@ -232,48 +237,36 @@ const DashboardPage = () => {
                 </div>
             </div>
 
+            <div className="grid mt-4">
+                 <div className="col-12 lg:col-6">
+                    <Card title="Suivi des Budgets Mensuels" className="h-full">
+                        <BudgetTracker />
+                    </Card>
+                </div>
+                <div className="col-12 lg:col-6">
+                    <ProjectBudgetTracker />
+                </div>
+            </div>
+            
             <div className="card mt-4">
-                <DataTable
-                    value={transactions}
-                    loading={loading}
-                    size="small"
-                    globalFilter={globalFilter}
-                    header={transactionListHeader}
-                    paginator rows={10}
-                    rowsPerPageOptions={[5, 10, 25, 50]}
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="{first} à {last} sur {totalRecords} transactions"
-                >
-                    <Column field="label" header="Libellé" body={labelBodyTemplate} sortable filterField="label" />
-                    <Column field="amount" header="Montant" body={(rowData) => formatCurrency(rowData.amount)} sortable />
-                    <Column field="type" header="Type" body={typeTemplate} sortable />
-                    <Column field="date" header="Date" body={(rowData) => formatDate(rowData.date)} sortable />
+                <DataTable value={transactions} loading={loading} size="small" globalFilter={globalFilter} header={transactionListHeader} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50]} >
+                    <Column field="label" header="Libellé" body={labelBodyTemplate} sortable />
+                    <Column field="amount" header="Montant" body={(rowData) => formatCurrency(rowData.amount)} sortable/>
+                    <Column field="type" header="Type" body={typeTemplate} sortable/>
+                    <Column field="date" header="Date" body={(rowData) => formatDate(rowData.date)} sortable/>
                     <Column body={actionBodyTemplate} header="Actions" style={{ width: '7rem' }} />
                 </DataTable>
             </div>
 
-            <Dialog
-                header="Ajouter une Transaction"
-                visible={isNewTransactionModalVisible}
-                style={{ width: '50vw' }}
-                onHide={() => setIsNewTransactionModalVisible(false)}
-                contentStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
-            >
+            <Dialog header="Ajouter une Transaction" visible={isNewTransactionModalVisible} style={{ width: '50vw' }} onHide={() => setIsNewTransactionModalVisible(false)} >
                 <TransactionForm onComplete={handleComplete} />
             </Dialog>
-            <Dialog
-                header="Modifier la Transaction"
-                visible={isEditModalVisible}
-                style={{ width: '50vw' }}
-                onHide={() => setIsEditModalVisible(false)}
-                contentStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
-            >
+            <Dialog header="Modifier la Transaction" visible={isEditModalVisible} style={{ width: '50vw' }} onHide={() => setIsEditModalVisible(false)} >
                 <TransactionForm transactionToEdit={selectedTransaction} onComplete={handleComplete} />
             </Dialog>
         </div>
     );
 };
-
 
 function App() {
     return (

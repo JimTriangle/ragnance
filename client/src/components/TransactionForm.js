@@ -118,7 +118,6 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
     }
   };
   
-  const cardTitle = transactionToEdit ? "Modifier la transaction" : "Ajouter une transaction";
 
   return (
     // On retire la Card pour un affichage plus direct dans la modale parente

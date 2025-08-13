@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import api from '../services/api';
 import { ToastContext } from '../context/ToastContext';
 import { Button } from 'primereact/button';
@@ -13,7 +13,7 @@ const BudgetsPage = () => {
     const { showToast } = React.useContext(ToastContext);
     const debounceTimeout = useRef(null);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth() + 1;
         try {
@@ -28,16 +28,18 @@ const BudgetsPage = () => {
             }, {});
             setBudgets(budgetMap);
         } catch (error) { console.error("Erreur fetch budgets", error); }
-    };
+    }, [currentDate]);
 
-    useEffect(() => { fetchData(); }, [currentDate]);
+    useEffect(() => { 
+        fetchData(); 
+    }, [fetchData]);
 
-    useEffect(() => {
+     useEffect(() => {
         window.addEventListener('focus', fetchData);
         return () => {
             window.removeEventListener('focus', fetchData);
         };
-    }, []);
+    }, [fetchData]);
 
     const handleBudgetChange = (categoryId, amount) => {
         setBudgets(prevBudgets => ({ ...prevBudgets, [categoryId]: amount }));

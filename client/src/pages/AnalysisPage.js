@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import { Card } from 'primereact/card';
 import { Calendar } from 'primereact/calendar';
@@ -21,7 +21,7 @@ const AnalysisPage = () => {
         plugins: { legend: { position: 'right' } }
     };
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         const [startDate, endDate] = dateRange;
         if (!startDate || !endDate) return;
         setLoading(true);
@@ -41,12 +41,12 @@ const AnalysisPage = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [dateRange]);
 
     // Fetch data on initial load
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
