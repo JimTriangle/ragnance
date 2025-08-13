@@ -27,7 +27,11 @@ sequelize.authenticate()
 sequelize.sync({ force: false })
   .then(() => console.log('Tables de la BDD synchronisées.'));
 
-app.use(cors()); 
+app.use(cors({
+  origin: ['http://ragnance.fr','https://ragnance.fr','https://www.ragnance.fr'],
+  credentials: true
+}));
+
 app.use(express.json()); 
 
 // ... (toutes les déclarations de routes)
