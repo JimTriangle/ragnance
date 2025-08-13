@@ -87,20 +87,21 @@ const DashboardPage = () => {
     const periodOptions = [{ label: '7j', value: '7d' }, { label: '1m', value: '30d' }, { label: '3m', value: '90d' }];
     const lineChartOptions = { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } }, y: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } } } };
     const barChartOptions = {
+        indexAxis: 'y', // <-- C'EST LA LIGNE CLÉ QUI PIVOTE LE GRAPHIQUE
         maintainAspectRatio: false,
         plugins: {
             legend: {
-                display: false // La légende est moins utile sur un bar chart, on la cache
+                display: false
             }
         },
         scales: {
-            x: {
-                ticks: { color: '#CCC' },
-                grid: { display: false } // On cache la grille verticale pour plus de clarté
-            },
-            y: {
+            x: { // L'axe X est maintenant l'axe des valeurs (montants)
                 ticks: { color: '#CCC' },
                 grid: { color: 'rgba(255,255,255,0.1)' }
+            },
+            y: { // L'axe Y est maintenant l'axe des catégories
+                ticks: { color: '#CCC' },
+                grid: { display: false }
             }
         }
     };
@@ -178,7 +179,7 @@ const DashboardPage = () => {
                 <div className="col-12 lg:col-6">
                     <Card title="Dépenses par Catégorie" className="h-full">
                         {categoryChartData && categoryChartData.labels.length > 0 ? (
-                             <Chart type="bar" data={categoryChartData} options={barChartOptions} />
+                            <Chart type="bar" data={categoryChartData} options={barChartOptions} />
                         ) : (<p className="text-center text-gray-500 mt-5">Aucune dépense catégorisée.</p>)}
                     </Card>
                 </div>
