@@ -28,8 +28,7 @@ jobs:
           npm ci || npm install
           npm run build
         env:
-          # On garde l'URL relative /api côté front
-          CI: true
+          CI: true   # front utilise /api en relatif
 
       # ---------- PREP & BACKUP (DB intouchable) ----------
       - name: Prepare & Backup DB (SSH)
@@ -43,19 +42,18 @@ jobs:
           script: |
             set -e
             sudo mkdir -p /var/www/ragnance /var/www/ragnance/server/var/data /var/backups/ragnance
-            # Sauvegarde sqlite si présente (rotation 7)
+            # Backup sqlite si présente (rotation 7)
             if [ -f /var/www/ragnance/server/ragnance.sqlite ]; then
               TS=$(date +%Y%m%d-%H%M%S)
               sudo cp /var/www/ragnance/server/ragnance.sqlite /var/backups/ragnance/ragnance.sqlite.$TS.bak
               ls -1t /var/backups/ragnance/ragnance.sqlite.*.bak 2>/dev/null | tail -n +8 | xargs -r sudo rm -f
             fi
-            # Sauvegarde /var si non vide (rotation 7)
+            # Backup /var si non vide (rotation 7)
             if [ -d /var/www/ragnance/server/var ] && [ "$(ls -A /var/www/ragnance/server/var)" ]; then
               TS=$(date +%Y%m%d-%H%M%S)
               sudo tar -czf /var/backups/ragnance/server-var-$TS.tgz -C /var/www/ragnance/server var
               ls -1t /var/backups/ragnance/server-var-*.tgz 2>/dev/null | tail -n +8 | xargs -r sudo rm -f
             fi
-            # Propriété au bon user pour éviter les "Permission denied" au SCP
             sudo chown -R $USER:$USER /var/www/ragnance
 
       # ---------- FRONT: clean + upload ----------
@@ -85,8 +83,30 @@ jobs:
           target: "/var/www/ragnance"
           strip_components: 2
 
-      # ---------- SERVER: clean (préserve .env + DB) ----------
-      - name: Clean server code (preserve .env & DB) (SSH)
+      # ---------- SERVER: pack local + upload unique ----------
+      - name: Pack server folder (exclude DB & secrets)
+        run: |
+          set -e
+          test -d server
+          tar --exclude='server/node_modules' \
+              --exclude='server/.env' \
+              --exclude='server/*.sqlite' \
+              --exclude='server/var' \
+              -czf server-upload.tgz -C server .
+
+      - name: Upload server bundle
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          source: "server-upload.tgz"
+          target: "/var/www/ragnance"
+
+      # ---------- SERVER: clean code (préserve .env & DB), puis extract ----------
+      - name: Unpack server on VPS (SSH)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -96,33 +116,19 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             set -e
-            sudo mkdir -p /var/www/ragnance/server/var/data
+            cd /var/www/ragnance
+            sudo mkdir -p server/var/data
             # Supprime tout SAUF 'var', '.env', 'ecosystem.config.js' et '*.sqlite'
-            sudo find /var/www/ragnance/server -mindepth 1 -maxdepth 1 \
+            sudo find server -mindepth 1 -maxdepth 1 \
               ! -name 'var' \
               ! -name '.env' \
               ! -name 'ecosystem.config.js' \
               ! -name '*.sqlite' \
               -exec rm -rf {} +
+            # Décompresse le bundle dans server/
+            tar -xzf server-upload.tgz -C server
+            rm -f server-upload.tgz
             sudo chown -R $USER:$USER /var/www/ragnance/server
-
-      # ---------- SERVER: upload (simple, jamais vide) ----------
-      - name: Upload server code
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
-          port: ${{ secrets.VPS_SSH_PORT }}
-          source: |
-            server/**
-            !server/node_modules/**
-            !server/.env
-            !server/*.sqlite
-            !server/var/**
-          target: "/var/www/ragnance/server"
-          strip_components: 1
 
       # ---------- POST-DEPLOY ----------
       - name: Post-deploy (install deps + pm2 + nginx reload)
