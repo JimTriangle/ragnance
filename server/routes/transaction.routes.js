@@ -10,7 +10,7 @@ router.get('/labels', isAuth, async (req, res) => {
     try {
         const labels = await Transaction.findAll({
             where: { UserId: req.user.id },
-            attributes: [ [fn('DISTINCT', col('label')), 'label'] ],
+            attributes: [[fn('DISTINCT', col('label')), 'label']],
             order: [['label', 'ASC']],
             raw: true
         });
@@ -22,7 +22,7 @@ router.get('/dashboard-list', isAuth, async (req, res) => {
     const userId = req.user.id;
     try {
         const thirtyDaysAgo = new Date(new Date().setDate(new Date().getDate() - 30));
-        
+
         // CORRECTION : On ajoute "include: [Category]" ici
         const oneTime = await Transaction.findAll({
             where: { UserId: userId, transactionType: 'one-time', date: { [Op.gte]: thirtyDaysAgo } },
@@ -137,7 +137,7 @@ router.get('/summary/:year/:month', isAuth, async (req, res) => {
                     occurrences++;
                     currentDate.setMonth(currentDate.getMonth() + 1);
                 } else {
-                    break; 
+                    break;
                 }
             }
             if (r.type === 'income') {
@@ -166,24 +166,24 @@ router.get('/summary/:year/:month', isAuth, async (req, res) => {
 
 // --- Route pour les stats du graphique en barres ---
 router.get('/stats/expenses-by-day', isAuth, async (req, res) => {
-  const userId = req.user.id;
-  const { startDate, endDate } = req.query;
-  const whereClause = { UserId: userId, type: 'expense' };
-  if (startDate && endDate) {
-    whereClause.date = { [Op.between]: [new Date(startDate), new Date(endDate)] };
-  }
-  try {
-    const expensesByDay = await Transaction.findAll({
-      attributes: [[fn('strftime', '%Y-%m-%d', col('date')), 'day'], [fn('sum', col('amount')), 'total']],
-      where: whereClause,
-      group: ['day'],
-      order: [['day', 'ASC']]
-    });
-    res.status(200).json(expensesByDay);
-  } catch (error) {
-    console.error("Erreur stats:", error);
-    res.status(500).json({ message: "Erreur lors de la récupération des statistiques." });
-  }
+    const userId = req.user.id;
+    const { startDate, endDate } = req.query;
+    const whereClause = { UserId: userId, type: 'expense' };
+    if (startDate && endDate) {
+        whereClause.date = { [Op.between]: [new Date(startDate), new Date(endDate)] };
+    }
+    try {
+        const expensesByDay = await Transaction.findAll({
+            attributes: [[fn('strftime', '%Y-%m-%d', col('date')), 'day'], [fn('sum', col('amount')), 'total']],
+            where: whereClause,
+            group: ['day'],
+            order: [['day', 'ASC']]
+        });
+        res.status(200).json(expensesByDay);
+    } catch (error) {
+        console.error("Erreur stats:", error);
+        res.status(500).json({ message: "Erreur lors de la récupération des statistiques." });
+    }
 });
 
 // --- Route pour les stats du graphique camembert ---
@@ -199,28 +199,52 @@ router.get('/stats/expenses-by-category', isAuth, async (req, res) => {
             include: [{
                 model: Category,
                 attributes: [],
-                required: true // On garde required car on ne veut que les dépenses catégorisées
+                required: true
             }],
             where: { UserId: userId, type: 'expense' },
             group: ['Categories.id', 'Categories.name', 'Categories.color'],
+            order: [[fn('sum', col('Transaction.amount')), 'DESC']], // On trie par total décroissant
             raw: true
         });
-        res.status(200).json(results);
+
+        const TOP_N = 6;
+        let finalResults = results;
+
+        // Si on a plus de catégories que notre limite, on regroupe les autres
+        if (results.length > TOP_N) {
+            const topResults = results.slice(0, TOP_N);
+            const otherResults = results.slice(TOP_N);
+
+            const otherTotal = otherResults.reduce((sum, item) => sum + item.total, 0);
+
+            finalResults = [
+                ...topResults,
+                {
+                    categoryName: 'Autres',
+                    categoryColor: '#888888', // Une couleur neutre pour "Autres"
+                    total: otherTotal
+                }
+            ];
+        }
+
+        res.status(200).json(finalResults);
     } catch (error) {
+        console.error("Erreur stats/expenses-by-category:", error);
         res.status(500).json({ message: "Erreur lors de la récupération des statistiques." });
     }
 });
 
+
 // --- ROUTE CORRIGÉE ---
 router.post('/', isAuth, async (req, res) => {
     const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, categoryIds, ProjectBudgetId } = req.body;
-    
+
     try {
         // Validation serveur : si un budget projet est associé
         if (ProjectBudgetId && type === 'expense') {
-            const budget = await ProjectBudget.findOne({ where: { id: ProjectBudgetId, UserId: req.user.id }});
+            const budget = await ProjectBudget.findOne({ where: { id: ProjectBudgetId, UserId: req.user.id } });
             if (!budget) {
-                return res.status(404).json({ message: "Budget de projet non trouvé."});
+                return res.status(404).json({ message: "Budget de projet non trouvé." });
             }
             const transactionDate = transactionType === 'one-time' ? new Date(date) : new Date(startDate);
             if (transactionDate < new Date(budget.startDate) || transactionDate > new Date(budget.endDate)) {
@@ -229,7 +253,7 @@ router.post('/', isAuth, async (req, res) => {
         }
 
         const newTransaction = await Transaction.create({
-            label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, 
+            label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth,
             ProjectBudgetId: ProjectBudgetId || null,
             UserId: req.user.id
         });
@@ -241,9 +265,9 @@ router.post('/', isAuth, async (req, res) => {
         const result = await Transaction.findByPk(newTransaction.id, { include: [Category] });
         res.status(201).json(result);
 
-    } catch (error) { 
+    } catch (error) {
         console.error("Erreur POST /transactions:", error);
-        res.status(500).json({ message: "Erreur lors de la création." }); 
+        res.status(500).json({ message: "Erreur lors de la création." });
     }
 });
 
