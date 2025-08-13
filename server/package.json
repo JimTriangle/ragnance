@@ -4,7 +4,8 @@
   "description": "Backend pour l'application Ragnance",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "cross-env NODE_ENV=development node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
+    "cross-env": "^10.0.0",
     "nodemon": "^3.1.4"
   }
 }

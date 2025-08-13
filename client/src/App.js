@@ -33,12 +33,6 @@ import ProjectBudgetsPage from './pages/ProjectBudgetsPage';
 import ProjectBudgetTracker from './components/ProjectBudgetTracker';
 import BudgetAnalysisPage from './pages/BudgetAnalysisPage';
 
-// CSS
-import 'primereact/resources/themes/vela-blue/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
-import 'primeflex/primeflex.css';
-
 
 const AppLayout = () => {
     return (
@@ -57,14 +51,16 @@ const Header = () => {
     return (
         <div className="main-header flex justify-content-between align-items-center p-3" style={{ background: '#242931', borderBottom: '1px solid #495057' }}>
             <div className="flex align-items-center flex-wrap">
-                <NavLink to="/" className="p-button p-button-text mr-2"><span>Dashboard</span></NavLink>
-                <NavLink to="/monthly" className="p-button p-button-text mr-2"><span>Vue Mensuelle</span></NavLink>
-                <NavLink to="/categories" className="p-button p-button-text mr-2"><span>Catégories</span></NavLink>
-                <NavLink to="/budgets" className="p-button p-button-text mr-2"><span>Budgets Mensuels</span></NavLink>
-                <NavLink to="/project-budgets" className="p-button p-button-text mr-2"><span>Budgets Projet</span></NavLink>
-                <NavLink to="/analysis" className="p-button p-button-text"><span>Dépenses</span></NavLink>
-                <NavLink to="/budget-analysis" className="p-button p-button-text"><span>Analyse Budgets</span></NavLink>
-                {user?.role === 'admin' && <NavLink to="/admin" className="p-button p-button-text p-button-danger ml-2"><span>Admin</span></NavLink>}
+                {/* On combine les classes PrimeReact AVEC notre classe perso */}
+                <NavLink to="/" className="p-button p-button-text main-nav-link">Dashboard</NavLink>
+                <NavLink to="/monthly" className="p-button p-button-text main-nav-link">Vue Mensuelle</NavLink>
+                <NavLink to="/categories" className="p-button p-button-text main-nav-link">Catégories</NavLink>
+                <NavLink to="/budgets" className="p-button p-button-text main-nav-link">Budgets Mensuels</NavLink>
+                <NavLink to="/project-budgets" className="p-button p-button-text main-nav-link">Budgets Projet</NavLink>
+                <NavLink to="/analysis" className="p-button p-button-text main-nav-link">Dépenses</NavLink>
+                <NavLink to="/budget-analysis" className="p-button p-button-text main-nav-link">Analyse Budgets</NavLink>
+                {/* On garde la version simple pour Admin pour conserver sa couleur rouge distinctive */}
+                {user?.role === 'admin' && <NavLink to="/admin" className="p-button p-button-text p-button-danger ml-2 main-nav-link">Admin</NavLink>}
             </div>
             <div className="flex align-items-center">
                 <UserInfo />
@@ -77,7 +73,7 @@ const UserInfo = () => {
     const { user, logoutUser } = useContext(AuthContext);
     return (
         <>
-            <NavLink to="/profile" className="p-button p-button-text">
+            <NavLink to="/profile" className="p-button p-button-text main-nav-link">
                 <span className="mr-3">Bonjour, <strong>{user.email}</strong> !</span>
             </NavLink>
             <Button label="Déconnexion" icon="pi pi-sign-out" className="p-button-sm p-button-text" onClick={logoutUser} />
