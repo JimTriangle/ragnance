@@ -21,6 +21,7 @@ const MonthlyViewPage = () => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [lineChartData, setLineChartData] = useState({});
   const [pieChartData, setPieChartData] = useState({});
+  const [cumulativeChartData, setCumulativeChartData] = useState({});
   const [globalFilter, setGlobalFilter] = useState('');
   const { showToast } = useContext(ToastContext);
 
@@ -37,7 +38,6 @@ const MonthlyViewPage = () => {
     }
   };
 
-  // MODIFICATION : CETTE FONCTION EST MISE À JOUR POUR CHARGER TOUTES LES BONNES DONNÉES
   const fetchData = useCallback(async () => {
     setLoading(true);
     const year = currentDate.getFullYear();
@@ -51,6 +51,18 @@ const MonthlyViewPage = () => {
       setTransactions(transacResponse.data);
       setSummary(summaryResponse.data);
 
+      const dailyFlowData = dailyFlowResponse.data;
+
+      // Logique pour le graphique des flux journaliers (inchangée)
+      setLineChartData({
+        labels: dailyFlowData.labels,
+        datasets: [
+          { label: 'Revenus', data: dailyFlowData.incomeData, fill: false, borderColor: '#10B981', tension: 0.4 },
+          { label: 'Dépenses', data: dailyFlowData.expenseData, fill: false, borderColor: '#EF4444', tension: 0.4 }
+        ]
+      });
+
+      // Logique pour le graphique camembert (inchangée)
       setPieChartData({
         labels: ['Revenus', 'Dépenses'],
         datasets: [{
@@ -59,14 +71,43 @@ const MonthlyViewPage = () => {
         }]
       });
 
-      // Les données du graphique linéaire incluent maintenant les transactions récurrentes
-      setLineChartData({
-        labels: dailyFlowResponse.data.labels,
+      // --- AJOUT : Calcul des données pour le nouveau graphique cumulatif ---
+      const cumulativeIncome = [];
+      const cumulativeExpense = [];
+      let runningIncome = 0;
+      let runningExpense = 0;
+
+      for (const dailyIncome of dailyFlowData.incomeData) {
+        runningIncome += dailyIncome;
+        cumulativeIncome.push(runningIncome);
+      }
+      for (const dailyExpense of dailyFlowData.expenseData) {
+        runningExpense += dailyExpense;
+        cumulativeExpense.push(runningExpense);
+      }
+
+      setCumulativeChartData({
+        labels: dailyFlowData.labels,
         datasets: [
-          { label: 'Revenus', data: dailyFlowResponse.data.incomeData, fill: false, borderColor: '#10B981', tension: 0.4 },
-          { label: 'Dépenses', data: dailyFlowResponse.data.expenseData, fill: false, borderColor: '#EF4444', tension: 0.4 }
+          {
+            label: 'Revenus Cumulés',
+            data: cumulativeIncome,
+            fill: true,
+            borderColor: '#10B981',
+            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+            tension: 0.4
+          },
+          {
+            label: 'Dépenses Cumulées',
+            data: cumulativeExpense,
+            fill: true,
+            borderColor: '#EF4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+            tension: 0.4
+          }
         ]
       });
+
     } catch (error) {
       showToast('error', 'Erreur', 'Impossible de charger les données');
     }
@@ -196,12 +237,19 @@ const MonthlyViewPage = () => {
         </div>
 
         <div className="grid">
-          <div className="col-12 lg:col-8">
+          <div className="col-12 lg:col-4">
             {/* MODIFICATION : Le titre du graphique est mis à jour */}
             <Card title="Flux Journalier">
               <div style={{ position: 'relative', height: '300px' }}>
                 <Chart type="line" data={lineChartData} options={chartOptions} />
               </div>
+            </Card>
+          </div>
+          <div className="col-12 lg:col-4">
+            <Card title="Progression Cumulée du Mois">
+            <div style={{ position: 'relative', height: '300px' }}>
+              <Chart type="line" data={cumulativeChartData} options={chartOptions} />
+            </div>
             </Card>
           </div>
           <div className="col-12 lg:col-4">
