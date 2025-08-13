@@ -35,6 +35,7 @@ jobs:
         host: ${{ secrets.VPS_HOST }}
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
+        port: ${{ secrets.VPS_SSH_PORT }}
         source: "client/build,server"
         target: "/var/www/ragnance"
         strip_components: 1
@@ -45,6 +46,7 @@ jobs:
         host: ${{ secrets.VPS_HOST }}
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
+        port: ${{ secrets.VPS_SSH_PORT }}
         script: |
           cd /var/www/ragnance/server
           mkdir -p /var/www/ragnance/database
