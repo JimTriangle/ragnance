@@ -26,7 +26,7 @@ jobs:
           npm ci || npm install
           npm run build
         env:
-          # REACT_APP_API_URL: https://ragnance.fr/api   # si besoin
+          REACT_APP_API_URL: https://ragnance.fr/api   # si besoin
           CI: true
 
       # ---------- PREP CÔTÉ SERVEUR ----------
