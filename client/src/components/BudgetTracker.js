@@ -1,33 +1,8 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
-import api from '../services/api';
+import React from 'react';
 import { ProgressBar } from 'primereact/progressbar';
-import { AuthContext } from '../context/AuthContext';
 
-const BudgetTracker = () => {
-    const [data, setData] = useState([]);
-    const { user } = useContext(AuthContext);
-
-    const fetchData = useCallback(async () => {
-        if (!user) return;
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
-        try {
-            const response = await api.get(`/budgets/progress/${year}/${month}`);
-            setData(response.data);
-        } catch (error) {
-            console.error("Erreur fetch budget progress", error);
-        }
-    }, [user]);
-
-    useEffect(() => {
-        fetchData();
-        // Ajout d'un écouteur pour rafraîchir quand l'utilisateur revient sur la page
-        window.addEventListener('focus', fetchData);
-        return () => {
-            window.removeEventListener('focus', fetchData);
-        };
-    }, [fetchData]); // Se relance si l'utilisateur change
+// Le composant reçoit maintenant les données en "props"
+const BudgetTracker = ({ data = [] }) => {
 
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
@@ -49,7 +24,7 @@ const BudgetTracker = () => {
                     );
                 })
             ) : (
-                <p className="text-center text-gray-500">Aucun budget défini pour ce mois-ci.</p>
+                <p className="text-center text-gray-500">Aucun budget à suivre pour ce mois-ci.</p>
             )}
         </div>
     );

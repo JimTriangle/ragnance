@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import api from '../services/api';
 import { ToastContext } from '../context/ToastContext';
 import { Button } from 'primereact/button';

@@ -91,6 +91,7 @@ const DashboardPage = () => {
     const [lineChartData, setLineChartData] = useState(null);
     const [categoryChartData, setCategoryChartData] = useState(null);
     const [budgetProgressData, setBudgetProgressData] = useState([]);
+    const [projectBudgets, setProjectBudgets] = useState([]);
     const [chartPeriod, setChartPeriod] = useState('30d');
     const [loading, setLoading] = useState(true);
     const [globalFilter, setGlobalFilter] = useState('');
@@ -109,11 +110,12 @@ const DashboardPage = () => {
         const year = today.getFullYear();
         const month = today.getMonth() + 1;
         try {
-            const [transacResponse, summaryResponse, categoryStatsResponse, budgetProgressResponse] = await Promise.all([
+            const [transacResponse, summaryResponse, categoryStatsResponse, budgetProgressResponse, projectBudgetsResponse] = await Promise.all([
                 api.get('/transactions/dashboard-list'),
                 api.get('/transactions/summary'),
                 api.get('/transactions/stats/expenses-by-category'),
-                api.get(`/budgets/progress/${year}/${month}`)
+                api.get(`/budgets/progress/${year}/${month}`),
+                api.get('/project-budgets')
             ]);
 
             setTransactions(transacResponse.data);
@@ -123,6 +125,7 @@ const DashboardPage = () => {
                 datasets: [{ data: categoryStatsResponse.data.map(c => c.total), backgroundColor: categoryStatsResponse.data.map(c => c.categoryColor) }]
             });
             setBudgetProgressData(budgetProgressResponse.data);
+            setProjectBudgets(projectBudgetsResponse.data); 
 
         } catch (error) {
             console.error("Erreur fatale lors du chargement du dashboard :", error);
@@ -240,11 +243,11 @@ const DashboardPage = () => {
             <div className="grid mt-4">
                  <div className="col-12 lg:col-6">
                     <Card title="Suivi des Budgets Mensuels" className="h-full">
-                        <BudgetTracker />
+                        <BudgetTracker data={budgetProgressData} />
                     </Card>
                 </div>
                 <div className="col-12 lg:col-6">
-                    <ProjectBudgetTracker />
+                    <ProjectBudgetTracker budgets={projectBudgets} />
                 </div>
             </div>
             
