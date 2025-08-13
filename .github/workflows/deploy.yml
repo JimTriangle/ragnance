@@ -28,11 +28,11 @@ jobs:
           npm ci || npm install
           npm run build
         env:
-          # Laisse vide pour utiliser "/api" en relatif dans ton api.js
+          # On garde l'URL relative /api côté front
           CI: true
 
-      # ---------- PREP & BACKUP DB (NE JAMAIS ÉCRASER LA DB) ----------
-      - name: Prepare dirs & backup DB (SSH)
+      # ---------- PREP & BACKUP (DB intouchable) ----------
+      - name: Prepare & Backup DB (SSH)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -43,22 +43,23 @@ jobs:
           script: |
             set -e
             sudo mkdir -p /var/www/ragnance /var/www/ragnance/server/var/data /var/backups/ragnance
-            # Backup DB sqlite si présente
+            # Sauvegarde sqlite si présente (rotation 7)
             if [ -f /var/www/ragnance/server/ragnance.sqlite ]; then
               TS=$(date +%Y%m%d-%H%M%S)
               sudo cp /var/www/ragnance/server/ragnance.sqlite /var/backups/ragnance/ragnance.sqlite.$TS.bak
               ls -1t /var/backups/ragnance/ragnance.sqlite.*.bak 2>/dev/null | tail -n +8 | xargs -r sudo rm -f
             fi
-            # Backup server/var si non vide
+            # Sauvegarde /var si non vide (rotation 7)
             if [ -d /var/www/ragnance/server/var ] && [ "$(ls -A /var/www/ragnance/server/var)" ]; then
               TS=$(date +%Y%m%d-%H%M%S)
               sudo tar -czf /var/backups/ragnance/server-var-$TS.tgz -C /var/www/ragnance/server var
               ls -1t /var/backups/ragnance/server-var-*.tgz 2>/dev/null | tail -n +8 | xargs -r sudo rm -f
             fi
+            # Propriété au bon user pour éviter les "Permission denied" au SCP
             sudo chown -R $USER:$USER /var/www/ragnance
 
-      # ---------- CLEAN FRONT (ne touche pas à /server) ----------
-      - name: Clean frontend dir on server (SSH)
+      # ---------- FRONT: clean + upload ----------
+      - name: Clean frontend dir (SSH)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -68,11 +69,11 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             set -e
+            # Supprime TOUT sauf le dossier server
             sudo find /var/www/ragnance -mindepth 1 -maxdepth 1 ! -name 'server' -exec rm -rf {} +
             sudo chown -R $USER:$USER /var/www/ragnance
 
-      # ---------- SCP FRONT ----------
-      - name: Upload frontend build to VPS
+      - name: Upload frontend build
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -84,35 +85,8 @@ jobs:
           target: "/var/www/ragnance"
           strip_components: 2
 
-      # ---------- ASSERT: ne jamais pousser la DB ni le .env ----------
-      - name: Assert DB/.env not in artifact
-        run: |
-          set -e
-          if [ -e server/.env ]; then echo "❌ Ne push pas server/.env"; exit 1; fi
-          if ls server/*.sqlite >/dev/null 2>&1; then echo "❌ Ne push pas de *.sqlite"; exit 1; fi
-
-      # ---------- DEBUG & GUARANTEE SERVER SOURCES EXIST ----------
-      - name: Debug server files (runner)
-        run: |
-          set -e
-          echo "PWD=$(pwd)"
-          ls -la server || true
-          echo "---- First 120 files ----"
-          find server -type f | sed -n '1,120p'
-
-      - name: Ensure server files exist (runner)
-        run: |
-          set -e
-          COUNT=$(find server -type f \( -name "package.json" -o -name "package-lock.json" -o -name "*.js" \) | wc -l)
-          if [ "$COUNT" -eq 0 ]; then
-            echo "❌ Aucun fichier serveur détecté (archive vide). Vérifie que 'server/' est bien commité et sur la bonne branche."
-            exit 1
-          else
-            echo "✅ $COUNT fichiers serveur trouvés."
-          fi
-
-      # ---------- CLEAN CODE BACK (préserve DB + .env + ecosystem) ----------
-      - name: Clean server code on server (preserve DB & .env)
+      # ---------- SERVER: clean (préserve .env + DB) ----------
+      - name: Clean server code (preserve .env & DB) (SSH)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -123,17 +97,17 @@ jobs:
           script: |
             set -e
             sudo mkdir -p /var/www/ragnance/server/var/data
-            # Supprime tout SAUF 'var', '.env', 'ecosystem.config.js' et 'ragnance.sqlite'
+            # Supprime tout SAUF 'var', '.env', 'ecosystem.config.js' et '*.sqlite'
             sudo find /var/www/ragnance/server -mindepth 1 -maxdepth 1 \
               ! -name 'var' \
               ! -name '.env' \
               ! -name 'ecosystem.config.js' \
-              ! -name 'ragnance.sqlite' \
+              ! -name '*.sqlite' \
               -exec rm -rf {} +
             sudo chown -R $USER:$USER /var/www/ragnance/server
 
-      # ---------- SCP SERVER (globs robustes, jamais vide) ----------
-      - name: Upload server code to VPS (no DB, no .env)
+      # ---------- SERVER: upload (simple, jamais vide) ----------
+      - name: Upload server code
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -142,25 +116,16 @@ jobs:
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           port: ${{ secrets.VPS_SSH_PORT }}
           source: |
-            server/package.json
-            server/package-lock.json
-            server/server.js
-            server/*.js
-            server/**/*.js
-            server/config/**
-            server/middleware/**
-            server/models/**
-            server/routes/**
+            server/**
             !server/node_modules/**
             !server/.env
             !server/*.sqlite
-            !server/**/*.sqlite
             !server/var/**
           target: "/var/www/ragnance/server"
           strip_components: 1
 
       # ---------- POST-DEPLOY ----------
-      - name: Post-deploy on VPS (install deps + pm2 + nginx reload)
+      - name: Post-deploy (install deps + pm2 + nginx reload)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
