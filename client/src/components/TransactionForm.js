@@ -18,19 +18,18 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
   const [frequency, setFrequency] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  // MODIFICATION : On utilise un état pour un tableau de catégories
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]); 
   const [selectedProjectBudget, setSelectedProjectBudget] = useState(null);
   const [error, setError] = useState('');
-
+  
   const [categories, setCategories] = useState([]);
   const [projectBudgets, setProjectBudgets] = useState([]);
   const [allLabels, setAllLabels] = useState([]);
   const [filteredLabels, setFilteredLabels] = useState([]);
 
-  const transactionTypeOptions = [{ label: 'Ponctuel', value: 'one-time' }, { label: 'Récurrent', value: 'recurring' }];
-  const frequencyOptions = [{ label: 'Mensuel', value: 'monthly' }, { label: 'Hebdomadaire', value: 'weekly' }];
-  const transactionTypes = [{ label: 'Dépense', value: 'expense' }, { label: 'Revenu', value: 'income' }];
+  const transactionTypeOptions = [ { label: 'Ponctuel', value: 'one-time' }, { label: 'Récurrent', value: 'recurring' }];
+  const frequencyOptions = [ { label: 'Mensuel', value: 'monthly' }, { label: 'Hebdomadaire', value: 'weekly' }];
+  const transactionTypes = [ { label: 'Dépense', value: 'expense' }, { label: 'Revenu', value: 'income' }];
 
   useEffect(() => {
     api.get('/categories').then(response => setCategories(response.data));
@@ -44,61 +43,74 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
       setAmount(transactionToEdit.amount);
       setType(transactionToEdit.type);
       setTransactionType(transactionToEdit.transactionType);
-      setDate(transactionToEdit.date ? new Date(transactionToEdit.date) : new Date());
+      // Pour les dates, on s'assure de les traiter correctement
+      const transactionDate = transactionToEdit.date ? new Date(transactionToEdit.date) : new Date();
+      // On compense le fuseau horaire pour afficher la bonne date dans le picker
+      transactionDate.setMinutes(transactionDate.getMinutes() + transactionDate.getTimezoneOffset());
+      setDate(transactionDate);
+
+      const transactionStartDate = transactionToEdit.startDate ? new Date(transactionToEdit.startDate) : null;
+      if (transactionStartDate) {
+        transactionStartDate.setMinutes(transactionStartDate.getMinutes() + transactionStartDate.getTimezoneOffset());
+      }
+      setStartDate(transactionStartDate);
+      
+      const transactionEndDate = transactionToEdit.endDate ? new Date(transactionToEdit.endDate) : null;
+       if (transactionEndDate) {
+        transactionEndDate.setMinutes(transactionEndDate.getMinutes() + transactionEndDate.getTimezoneOffset());
+      }
+      setEndDate(transactionEndDate);
+
       setFrequency(transactionToEdit.frequency);
-      setStartDate(transactionToEdit.startDate ? new Date(transactionToEdit.startDate) : null);
-      setEndDate(transactionToEdit.endDate ? new Date(transactionToEdit.endDate) : null);
-      // MODIFICATION : On pré-remplit le tableau des catégories
       setSelectedCategories(transactionToEdit.Categories ? transactionToEdit.Categories.map(c => c.id) : []);
       setSelectedProjectBudget(transactionToEdit.ProjectBudgetId);
     } else {
-      setLabel(''); setAmount(null); setType(null); setTransactionType('one-time');
-      setDate(new Date()); setFrequency(null); setStartDate(null); setEndDate(null);
-      setSelectedCategories([]); setSelectedProjectBudget(null);
+      setLabel(''); setAmount(null); setType(null); setTransactionType('one-time'); 
+      setDate(new Date()); setFrequency(null); setStartDate(null); setEndDate(null); 
+      setSelectedCategories([]); setSelectedProjectBudget(null); 
     }
   }, [transactionToEdit]);
-
+  
   const searchLabel = (event) => {
     setTimeout(() => {
-      let _filteredLabels;
-      if (!event.query.trim().length) {
-        _filteredLabels = [...allLabels];
-      } else {
-        _filteredLabels = allLabels.filter((label) => {
-          return label.toLowerCase().startsWith(event.query.toLowerCase());
-        });
-      }
-      setFilteredLabels(_filteredLabels);
+        let _filteredLabels;
+        if (!event.query.trim().length) {
+            _filteredLabels = [...allLabels];
+        } else {
+            _filteredLabels = allLabels.filter((label) => {
+                return label.toLowerCase().startsWith(event.query.toLowerCase());
+            });
+        }
+        setFilteredLabels(_filteredLabels);
     }, 250);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
+    
     if (selectedProjectBudget) {
-      const budget = projectBudgets.find(b => b.id === selectedProjectBudget);
-      const transactionDate = transactionType === 'one-time' ? date : startDate;
-      if (budget && transactionDate && (new Date(transactionDate) < new Date(budget.startDate) || new Date(transactionDate) > new Date(budget.endDate))) {
-        setError("La date de la transaction n'est pas dans la période du budget de projet sélectionné.");
-        return;
-      }
+        const budget = projectBudgets.find(b => b.id === selectedProjectBudget);
+        const transactionDate = transactionType === 'one-time' ? date : startDate;
+        if (budget && transactionDate && (new Date(transactionDate) < new Date(budget.startDate) || new Date(transactionDate) > new Date(budget.endDate))) {
+            setError("La date de la transaction n'est pas dans la période du budget de projet sélectionné.");
+            return;
+        }
     }
 
-    const transactionData = {
-      label, amount, type, transactionType,
-      categoryIds: selectedCategories, // MODIFICATION : On envoie bien "categoryIds"
-      ProjectBudgetId: selectedProjectBudget
+    const transactionData = { 
+        label, amount, type, transactionType, 
+        categoryIds: selectedCategories,
+        ProjectBudgetId: selectedProjectBudget 
     };
-
+    
     const formatDateForAPI = (d) => {
-      if (!d) return null;
-      const dateObj = new Date(d);
-      // On compense le fuseau horaire pour éviter le décalage d'un jour
-      dateObj.setMinutes(dateObj.getMinutes() - dateObj.getTimezoneOffset());
-      return dateObj.toISOString().split('T')[0];
+        if (!d) return null;
+        const dateObj = new Date(d);
+        dateObj.setMinutes(dateObj.getMinutes() - dateObj.getTimezoneOffset());
+        return dateObj.toISOString().split('T')[0];
     };
-
+    
     if (transactionType === 'recurring') {
       if (!frequency || !startDate) {
         setError('Pour une transaction récurrente, la fréquence et la date de début sont requises.');
@@ -108,10 +120,10 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
       transactionData.startDate = formatDateForAPI(startDate);
       transactionData.endDate = formatDateForAPI(endDate);
       if (frequency === 'monthly') {
-        transactionData.dayOfMonth = startDate.getDate();
+          transactionData.dayOfMonth = new Date(startDate).getDate();
       }
     } else {
-      transactionData.date = formatDateForAPI(date);
+        transactionData.date = formatDateForAPI(date);
     }
 
     try {
@@ -120,62 +132,61 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
       } else {
         await api.post('/transactions', transactionData);
       }
-      onComplete();
+      onComplete(); 
     } catch (err) {
       setError(err.response?.data?.message || 'Une erreur est survenue.');
     }
   };
 
-
   return (
-    // On retire la Card pour un affichage plus direct dans la modale parente
     <form onSubmit={handleSubmit} className="p-fluid">
-      <div className="field text-center mb-4">
-        <SelectButton value={transactionType} options={transactionTypeOptions} onChange={(e) => setTransactionType(e.value)} />
-      </div>
+        <div className="field text-center mb-4">
+            <SelectButton value={transactionType} options={transactionTypeOptions} onChange={(e) => setTransactionType(e.value)} />
+        </div>
+        
+        <div className="grid formgrid">
+            <div className="field col-12 md:col-6"><span className="p-float-label"><AutoComplete value={label} suggestions={filteredLabels} completeMethod={searchLabel} onChange={(e) => setLabel(e.value)} id="label" dropdown /><label htmlFor="label">Libellé*</label></span></div>
+            <div className="field col-12 md:col-3"><span className="p-float-label"><InputNumber id="amount" value={amount} onValueChange={(e) => setAmount(e.value)} mode="currency" currency="EUR" locale="fr-FR" /><label htmlFor="amount">Montant*</label></span></div>
+            <div className="field col-12 md:col-3"><span className="p-float-label"><Dropdown id="type" value={type} options={transactionTypes} onChange={(e) => setType(e.value)} optionLabel="label" optionValue="value" placeholder="Type*" /><label htmlFor="type">Type*</label></span></div>
+            
+            <div className="field col-12">
+                <span className="p-float-label">
+                    <MultiSelect 
+                        id="category" 
+                        value={selectedCategories} 
+                        options={categories} 
+                        onChange={(e) => setSelectedCategories(e.value)}
+                        optionLabel="name" 
+                        optionValue="id" 
+                        placeholder="Catégories" 
+                        display="chip"
+                        className="p-inputtext-sm"
+                        filter // <-- AJOUT : Active le champ de recherche
+                        filterPlaceholder="Rechercher une catégorie" // <-- AJOUT : Texte d'aide dans le champ
+                    />
+                    <label htmlFor="category">Catégories</label>
+                </span>
+            </div>
 
-      <div className="grid formgrid">
-        <div className="field col-12 md:col-6"><span className="p-float-label"><AutoComplete value={label} suggestions={filteredLabels} completeMethod={searchLabel} onChange={(e) => setLabel(e.value)} id="label" dropdown /><label htmlFor="label">Libellé*</label></span></div>
-        <div className="field col-12 md:col-3"><span className="p-float-label"><InputNumber id="amount" value={amount} onValueChange={(e) => setAmount(e.value)} mode="currency" currency="EUR" locale="fr-FR" /><label htmlFor="amount">Montant*</label></span></div>
-        <div className="field col-12 md:col-3"><span className="p-float-label"><Dropdown id="type" value={type} options={transactionTypes} onChange={(e) => setType(e.value)} optionLabel="label" optionValue="value" placeholder="Type*" /><label htmlFor="type">Type*</label></span></div>
+            {type === 'expense' && (
+                <div className="field col-12"><span className="p-float-label"><Dropdown id="projectBudget" value={selectedProjectBudget} options={projectBudgets} onChange={(e) => setSelectedProjectBudget(e.value)} optionLabel="name" optionValue="id" placeholder="Associer à un budget de projet (optionnel)" showClear /><label htmlFor="projectBudget">Budget de Projet</label></span></div>
+            )}
 
-        {/* MODIFICATION : On remplace le Dropdown par un MultiSelect */}
-        <div className="field col-12">
-          <span className="p-float-label">
-            <MultiSelect
-              id="category"
-              value={selectedCategories}
-              options={categories}
-              onChange={(e) => setSelectedCategories(e.value)}
-              optionLabel="name"
-              optionValue="id"
-              placeholder="Catégories"
-              display="chip"
-              className="p-inputtext-sm"
-            />
-            <label htmlFor="category">Catégories</label>
-          </span>
+            {transactionType === 'one-time' && (
+                <div className="field col-12"><span className="p-float-label"><Calendar id="date" value={date} onChange={(e) => setDate(e.value)} dateFormat="dd/mm/yy" placeholder="Date*" /><label htmlFor="date">Date*</label></span></div>
+            )}
+
+            {transactionType === 'recurring' && (
+                <>
+                    <div className="field col-12 md:col-4"><span className="p-float-label"><Dropdown id="frequency" value={frequency} options={frequencyOptions} onChange={(e) => setFrequency(e.value)} optionLabel="label" optionValue="value" placeholder="Fréquence*" /><label htmlFor="frequency">Fréquence*</label></span></div>
+                    <div className="field col-12 md:col-4"><span className="p-float-label"><Calendar id="startDate" value={startDate} onChange={(e) => setStartDate(e.value)} dateFormat="dd/mm/yy" placeholder="Date de 1ère application*" /><label htmlFor="startDate">Date de 1ère application*</label></span></div>
+                    <div className="field col-12 md:col-4"><span className="p-float-label"><Calendar id="endDate" value={endDate} onChange={(e) => setEndDate(e.value)} dateFormat="dd/mm/yy" placeholder="Date de fin (optionnel)" showClear /><label htmlFor="endDate">Date de fin (optionnel)</label></span></div>
+                </>
+            )}
         </div>
 
-        {type === 'expense' && (
-          <div className="field col-12"><span className="p-float-label"><Dropdown id="projectBudget" value={selectedProjectBudget} options={projectBudgets} onChange={(e) => setSelectedProjectBudget(e.value)} optionLabel="name" optionValue="id" placeholder="Associer à un budget de projet (optionnel)" showClear /><label htmlFor="projectBudget">Budget de Projet</label></span></div>
-        )}
-
-        {transactionType === 'one-time' && (
-          <div className="field col-12"><span className="p-float-label"><Calendar id="date" value={date} onChange={(e) => setDate(e.value)} dateFormat="dd/mm/yy" placeholder="Date*" /><label htmlFor="date">Date*</label></span></div>
-        )}
-
-        {transactionType === 'recurring' && (
-          <>
-            <div className="field col-12 md:col-4"><span className="p-float-label"><Dropdown id="frequency" value={frequency} options={frequencyOptions} onChange={(e) => setFrequency(e.value)} optionLabel="label" optionValue="value" placeholder="Fréquence*" /><label htmlFor="frequency">Fréquence*</label></span></div>
-            <div className="field col-12 md:col-4"><span className="p-float-label"><Calendar id="startDate" value={startDate} onChange={(e) => setStartDate(e.value)} dateFormat="dd/mm/yy" placeholder="Date de 1ère application*" /><label htmlFor="startDate">Date de 1ère application*</label></span></div>
-            <div className="field col-12 md:col-4"><span className="p-float-label"><Calendar id="endDate" value={endDate} onChange={(e) => setEndDate(e.value)} dateFormat="dd/mm/yy" placeholder="Date de fin (optionnel)" showClear /><label htmlFor="endDate">Date de fin (optionnel)</label></span></div>
-          </>
-        )}
-      </div>
-
-      <div className="field col-12 mt-3">{error && <Message severity="error" text={error} />}</div>
-      <div className="field col-12"><Button type="submit" label={transactionToEdit ? 'Enregistrer' : 'Ajouter'} icon="pi pi-check" /></div>
+        <div className="field col-12 mt-3">{error && <Message severity="error" text={error} />}</div>
+        <div className="field col-12"><Button type="submit" label={transactionToEdit ? 'Enregistrer' : 'Ajouter'} icon="pi pi-check" /></div>
     </form>
   );
 };
