@@ -8,46 +8,43 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      FRONT_BUILD_DIR: client/dist   # CRA: client/build  |  Vite: client/dist
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      # ---------- FRONT ----------
+      - name: Setup Node.js (frontend)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: client/package-lock.json 
+          cache-dependency-path: client/package-lock.json
 
-      # ===== Build FRONT =====
-      - name: Install & build frontend
+      - name: Install & Build (frontend)
         working-directory: ./client
+        # astuce: si le lock n'est pas synchro, on retombe sur npm install pour éviter l'échec
         run: |
-          npm install
+          npm ci || npm install
           npm run build
         env:
-          # si tu as des variables pour le build front, ajoute-les ici
-          # VITE_API_URL: https://ragnance.fr/api
+          # adapte si besoin pour ton API publique
+          # REACT_APP_API_URL: https://ragnance.fr/api
           CI: true
 
-      # ===== Upload FRONT (statique) =====
       - name: Upload frontend build to VPS
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }} # retire si ta clé n'a pas de passphrase
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           port: ${{ secrets.VPS_SSH_PORT }}
-          source: "${{ env.FRONT_BUILD_DIR }}/*"
+          source: "client/build/**"
           target: "/var/www/ragnance"
-          strip_components: 2   # enlève "client/dist" -> dépose directement les fichiers
-          rm: true              # nettoie les anciens fichiers (évite les restes)
+          strip_components: 2     # enlève "client/build/" et dépose les fichiers à la racine
+          rm: true                # nettoie l'ancienne version (évite un dossier vide ou obsolète)
 
-      # ===== Upload SERVER (code) =====
+      # ---------- SERVER ----------
       - name: Upload server code to VPS
         uses: appleboy/scp-action@master
         with:
@@ -60,11 +57,10 @@ jobs:
             server/**
             !server/node_modules/**
             !server/.env
-          target: "/var/www/ragnance"
-          strip_components: 0
+          target: "/var/www/ragnance/server"
+          strip_components: 1     # enlève le préfixe "server/"
 
-      # ===== Post-deploy (serveur) =====
-      - name: Execute deployment script on VPS via SSH
+      - name: Post-deploy on VPS (install deps + pm2 + nginx reload)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -74,8 +70,6 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             set -e
-
-            # Assure l'environnement Node/pm2 (cas nvm & cas Node system)
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
             if ! command -v node >/dev/null 2>&1; then
@@ -86,21 +80,17 @@ jobs:
               sudo npm i -g pm2
             fi
 
-            # Dossiers
-            sudo mkdir -p /var/www/ragnance /var/www/ragnance/server /var/www/ragnance/database
+            # Dossiers et droits
+            sudo mkdir -p /var/www/ragnance /var/www/ragnance/server/var/data
             sudo chown -R $USER:$USER /var/www/ragnance
 
-            # Install deps serveur si package-lock a changé (safe de refaire npm ci)
+            # Dépendances serveur
             cd /var/www/ragnance/server
-            [ -f package.json ] && npm ci --omit=dev || true
+            npm ci --omit=dev || npm install --omit=dev
 
-            # (Re)démarre l'API
-            if [ -f ecosystem.config.js ]; then
-              pm2 startOrRestart ecosystem.config.js
-            else
-              pm2 restart ragnance-api || pm2 start server.js --name ragnance-api
-            fi
+            # Démarrage / redémarrage API
+            PORT=3000 pm2 restart ragnance-api || PORT=3000 pm2 start server.js --name ragnance-api
             pm2 save
 
-            # Nginx reload (au cas où le front a changé)
+            # Nginx reload (si conf déjà en place)
             sudo nginx -t && sudo systemctl reload nginx
