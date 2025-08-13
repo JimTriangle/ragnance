@@ -86,7 +86,24 @@ const DashboardPage = () => {
     // OPTIONS DES GRAPHIQUES
     const periodOptions = [{ label: '7j', value: '7d' }, { label: '1m', value: '30d' }, { label: '3m', value: '90d' }];
     const lineChartOptions = { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } }, y: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } } } };
-    const doughnutChartOptions = { maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#CCC', font: { size: 10 } } } } };
+    const barChartOptions = {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false // La légende est moins utile sur un bar chart, on la cache
+            }
+        },
+        scales: {
+            x: {
+                ticks: { color: '#CCC' },
+                grid: { display: false } // On cache la grille verticale pour plus de clarté
+            },
+            y: {
+                ticks: { color: '#CCC' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+            }
+        }
+    };
 
     // LOGIQUE DE RÉCUPÉRATION DES DONNÉES
     const fetchData = useCallback(async () => {
@@ -158,25 +175,26 @@ const DashboardPage = () => {
                         </div>
                     </Card>
                 </div>
-                <div className="col-12 lg:col-3">
+                <div className="col-12 lg:col-6">
                     <Card title="Dépenses par Catégorie" className="h-full">
                         {categoryChartData && categoryChartData.labels.length > 0 ? (
-                            <Chart type="pie" data={categoryChartData} options={doughnutChartOptions} />
+                             <Chart type="bar" data={categoryChartData} options={barChartOptions} />
                         ) : (<p className="text-center text-gray-500 mt-5">Aucune dépense catégorisée.</p>)}
                     </Card>
                 </div>
-                <div className="col-12 lg:col-3">
-                    <ShoppingList onUpdate={fetchData} />
-                </div>
+
             </div>
             <div className="grid mt-4">
-                 <div className="col-12 lg:col-6">
+                <div className="col-12 lg:col-4">
                     <Card title="Suivi des Budgets Mensuels" className="h-full">
                         <BudgetTracker data={budgetProgressData} />
                     </Card>
                 </div>
-                <div className="col-12 lg:col-6">
+                <div className="col-12 lg:col-4">
                     <ProjectBudgetTracker budgets={projectBudgets} />
+                </div>
+                <div className="col-12 lg:col-4">
+                    <ShoppingList onUpdate={fetchData} />
                 </div>
             </div>
         </div>
