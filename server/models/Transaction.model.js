@@ -7,11 +7,11 @@ const Transaction = sequelize.define('Transaction', {
   label: { type: DataTypes.STRING, allowNull: false },
   amount: { type: DataTypes.FLOAT, allowNull: false },
   type: { type: DataTypes.ENUM('expense', 'income'), allowNull: false },
-  date: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+  date: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW },
   transactionType: { type: DataTypes.ENUM('one-time', 'recurring'), defaultValue: 'one-time' },
   frequency: { type: DataTypes.STRING },
-  startDate: { type: DataTypes.DATE },
-  endDate: { type: DataTypes.DATE, allowNull: true },
+  startDate: { type: DataTypes.DATEONLY },
+  endDate: { type: DataTypes.DATEONLY, allowNull: true },
   dayOfMonth: { type: DataTypes.INTEGER }
 });
 

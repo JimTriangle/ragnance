@@ -11,12 +11,9 @@ const ProjectBudget = sequelize.define('ProjectBudget', {
     type: DataTypes.FLOAT,
     allowNull: false
   },
-  startDate: {
-    type: DataTypes.DATE,
-    allowNull: false
-  },
+  startDate: { type: DataTypes.DATEONLY },
   endDate: {
-    type: DataTypes.DATE,
+    type: DataTypes.DATEONLY,
     allowNull: false
   }
 });
