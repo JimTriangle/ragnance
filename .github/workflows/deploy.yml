@@ -26,13 +26,10 @@ jobs:
           npm ci || npm install
           npm run build
         env:
-          # CRA : utilise REACT_APP_*
-          # Vite : utilise VITE_*
-          # Exemple CRA :
-          # REACT_APP_API_URL: https://ragnance.fr/api
+          # REACT_APP_API_URL: https://ragnance.fr/api   # si besoin
           CI: true
 
-      # ---------- PREPARE REMOTE DIRS & PERMS (fix perms for scp rm: true) ----------
+      # ---------- PREP/DROITS COTE SERVEUR ----------
       - name: Prepare deploy dir permissions (SSH)
         uses: appleboy/ssh-action@master
         with:
@@ -46,7 +43,20 @@ jobs:
             sudo mkdir -p /var/www/ragnance /var/www/ragnance/server/var/data
             sudo chown -R $USER:$USER /var/www/ragnance
 
-      # ---------- SCP FRONT ----------
+      # On nettoie le CONTENU du dossier (pas le dossier lui-même)
+      - name: Clean frontend dir on server (SSH)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script: |
+            set -e
+            sudo find /var/www/ragnance -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
+      # ---------- SCP FRONT (sans rm:true) ----------
       - name: Upload frontend build to VPS
         uses: appleboy/scp-action@master
         with:
@@ -57,8 +67,7 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           source: "client/build/**"
           target: "/var/www/ragnance"
-          strip_components: 2   # enlève "client/build/"
-          rm: true              # supprime l'ancien contenu avant copie
+          strip_components: 2     # enlève "client/build/"
 
       # ---------- SCP SERVER ----------
       - name: Upload server code to VPS
@@ -73,9 +82,9 @@ jobs:
             server/**
             !server/node_modules/**
             !server/.env
-            !server/var/data/**      # ne pas écraser ta base/sqlite locale
+            !server/var/data/**
           target: "/var/www/ragnance/server"
-          strip_components: 1        # enlève le préfixe "server/"
+          strip_components: 1
 
       # ---------- POST-DEPLOY ----------
       - name: Post-deploy on VPS (install deps + pm2 + nginx reload)
@@ -88,7 +97,6 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             set -e
-            # Node/pm2 disponibles même si nvm est utilisé
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
             if ! command -v node >/dev/null 2>&1; then
@@ -99,13 +107,10 @@ jobs:
               sudo npm i -g pm2
             fi
 
-            # Dépendances serveur (prod only)
             cd /var/www/ragnance/server
             npm ci --omit=dev || npm install --omit=dev
 
-            # (Re)démarrage API (adapter le port si besoin)
             PORT=3000 pm2 restart ragnance-api || PORT=3000 pm2 start server.js --name ragnance-api
             pm2 save
 
-            # Recharge Nginx si conf déjà en place
             sudo nginx -t && sudo systemctl reload nginx
