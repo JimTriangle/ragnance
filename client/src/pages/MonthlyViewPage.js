@@ -159,6 +159,10 @@ const MonthlyViewPage = () => {
     </div>
   );
 
+  const createdAtDate = (rowData) => {
+        return new Date(rowData.createdAt).toLocaleDateString('fr-FR');
+    };
+
   return (
     <div>
       <div className="p-4">
@@ -200,6 +204,7 @@ const MonthlyViewPage = () => {
             <Column field="amount" header="Montant" body={(rowData) => formatCurrency(rowData.amount)} sortable />
             <Column field="type" header="Type" body={typeTemplate} sortable />
             <Column field="date" header="Date" body={formatDate} sortable />
+            <Column field="createdAt" header="Saisi le" body={createdAtDate} sortable />
             <Column body={actionBodyTemplate} header="Actions" style={{ width: '7rem', textAlign: 'center' }} />
           </DataTable>
         </div>
