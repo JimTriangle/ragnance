@@ -1,7 +1,7 @@
+require('dotenv').config();
 const express = require('express');
 const cors =require('cors');
 const sequelize = require('./config/database');
-require('dotenv').config(); // Charge les variables d'environnement
 
 // ... (tous les require des modèles)
 require('./models/User.model');
