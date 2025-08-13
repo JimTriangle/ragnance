@@ -1,0 +1,52 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Build Client
+      run: |
+        cd client
+        npm install
+        sed -i "s|baseURL: '.*'|baseURL: '${{ secrets.VITE_API_URL }}/api'|" src/services/api.js
+        npm run build
+
+    - name: Install Server Dependencies
+      run: |
+        cd server
+        npm install --production
+
+    - name: Deploy files to VPS via SCP
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        source: "client/build,server"
+        target: "/var/www/ragnance"
+        strip_components: 1
+
+    - name: Execute deployment script on VPS via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        script: |
+          cd /var/www/ragnance/server
+          mkdir -p /var/www/ragnance/database
+          pm2 restart ragnance-api || pm2 start server.js --name ragnance-api
+          pm2 save
