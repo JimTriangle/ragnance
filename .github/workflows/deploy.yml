@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       # ---------- FRONT ----------
       - name: Setup Node.js (frontend)
@@ -26,7 +28,7 @@ jobs:
           npm ci || npm install
           npm run build
         env:
-          # Laisse vide pour utiliser "/api" en relatif côté front
+          # Laisse vide pour utiliser "/api" en relatif dans ton api.js
           CI: true
 
       # ---------- PREP & BACKUP DB (NE JAMAIS ÉCRASER LA DB) ----------
@@ -41,14 +43,13 @@ jobs:
           script: |
             set -e
             sudo mkdir -p /var/www/ragnance /var/www/ragnance/server/var/data /var/backups/ragnance
-            # Backup DB ragnance.sqlite si elle existe
+            # Backup DB sqlite si présente
             if [ -f /var/www/ragnance/server/ragnance.sqlite ]; then
               TS=$(date +%Y%m%d-%H%M%S)
               sudo cp /var/www/ragnance/server/ragnance.sqlite /var/backups/ragnance/ragnance.sqlite.$TS.bak
-              # Rotation: garde 7 backups
               ls -1t /var/backups/ragnance/ragnance.sqlite.*.bak 2>/dev/null | tail -n +8 | xargs -r sudo rm -f
             fi
-            # Backup server/var si non vide (au cas où tu stockes autre chose)
+            # Backup server/var si non vide
             if [ -d /var/www/ragnance/server/var ] && [ "$(ls -A /var/www/ragnance/server/var)" ]; then
               TS=$(date +%Y%m%d-%H%M%S)
               sudo tar -czf /var/backups/ragnance/server-var-$TS.tgz -C /var/www/ragnance/server var
@@ -56,7 +57,7 @@ jobs:
             fi
             sudo chown -R $USER:$USER /var/www/ragnance
 
-      # ---------- CLEAN FRONT (sans toucher à /server) ----------
+      # ---------- CLEAN FRONT (ne touche pas à /server) ----------
       - name: Clean frontend dir on server (SSH)
         uses: appleboy/ssh-action@master
         with:
@@ -86,9 +87,28 @@ jobs:
       # ---------- ASSERT: ne jamais pousser la DB ni le .env ----------
       - name: Assert DB/.env not in artifact
         run: |
-          if [ -e server/.env ] || ls server/*.sqlite >/dev/null 2>&1; then
-            echo "❌ N'upload PAS server/.env ni aucun *.sqlite depuis le CI.";
-            exit 1;
+          set -e
+          if [ -e server/.env ]; then echo "❌ Ne push pas server/.env"; exit 1; fi
+          if ls server/*.sqlite >/dev/null 2>&1; then echo "❌ Ne push pas de *.sqlite"; exit 1; fi
+
+      # ---------- DEBUG & GUARANTEE SERVER SOURCES EXIST ----------
+      - name: Debug server files (runner)
+        run: |
+          set -e
+          echo "PWD=$(pwd)"
+          ls -la server || true
+          echo "---- First 120 files ----"
+          find server -type f | sed -n '1,120p'
+
+      - name: Ensure server files exist (runner)
+        run: |
+          set -e
+          COUNT=$(find server -type f \( -name "package.json" -o -name "package-lock.json" -o -name "*.js" \) | wc -l)
+          if [ "$COUNT" -eq 0 ]; then
+            echo "❌ Aucun fichier serveur détecté (archive vide). Vérifie que 'server/' est bien commité et sur la bonne branche."
+            exit 1
+          else
+            echo "✅ $COUNT fichiers serveur trouvés."
           fi
 
       # ---------- CLEAN CODE BACK (préserve DB + .env + ecosystem) ----------
@@ -103,7 +123,7 @@ jobs:
           script: |
             set -e
             sudo mkdir -p /var/www/ragnance/server/var/data
-            # Supprime tout SAUF 'var', '.env', 'ecosystem.config.js' ET 'ragnance.sqlite'
+            # Supprime tout SAUF 'var', '.env', 'ecosystem.config.js' et 'ragnance.sqlite'
             sudo find /var/www/ragnance/server -mindepth 1 -maxdepth 1 \
               ! -name 'var' \
               ! -name '.env' \
@@ -112,7 +132,7 @@ jobs:
               -exec rm -rf {} +
             sudo chown -R $USER:$USER /var/www/ragnance/server
 
-      # ---------- SCP SERVER (sans DB ni .env) ----------
+      # ---------- SCP SERVER (globs robustes, jamais vide) ----------
       - name: Upload server code to VPS (no DB, no .env)
         uses: appleboy/scp-action@master
         with:
@@ -122,10 +142,19 @@ jobs:
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           port: ${{ secrets.VPS_SSH_PORT }}
           source: |
-            server/**
+            server/package.json
+            server/package-lock.json
+            server/server.js
+            server/*.js
+            server/**/*.js
+            server/config/**
+            server/middleware/**
+            server/models/**
+            server/routes/**
             !server/node_modules/**
             !server/.env
             !server/*.sqlite
+            !server/**/*.sqlite
             !server/var/**
           target: "/var/www/ragnance/server"
           strip_components: 1
@@ -154,7 +183,6 @@ jobs:
             cd /var/www/ragnance/server
             npm ci --omit=dev || npm install --omit=dev
 
-            # Redémarrage API (avec update-env si le process existe)
             if pm2 describe ragnance-api >/dev/null 2>&1; then
               pm2 restart ragnance-api --update-env
             else
