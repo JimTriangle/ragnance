@@ -160,9 +160,24 @@ const MonthlyViewPage = () => {
   );
 
   const createdAtDate = (rowData) => {
-        return new Date(rowData.createdAt).toLocaleDateString('fr-FR');
-    };
+    return new Date(rowData.createdAt).toLocaleDateString('fr-FR');
+  };
 
+
+  const categoryBodyTemplate = (rowData) => {
+    // Si la transaction n'a pas de catégories, on n'affiche rien.
+    if (!rowData.Categories || rowData.Categories.length === 0) {
+      return null;
+    }
+    // On affiche une pastille (Tag) pour chaque catégorie
+    return (
+      <div className="flex flex-wrap gap-1">
+        {rowData.Categories.map(category => (
+          <Tag key={category.id} value={category.name} style={{ background: category.color }}></Tag>
+        ))}
+      </div>
+    );
+  };
   return (
     <div>
       <div className="p-4">
@@ -203,6 +218,7 @@ const MonthlyViewPage = () => {
             <Column field="label" header="Libellé" body={labelBodyTemplate} sortable />
             <Column field="amount" header="Montant" body={(rowData) => formatCurrency(rowData.amount)} sortable />
             <Column field="type" header="Type" body={typeTemplate} sortable />
+            <Column header="Catégories" body={categoryBodyTemplate} />
             <Column field="date" header="Date" body={formatDate} sortable />
             <Column field="createdAt" header="Saisi le" body={createdAtDate} sortable />
             <Column body={actionBodyTemplate} header="Actions" style={{ width: '7rem', textAlign: 'center' }} />
