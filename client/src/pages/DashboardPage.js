@@ -25,14 +25,9 @@ const DashboardPage = () => {
     // Options des graphiques
     const periodOptions = [{ label: '7j', value: '7d' }, { label: '1m', value: '30d' }, { label: '3m', value: '90d' }];
     const lineChartOptions = { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } }, y: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } } } };
-    const barChartOptions = {
-        indexAxis: 'y',
+    const pieChartOptions = {
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            x: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-            y: { ticks: { color: '#CCC' }, grid: { display: false } }
-        }
+        plugins: { legend: { labels: { color: '#CCC' } } }
     };
 
     // Logique de récupération des données
@@ -108,7 +103,7 @@ const DashboardPage = () => {
                     <Card title="Dépenses par Catégorie" className="h-full">
                         {categoryChartData && categoryChartData.labels.length > 0 ? (
                             <div style={{ position: 'relative', height: '300px' }}>
-                                <Chart type="bar" data={categoryChartData} options={barChartOptions} />
+                                <Chart type="pie" data={categoryChartData} options={pieChartOptions} />
                             </div>
                         ) : (<p className="text-center text-gray-500 mt-5">Aucune dépense catégorisée.</p>)}
                     </Card>

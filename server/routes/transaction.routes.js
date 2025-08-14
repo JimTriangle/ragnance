@@ -328,24 +328,44 @@ router.get('/stats/expenses-by-day', isAuth, async (req, res) => {
 
 router.get('/stats/expenses-by-category', isAuth, async (req, res) => {
     const userId = req.user.id;
+    const today = new Date();
+    const startOfMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
+    const startOfNextMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 1));
     try {
-        const results = await Transaction.findAll({
-            attributes: [[col('Categories.name'), 'categoryName'], [col('Categories.color'), 'categoryColor'], [fn('sum', col('Transaction.amount')), 'total']],
-            include: [{ model: Category, attributes: [], required: true }],
-            where: { UserId: userId, type: 'expense' },
-            group: ['Categories.id', 'Categories.name', 'Categories.color'],
-            order: [[fn('sum', col('Transaction.amount')), 'DESC']],
-            raw: true
+        const transactions = await Transaction.findAll({
+            where: {
+                UserId: userId,
+                type: 'expense',
+                date: { [Op.gte]: startOfMonth, [Op.lt]: startOfNextMonth }
+            },
+            include: [{
+                model: Category,
+                attributes: ['id', 'name', 'color'],
+                through: { attributes: [] },
+                required: true
+            }]
         });
+
+        const categoryTotals = {};
+        transactions.forEach(tx => {
+            const share = tx.amount / tx.Categories.length;
+            tx.Categories.forEach(c => {
+                if (!categoryTotals[c.id]) {
+                    categoryTotals[c.id] = { categoryName: c.name, categoryColor: c.color, total: 0 };
+                }
+                categoryTotals[c.id].total += share;
+            });
+        });
+
+        let results = Object.values(categoryTotals).sort((a, b) => b.total - a.total);
         const TOP_N = 6;
-        let finalResults = results;
         if (results.length > TOP_N) {
             const topResults = results.slice(0, TOP_N);
             const otherResults = results.slice(TOP_N);
             const otherTotal = otherResults.reduce((sum, item) => sum + item.total, 0);
-            finalResults = [...topResults, { categoryName: 'Autres', categoryColor: '#888888', total: otherTotal }];
+            results = [...topResults, { categoryName: 'Autres', categoryColor: '#888888', total: otherTotal }];
         }
-        res.status(200).json(finalResults);
+        res.status(200).json(results);
     } catch (error) {
         console.error("Erreur stats/expenses-by-category:", error);
         res.status(500).json({ message: "Erreur lors de la récupération des statistiques." });
