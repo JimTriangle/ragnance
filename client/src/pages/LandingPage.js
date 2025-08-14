@@ -52,6 +52,21 @@ const LandingPage = () => {
                         <li>🔄 **Transactions Récurrentes :** Gagnez du temps en configurant vos charges fixes (loyer, abonnements...). Elles seront prises en compte automatiquement chaque mois.</li>
                     </ul>
                 </section>
+                <section className="new-project-section">
+                    <h2>Bientôt : Ragnance Trading 📈</h2>
+                    <div className="new-project-card">
+                        <i className="pi pi-chart-line project-icon"></i>
+                        <div className="project-details">
+                            <h3>Le trading et l'analyse de marché, simplifiés.</h3>
+                            <p>
+                                Découvrez notre nouvelle plateforme dédiée au trading automatisé.
+                                Connectez-vous à vos exchanges, analysez les tendances avec des indicateurs avancés
+                                et déployez vos propres stratégies.
+                            </p>
+                            <Button label="En savoir plus (Bientôt disponible)" disabled />
+                        </div>
+                    </div>
+                </section>
             </main>
         </div>
     );

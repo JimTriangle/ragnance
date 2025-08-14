@@ -57,3 +57,51 @@
     margin-bottom: 1rem;
     border-left: 4px solid var(--primary-color);
 }
+
+
+
+/* ... (tous les styles existants sont conservés) ... */
+
+
+/* --- STYLES POUR LA NOUVELLE SECTION PROJET --- */
+
+.new-project-section {
+    text-align: center;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid #495057;
+}
+
+.new-project-card {
+    background: #2c2c3e;
+    border-radius: 12px;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    text-align: left;
+    margin-top: 2rem;
+    gap: 2rem;
+}
+
+.project-icon {
+    font-size: 5rem;
+    color: var(--primary-color);
+}
+
+.project-details h3 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+.project-details p {
+    color: #b0b0d0;
+    line-height: 1.6;
+}
+
+/* Responsive pour les mobiles */
+@media screen and (max-width: 768px) {
+    .new-project-card {
+        flex-direction: column;
+        text-align: center;
+    }
+}
