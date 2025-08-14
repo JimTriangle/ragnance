@@ -92,22 +92,17 @@ const CategoriesPage = () => {
         const updatedCategory = { ...category, isTrackedMonthly: e.value };
         try {
             await api.put(`/categories/${category.id}`, updatedCategory);
-            // On met à jour l'état local pour une réactivité immédiate
-            let _categories = [...categories];
-            const index = _categories.findIndex(c => c.id === category.id);
-            _categories[index] = updatedCategory;
-            setCategories(_categories);
+            setCategories(prev => prev.map(c => (c.id === category.id ? updatedCategory : c)));
             toast.current.show({ severity: 'info', summary: 'Mise à jour', detail: 'Suivi mensuel modifié', life: 2000 });
         } catch (error) {
-             toast.current.show({ severity: 'error', summary: 'Erreur', detail: 'La mise à jour a échoué' });
+            toast.current.show({ severity: 'error', summary: 'Erreur', detail: 'La mise à jour a échoué' });
         }
     };
 
     const trackedBodyTemplate = (rowData) => {
-        return <InputSwitch key={rowData.id} checked={rowData.isTrackedMonthly} onChange={(e) => onTrackedChange(e, rowData)} />;
+        return <InputSwitch checked={rowData.isTrackedMonthly} onChange={(e) => onTrackedChange(e, rowData)} />;
     };
 
-    // MODIFIÉ : On ajoute le bouton Modifier
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="flex gap-2">

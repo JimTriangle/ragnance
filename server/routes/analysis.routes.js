@@ -16,7 +16,7 @@ router.get('/daily-flow/:year/:month', isAuth, async (req, res) => {
     const startOfNextMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
     const endDate = new Date(startOfNextMonth.getTime() - 1);
     const daysInMonth = endDate.getUTCDate();
-    
+
     try {
         const flowData = {
             labels: Array.from({ length: daysInMonth }, (_, i) => i + 1),
@@ -24,7 +24,7 @@ router.get('/daily-flow/:year/:month', isAuth, async (req, res) => {
             expenseData: new Array(daysInMonth).fill(0)
         };
 
-       const oneTimeTransactions = await Transaction.findAll({ where: { UserId: userId, transactionType: 'one-time', date: { [Op.gte]: startDate, [Op.lt]: startOfNextMonth } } });
+        const oneTimeTransactions = await Transaction.findAll({ where: { UserId: userId, transactionType: 'one-time', date: { [Op.gte]: startDate, [Op.lt]: startOfNextMonth } } });
         oneTimeTransactions.forEach(t => {
             const dayIndex = new Date(t.date).getUTCDate() - 1;
             if (t.type === 'income') flowData.incomeData[dayIndex] += t.amount;
@@ -33,8 +33,8 @@ router.get('/daily-flow/:year/:month', isAuth, async (req, res) => {
 
         const recurringTransactions = await Transaction.findAll({
             where: {
-                UserId: userId, 
-                transactionType: 'recurring', 
+                UserId: userId,
+                transactionType: 'recurring',
                 startDate: { [Op.lt]: startOfNextMonth },
                 [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDate } }]
             }
@@ -64,9 +64,9 @@ router.get('/daily-flow/:year/:month', isAuth, async (req, res) => {
         });
 
         res.status(200).json(flowData);
-    } catch (error) { 
+    } catch (error) {
         console.error("Erreur GET /daily-flow:", error);
-        res.status(500).json({ message: "Erreur serveur" }); 
+        res.status(500).json({ message: "Erreur serveur" });
     }
 });
 
@@ -100,7 +100,7 @@ router.get('/category-breakdown', isAuth, async (req, res) => {
             include: [Category]
         });
 
-          recurringExpenses.forEach(r => {
+        recurringExpenses.forEach(r => {
             let occurrences = 0;
             const [startYear, startMonth, startDay] = r.startDate.split('-').map(Number);
             const finalEndDateStr = r.endDate || endDate;
@@ -157,7 +157,11 @@ router.get('/budget-history', isAuth, async (req, res) => {
         // 1. Récupérer tous les budgets de l'utilisateur avec leur catégorie
         const allBudgets = await Budget.findAll({
             where: { UserId: userId },
-            include: { model: Category, attributes: ['name', 'color'] },
+            include: {
+                model: Category,
+                attributes: ['name', 'color'],
+                where: { isTrackedMonthly: true }
+            },
             order: [['year', 'ASC'], ['month', 'ASC']]
         });
 
