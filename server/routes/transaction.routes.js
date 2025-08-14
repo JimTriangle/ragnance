@@ -6,6 +6,72 @@ const Category = require('../models/Category.model');
 const ProjectBudget = require('../models/ProjectBudget.model');
 const { Op, fn, col } = require('sequelize');
 
+/**
+ * [Conservé] Helper pour calculer le total des transactions récurrentes sur une période.
+ * Essentiel pour un calcul de solde et de projection correct.
+ */
+/**
+ * [CORRIGÉ] Helper pour calculer le total des transactions récurrentes sur une période.
+ * Gère maintenant les fréquences HEBDOMADAIRES, MENSUELLES et ANNUELLES.
+ */
+const calculateRecurringTotals = (transactions, periodStart, periodEnd) => {
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    transactions.forEach(r => {
+        if (!r.startDate) return; // Ignore les récurrentes sans date de début
+
+        let occurrences = 0;
+        const tStartDate = new Date(r.startDate);
+        const tEndDate = r.endDate ? new Date(r.endDate) : null;
+        
+        // On ne commence pas le calcul avant le début de la transaction ou le début de la période
+        let currentDate = periodStart > tStartDate ? new Date(periodStart) : new Date(tStartDate);
+
+        const loopEndDate = tEndDate && tEndDate < periodEnd ? tEndDate : periodEnd;
+
+        if (r.frequency === 'weekly') {
+            if (r.dayOfWeek === null || r.dayOfWeek === undefined) return;
+
+            // Avance jusqu'au premier jour de la semaine correspondant dans la période
+            while (currentDate.getUTCDay() !== r.dayOfWeek) {
+                currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+                if (currentDate > loopEndDate) break;
+            }
+
+            // Compte les occurrences semaine par semaine
+            while (currentDate <= loopEndDate) {
+                if (currentDate >= tStartDate) occurrences++;
+                currentDate.setUTCDate(currentDate.getUTCDate() + 7);
+            }
+        } else if (r.frequency === 'monthly' || r.frequency === 'yearly') {
+            if (!r.dayOfMonth) return;
+            // Itération mois par mois ou année par année
+             for (let year = currentDate.getUTCFullYear(); year <= loopEndDate.getUTCFullYear(); year++) {
+                const startMonth = (year === currentDate.getUTCFullYear()) ? currentDate.getUTCMonth() : 0;
+                const endMonthLoop = (year === loopEndDate.getUTCFullYear()) ? loopEndDate.getUTCMonth() : 11;
+
+                for (let month = startMonth; month <= endMonthLoop; month++) {
+                    if (r.frequency === 'yearly' && month !== tStartDate.getUTCMonth()) continue;
+
+                    const occurrenceDate = new Date(Date.UTC(year, month, r.dayOfMonth));
+
+                    if (occurrenceDate.getUTCMonth() === month && occurrenceDate <= loopEndDate && occurrenceDate >= tStartDate) {
+                        occurrences++;
+                    }
+                }
+            }
+        }
+
+        if (occurrences > 0) {
+            if (r.type === 'income') totalIncome += occurrences * r.amount;
+            else totalExpense += occurrences * r.amount;
+        }
+    });
+    return { income: totalIncome, expense: totalExpense };
+};
+
+
 router.get('/labels', isAuth, async (req, res) => {
     try {
         const labels = await Transaction.findAll({
@@ -65,63 +131,37 @@ router.get('/', isAuth, async (req, res) => {
             const startDateOfMonth = new Date(Date.UTC(currentYear, currentMonth - 1, 1));
             const endDateOfMonth = new Date(Date.UTC(currentYear, currentMonth, 0, 23, 59, 59));
 
-            // Les transactions ponctuelles sont déjà correctement filtrées par la BDD
             const oneTimeTransactions = await Transaction.findAll({ 
-                where: { 
-                    UserId: userId, 
-                    transactionType: 'one-time', 
-                    date: { [Op.between]: [startDateOfMonth, endDateOfMonth] } 
-                }, 
+                where: { UserId: userId, transactionType: 'one-time', date: { [Op.between]: [startDateOfMonth, endDateOfMonth] } }, 
                 include: [Category] 
             });
 
-            // On récupère toutes les transactions récurrentes qui pourraient s'appliquer
             const potentiallyRecurring = await Transaction.findAll({
                 where: {
-                    UserId: userId, 
-                    transactionType: 'recurring', 
-                    startDate: { [Op.lte]: endDateOfMonth }, // Doit avoir commencé avant la fin du mois
-                    [Op.or]: [
-                        { endDate: { [Op.is]: null } },       // Soit elle n'a pas de date de fin
-                        { endDate: { [Op.gte]: startDateOfMonth } } // Soit sa fin est après le début du mois
-                    ]
+                    UserId: userId, transactionType: 'recurring', startDate: { [Op.lte]: endDateOfMonth },
+                    [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDateOfMonth } }]
                 },
                 include: [Category]
             });
 
-            // --- CORRECTIF : Logique de filtrage des transactions récurrentes ---
             const recurringTransactionsForMonth = potentiallyRecurring.filter(r => {
                 const transactionStartDate = new Date(r.startDate);
-
-                if (r.frequency === 'monthly') {
-                    // Pour le mensuel, la requête SQL est suffisante, la transaction s'applique
-                    return true;
-                }
-                
+                if (r.frequency === 'monthly') return true;
                 if (r.frequency === 'yearly') {
-                    // Pour l'annuel, on vérifie si le mois de la date de début correspond au mois en cours
-                    // getUTCMonth() est 0-indexé (0-11), donc on ajoute 1
                     const transactionStartMonth = transactionStartDate.getUTCMonth() + 1;
                     return transactionStartMonth === currentMonth;
                 }
-
-                // Ajouter ici la logique pour 'weekly' si nécessaire
-                
                 return false;
             });
 
-
             const allTransactions = [...oneTimeTransactions, ...recurringTransactionsForMonth]
                 .sort((a, b) => {
-                    // Pour le tri, on crée une date valide pour les récurrentes dans le mois en cours
                     const dateA = a.date ? new Date(a.date) : new Date(Date.UTC(currentYear, currentMonth - 1, a.dayOfMonth || 1));
                     const dateB = b.date ? new Date(b.date) : new Date(Date.UTC(currentYear, currentMonth - 1, b.dayOfMonth || 1));
                     return dateB - dateA;
                 });
-
             res.status(200).json(allTransactions);
         } else {
-            // Logique fallback si pas de date fournie (inchangée)
             const transactions = await Transaction.findAll({ where: { UserId: userId, transactionType: 'one-time' }, order: [['date', 'DESC']], limit: 100, include: [Category] });
             res.status(200).json(transactions);
         }
@@ -133,114 +173,94 @@ router.get('/', isAuth, async (req, res) => {
 
 router.get('/summary', isAuth, async (req, res) => {
     const userId = req.user.id;
+    const today = new Date();
+    const startOfMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
+    const endOfMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0, 23, 59, 59));
     try {
-        const oneTimeIncomeTotal = await Transaction.sum('amount', { where: { UserId: userId, type: 'income', transactionType: 'one-time', date: { [Op.lte]: new Date() } } });
-        const oneTimeExpenseTotal = await Transaction.sum('amount', { where: { UserId: userId, type: 'expense', transactionType: 'one-time', date: { [Op.lte]: new Date() } } });
-        const currentBalance = (oneTimeIncomeTotal || 0) - (oneTimeExpenseTotal || 0);
-        const today = new Date();
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        const incomeBeforeMonth = await Transaction.sum('amount', { where: { UserId: userId, type: 'income', transactionType: 'one-time', date: { [Op.lt]: startOfMonth } } });
-        const expenseBeforeMonth = await Transaction.sum('amount', { where: { UserId: userId, type: 'expense', transactionType: 'one-time', date: { [Op.lt]: startOfMonth } } });
-        const startingBalanceOfMonth = (incomeBeforeMonth || 0) - (expenseBeforeMonth || 0);
-        const oneTimeIncomeMonth = await Transaction.sum('amount', { where: { UserId: userId, type: 'income', transactionType: 'one-time', date: { [Op.between]: [startOfMonth, endOfMonth] } } });
-        const recurringIncome = await Transaction.sum('amount', { where: { UserId: userId, type: 'income', transactionType: 'recurring', startDate: { [Op.lte]: endOfMonth }, [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startOfMonth } }] } });
-        const totalProjectedIncome = (oneTimeIncomeMonth || 0) + (recurringIncome || 0);
-        const oneTimeExpenseMonth = await Transaction.sum('amount', { where: { UserId: userId, type: 'expense', transactionType: 'one-time', date: { [Op.between]: [startOfMonth, endOfMonth] } } });
-        const recurringExpense = await Transaction.sum('amount', { where: { UserId: userId, type: 'expense', transactionType: 'recurring', startDate: { [Op.lte]: endOfMonth }, [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startOfMonth } }] } });
-        const totalProjectedExpense = (oneTimeExpenseMonth || 0) + (recurringExpense || 0);
+        const oneTimeTxs = await Transaction.findAll({
+            where: { UserId: userId, transactionType: 'one-time', date: { [Op.lte]: today } },
+            attributes: ['type', 'amount', 'date']
+        });
+        const oneTimeIncomeToday = oneTimeTxs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+        const oneTimeExpenseToday = oneTimeTxs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+        const recurringTxs = await Transaction.findAll({
+            where: { UserId: userId, transactionType: 'recurring', startDate: { [Op.lte]: today } }
+        });
+        const recurringTotalsToday = calculateRecurringTotals(recurringTxs, new Date('1970-01-01'), today);
+        const currentBalance = (oneTimeIncomeToday + recurringTotalsToday.income) - (oneTimeExpenseToday + recurringTotalsToday.expense);
+        const oneTimeTxsMonth = await Transaction.findAll({
+            where: { UserId: userId, transactionType: 'one-time', date: { [Op.between]: [startOfMonth, endOfMonth] } },
+            attributes: ['type', 'amount', 'date']
+        });
+        const oneTimeIncomeMonth = oneTimeTxsMonth.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+        const oneTimeExpenseMonth = oneTimeTxsMonth.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+        const recurringTotalsMonth = calculateRecurringTotals(recurringTxs, startOfMonth, endOfMonth);
+        const totalProjectedIncome = oneTimeIncomeMonth + recurringTotalsMonth.income;
+        const totalProjectedExpense = oneTimeExpenseMonth + recurringTotalsMonth.expense;
+        const oneTimeIncomeBeforeMonth = oneTimeTxs.filter(t => new Date(t.date) < startOfMonth && t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+        const oneTimeExpenseBeforeMonth = oneTimeTxs.filter(t => new Date(t.date) < startOfMonth && t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+        const recurringTotalsBeforeMonth = calculateRecurringTotals(recurringTxs, new Date('1970-01-01'), new Date(startOfMonth.getTime() - 1));
+        const startingBalanceOfMonth = (oneTimeIncomeBeforeMonth + recurringTotalsBeforeMonth.income) - (oneTimeExpenseBeforeMonth + recurringTotalsBeforeMonth.expense);
         const projectedBalance = startingBalanceOfMonth + totalProjectedIncome - totalProjectedExpense;
         res.status(200).json({ currentBalance, projectedBalance, totalProjectedIncome, totalProjectedExpense });
-    } catch (error) { res.status(500).json({ message: "Erreur lors du calcul du résumé." }); }
+    } catch (error) {
+        console.error("Erreur GET /summary:", error);
+        res.status(500).json({ message: "Erreur lors du calcul du résumé." });
+    }
 });
 
 router.get('/summary/:year/:month', isAuth, async (req, res) => {
     const { year, month } = req.params;
     const userId = req.user.id;
-    
     const currentMonth = parseInt(month, 10);
     const currentYear = parseInt(year, 10);
-
     const startDateOfMonthStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
     const endDateOfMonth = new Date(Date.UTC(currentYear, currentMonth, 0, 23, 59, 59));
     const endDateOfMonthStr = endDateOfMonth.toISOString().split('T')[0];
-
     try {
-        // --- 1. Calcul du Solde de Départ (logique inchangée mais attention à sa complexité) ---
         const oneTimeIncomeBefore = await Transaction.sum('amount', { where: { UserId: userId, type: 'income', transactionType: 'one-time', date: { [Op.lt]: startDateOfMonthStr } } });
         const oneTimeExpenseBefore = await Transaction.sum('amount', { where: { UserId: userId, type: 'expense', transactionType: 'one-time', date: { [Op.lt]: startDateOfMonthStr } } });
         let startingBalance = (oneTimeIncomeBefore || 0) - (oneTimeExpenseBefore || 0);
-
         const recurringTransactionsBefore = await Transaction.findAll({
             where: { UserId: userId, transactionType: 'recurring', startDate: { [Op.lt]: startDateOfMonthStr } }
         });
-
         recurringTransactionsBefore.forEach(r => {
             let occurrences = 0;
             const transactionStartDate = new Date(r.startDate);
             const finalEndDate = r.endDate ? new Date(r.endDate) : new Date(startDateOfMonthStr);
-
             let currentDate = new Date(transactionStartDate);
-
             while (currentDate < new Date(startDateOfMonthStr) && currentDate <= finalEndDate) {
                 occurrences++;
-                if (r.frequency === 'monthly') {
-                    currentDate.setMonth(currentDate.getMonth() + 1);
-                } else if (r.frequency === 'yearly') {
-                    currentDate.setFullYear(currentDate.getFullYear() + 1);
-                } else {
-                    break;
-                }
+                if (r.frequency === 'monthly') currentDate.setMonth(currentDate.getMonth() + 1);
+                else if (r.frequency === 'yearly') currentDate.setFullYear(currentDate.getFullYear() + 1);
+                else break;
             }
-            
-            if (r.type === 'income') {
-                startingBalance += occurrences * r.amount;
-            } else {
-                startingBalance -= occurrences * r.amount;
-            }
+            if (r.type === 'income') startingBalance += occurrences * r.amount;
+            else startingBalance -= occurrences * r.amount;
         });
-        
-        // --- 2. Calcul des flux du mois (logique corrigée) ---
         const oneTimeIncomeMonth = await Transaction.sum('amount', { where: { UserId: userId, type: 'income', transactionType: 'one-time', date: { [Op.between]: [startDateOfMonthStr, endDateOfMonthStr] } } });
         const oneTimeExpenseMonth = await Transaction.sum('amount', { where: { UserId: userId, type: 'expense', transactionType: 'one-time', date: { [Op.between]: [startDateOfMonthStr, endDateOfMonthStr] } } });
-
         const potentiallyRecurringMonth = await Transaction.findAll({ 
-            where: { 
-                UserId: userId, 
-                transactionType: 'recurring', 
-                startDate: { [Op.lte]: endDateOfMonthStr },
-                [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDateOfMonthStr } }] 
-            } 
+            where: { UserId: userId, transactionType: 'recurring', startDate: { [Op.lte]: endDateOfMonthStr },
+            [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDateOfMonthStr } }] } 
         });
-
         let recurringIncomeMonth = 0;
         let recurringExpenseMonth = 0;
-
         potentiallyRecurringMonth.forEach(r => {
             const transactionStartDate = new Date(r.startDate);
             let appliesThisMonth = false;
-
-            if (r.frequency === 'monthly') {
-                appliesThisMonth = true;
-            } else if (r.frequency === 'yearly') {
+            if (r.frequency === 'monthly') appliesThisMonth = true;
+            else if (r.frequency === 'yearly') {
                 const transactionStartMonth = transactionStartDate.getUTCMonth() + 1;
-                if (transactionStartMonth === currentMonth) {
-                    appliesThisMonth = true;
-                }
+                if (transactionStartMonth === currentMonth) appliesThisMonth = true;
             }
-            
             if (appliesThisMonth) {
-                if (r.type === 'income') {
-                    recurringIncomeMonth += r.amount;
-                } else {
-                    recurringExpenseMonth += r.amount;
-                }
+                if (r.type === 'income') recurringIncomeMonth += r.amount;
+                else recurringExpenseMonth += r.amount;
             }
         });
-        
         const totalIncome = (oneTimeIncomeMonth || 0) + recurringIncomeMonth;
         const totalExpense = (oneTimeExpenseMonth || 0) + recurringExpenseMonth;
-
         res.status(200).json({ startingBalance, totalIncome, totalExpense });
     } catch (error) {
         console.error("Erreur résumé mensuel:", error);
@@ -248,7 +268,6 @@ router.get('/summary/:year/:month', isAuth, async (req, res) => {
     }
 });
 
-// --- Route pour les stats du graphique en barres ---
 router.get('/stats/expenses-by-day', isAuth, async (req, res) => {
     const userId = req.user.id;
     const { startDate, endDate } = req.query;
@@ -270,47 +289,25 @@ router.get('/stats/expenses-by-day', isAuth, async (req, res) => {
     }
 });
 
-// --- Route pour les stats du graphique camembert ---
 router.get('/stats/expenses-by-category', isAuth, async (req, res) => {
     const userId = req.user.id;
     try {
         const results = await Transaction.findAll({
-            attributes: [
-                [col('Categories.name'), 'categoryName'],
-                [col('Categories.color'), 'categoryColor'],
-                [fn('sum', col('Transaction.amount')), 'total']
-            ],
-            include: [{
-                model: Category,
-                attributes: [],
-                required: true
-            }],
+            attributes: [[col('Categories.name'), 'categoryName'], [col('Categories.color'), 'categoryColor'], [fn('sum', col('Transaction.amount')), 'total']],
+            include: [{ model: Category, attributes: [], required: true }],
             where: { UserId: userId, type: 'expense' },
             group: ['Categories.id', 'Categories.name', 'Categories.color'],
-            order: [[fn('sum', col('Transaction.amount')), 'DESC']], // On trie par total décroissant
+            order: [[fn('sum', col('Transaction.amount')), 'DESC']],
             raw: true
         });
-
         const TOP_N = 6;
         let finalResults = results;
-
-        // Si on a plus de catégories que notre limite, on regroupe les autres
         if (results.length > TOP_N) {
             const topResults = results.slice(0, TOP_N);
             const otherResults = results.slice(TOP_N);
-
             const otherTotal = otherResults.reduce((sum, item) => sum + item.total, 0);
-
-            finalResults = [
-                ...topResults,
-                {
-                    categoryName: 'Autres',
-                    categoryColor: '#888888', // Une couleur neutre pour "Autres"
-                    total: otherTotal
-                }
-            ];
+            finalResults = [ ...topResults, { categoryName: 'Autres', categoryColor: '#888888', total: otherTotal }];
         }
-
         res.status(200).json(finalResults);
     } catch (error) {
         console.error("Erreur stats/expenses-by-category:", error);
@@ -318,57 +315,80 @@ router.get('/stats/expenses-by-category', isAuth, async (req, res) => {
     }
 });
 
-
-// --- ROUTE CORRIGÉE ---
 router.post('/', isAuth, async (req, res) => {
-    const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, categoryIds, ProjectBudgetId } = req.body;
+    const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, dayOfWeek, categoryIds, ProjectBudgetId } = req.body;
+    
+    // --- Validation et Normalisation ---
+    let processedStartDate = startDate;
+    if (transactionType === 'recurring') {
+        if (!startDate) return res.status(400).json({ message: "La date de début est requise pour une transaction récurrente." });
 
-    try {
-        // Validation serveur : si un budget projet est associé
-        if (ProjectBudgetId && type === 'expense') {
-            const budget = await ProjectBudget.findOne({ where: { id: ProjectBudgetId, UserId: req.user.id } });
-            if (!budget) {
-                return res.status(404).json({ message: "Budget de projet non trouvé." });
-            }
-            const transactionDate = transactionType === 'one-time' ? new Date(date) : new Date(startDate);
-            if (transactionDate < new Date(budget.startDate) || transactionDate > new Date(budget.endDate)) {
-                return res.status(400).json({ message: "Validation échouée : La date de la transaction est en dehors de la période du budget de projet." });
-            }
+        if (frequency === 'weekly' && (dayOfWeek === null || dayOfWeek === undefined)) {
+            return res.status(400).json({ message: "Le jour de la semaine (dayOfWeek) est requis pour une transaction hebdomadaire." });
+        }
+        if ((frequency === 'monthly' || frequency === 'yearly') && !dayOfMonth) {
+            return res.status(400).json({ message: "Le jour du mois (dayOfMonth) est requis pour une transaction mensuelle ou annuelle." });
         }
 
+        // Normalise la date de début au 1er du mois pour les types mensuels/annuels
+        if (frequency === 'monthly' || frequency === 'yearly') {
+            const parts = startDate.split('-');
+            processedStartDate = `${parts[0]}-${parts[1]}-01`;
+        }
+    }
+    
+    try {
         const newTransaction = await Transaction.create({
-            label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth,
+            label, amount, type, transactionType, frequency, dayOfMonth, dayOfWeek,
+            date: date || null,
+            startDate: processedStartDate,
+            endDate: endDate || null,
             ProjectBudgetId: ProjectBudgetId || null,
             UserId: req.user.id
         });
-
-        if (categoryIds && categoryIds.length > 0) {
-            await newTransaction.setCategories(categoryIds);
-        }
-
+        if (categoryIds && categoryIds.length > 0) await newTransaction.setCategories(categoryIds);
         const result = await Transaction.findByPk(newTransaction.id, { include: [Category] });
         res.status(201).json(result);
-
     } catch (error) {
         console.error("Erreur POST /transactions:", error);
         res.status(500).json({ message: "Erreur lors de la création." });
     }
 });
 
-
 router.put('/:id', isAuth, async (req, res) => {
-    const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, categoryIds, ProjectBudgetId } = req.body;
+    const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, dayOfWeek, categoryIds, ProjectBudgetId } = req.body;
+
+    let processedStartDate = startDate;
+    if (transactionType === 'recurring') {
+        if (!startDate) return res.status(400).json({ message: "La date de début est requise pour une transaction récurrente." });
+        if (frequency === 'weekly' && (dayOfWeek === null || dayOfWeek === undefined)) return res.status(400).json({ message: "Le jour de la semaine (dayOfWeek) est requis." });
+        if ((frequency === 'monthly' || frequency === 'yearly') && !dayOfMonth) return res.status(400).json({ message: "Le jour du mois (dayOfMonth) est requis." });
+        
+        if (frequency === 'monthly' || frequency === 'yearly') {
+            const parts = startDate.split('-');
+            processedStartDate = `${parts[0]}-${parts[1]}-01`;
+        }
+    }
+
     try {
         const transaction = await Transaction.findOne({ where: { id: req.params.id, UserId: req.user.id } });
         if (!transaction) return res.status(404).json({ message: "Transaction non trouvée." });
 
-        await transaction.update({ label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, ProjectBudgetId });
-        if (categoryIds) {
-            await transaction.setCategories(categoryIds);
-        }
+        await transaction.update({
+            label, amount, type, transactionType, frequency, dayOfMonth, dayOfWeek,
+            date: date || null,
+            startDate: processedStartDate,
+            endDate: endDate || null,
+            ProjectBudgetId
+        });
+
+        if (categoryIds) await transaction.setCategories(categoryIds);
         const updatedTransaction = await Transaction.findByPk(req.params.id, { include: [Category] });
         res.status(200).json(updatedTransaction);
-    } catch (error) { res.status(500).json({ message: 'Erreur lors de la modification.' }); }
+    } catch (error) {
+        console.error("Erreur PUT /transactions:", error);
+        res.status(500).json({ message: 'Erreur lors de la modification.' });
+    }
 });
 
 router.delete('/:id', isAuth, async (req, res) => {
@@ -376,13 +396,12 @@ router.delete('/:id', isAuth, async (req, res) => {
     const userId = req.user.id;
     try {
         const transaction = await Transaction.findOne({ where: { id: transactionId, UserId: userId } });
-        if (!transaction) { return res.status(404).json({ message: "Transaction non trouvée." }); }
+        if (!transaction) return res.status(404).json({ message: "Transaction non trouvée." });
         await transaction.destroy();
         res.status(200).json({ message: 'Transaction supprimée avec succès.' });
     } catch (error) {
         res.status(500).json({ message: 'Erreur lors de la suppression de la transaction.' });
     }
 });
-
 
 module.exports = router;
