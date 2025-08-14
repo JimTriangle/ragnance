@@ -104,7 +104,7 @@ const CategoriesPage = () => {
     };
 
     const trackedBodyTemplate = (rowData) => {
-        return <InputSwitch checked={rowData.isTrackedMonthly} onChange={(e) => onTrackedChange(e, rowData)} />;
+        return <InputSwitch key={rowData.id} checked={rowData.isTrackedMonthly} onChange={(e) => onTrackedChange(e, rowData)} />;
     };
 
     // MODIFIÉ : On ajoute le bouton Modifier
