@@ -6,9 +6,12 @@ const TradingHeader = () => {
     return (
         <div className="main-header flex justify-content-between align-items-center p-3" style={{ background: '#1a1d24', borderBottom: '1px solid #495057' }}>
             <div className="flex align-items-center flex-wrap">
-                <NavLink to="/trading" className="p-button p-button-text main-nav-link">Dashboard Trading</NavLink>
-                <NavLink to="/trading/markets" className="p-button p-button-text main-nav-link">Marchés</NavLink>
-                <NavLink to="/trading/strategies" className="p-button p-button-text main-nav-link">Stratégies</NavLink>
+                <NavLink to="/trading" end className="p-button p-button-text main-nav-link">Dashboard</NavLink>
+                <NavLink to="/trading/portfolios" className="p-button p-button-text main-nav-link">Portefeuilles</NavLink>
+                <NavLink to="/trading/api-connections" className="p-button p-button-text main-nav-link">Connexions API</NavLink>
+                <NavLink to="/trading/strategy" className="p-button p-button-text main-nav-link">Stratégie</NavLink>
+                <NavLink to="/trading/simulation" className="p-button p-button-text main-nav-link">Simulation</NavLink>
+                <NavLink to="/trading/bot-activity" className="p-button p-button-text main-nav-link">Bot</NavLink>
             </div>
             <div>{/* Espace pour un futur UserInfo */}</div>
         </div>
