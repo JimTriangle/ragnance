@@ -13,7 +13,8 @@ router.get('/daily-flow/:year/:month', isAuth, async (req, res) => {
     const currentYear = parseInt(year, 10);
 
     const startDate = new Date(Date.UTC(currentYear, currentMonth - 1, 1));
-    const endDate = new Date(Date.UTC(currentYear, currentMonth, 0, 23, 59, 59));
+    const startOfNextMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
+    const endDate = new Date(startOfNextMonth.getTime() - 1);
     const daysInMonth = endDate.getUTCDate();
     
     try {
@@ -23,7 +24,7 @@ router.get('/daily-flow/:year/:month', isAuth, async (req, res) => {
             expenseData: new Array(daysInMonth).fill(0)
         };
 
-        const oneTimeTransactions = await Transaction.findAll({ where: { UserId: userId, transactionType: 'one-time', date: { [Op.between]: [startDate, endDate] } } });
+       const oneTimeTransactions = await Transaction.findAll({ where: { UserId: userId, transactionType: 'one-time', date: { [Op.gte]: startDate, [Op.lt]: startOfNextMonth } } });
         oneTimeTransactions.forEach(t => {
             const dayIndex = new Date(t.date).getUTCDate() - 1;
             if (t.type === 'income') flowData.incomeData[dayIndex] += t.amount;
@@ -34,7 +35,7 @@ router.get('/daily-flow/:year/:month', isAuth, async (req, res) => {
             where: {
                 UserId: userId, 
                 transactionType: 'recurring', 
-                startDate: { [Op.lte]: endDate },
+                startDate: { [Op.lt]: startOfNextMonth },
                 [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDate } }]
             }
         });

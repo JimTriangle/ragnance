@@ -9,8 +9,8 @@ const { Op } = require('sequelize');
 router.get('/progress/:year/:month', isAuth, async (req, res) => {
     const { year, month } = req.params;
     const userId = req.user.id;
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59);
+    const startDate = new Date(Date.UTC(year, month - 1, 1));
+    const startOfNextMonth = new Date(Date.UTC(year, month, 1));
 
     try {
         const budgets = await Budget.findAll({
@@ -29,7 +29,7 @@ router.get('/progress/:year/:month', isAuth, async (req, res) => {
                     type: 'expense',
                     // On ne prend que les transactions ponctuelles pour ce calcul
                     transactionType: 'one-time',
-                    date: { [Op.between]: [startDate, endDate] }
+                    date: { [Op.gte]: startDate, [Op.lt]: startOfNextMonth }
                 },
                 include: [{
                     model: Category,
