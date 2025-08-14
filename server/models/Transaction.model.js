@@ -12,7 +12,8 @@ const Transaction = sequelize.define('Transaction', {
   frequency: { type: DataTypes.STRING },
   startDate: { type: DataTypes.DATEONLY },
   endDate: { type: DataTypes.DATEONLY, allowNull: true },
-  dayOfMonth: { type: DataTypes.INTEGER }
+  dayOfMonth: { type: DataTypes.INTEGER },
+  dayOfWeek: { type: DataTypes.INTEGER }
 });
 
 Transaction.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
