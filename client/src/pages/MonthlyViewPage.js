@@ -160,10 +160,13 @@ const MonthlyViewPage = () => {
   const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
   const formatDate = (rowData) => {
+    if (rowData.date) {
+      return new Date(rowData.date).toLocaleDateString('fr-FR');
+    }
     if (rowData.transactionType === 'recurring') {
       return `Le ${rowData.dayOfMonth || '1er'} du mois`;
     }
-    return rowData.date ? new Date(rowData.date).toLocaleDateString('fr-FR') : '-';
+    return '-';
   };
 
   const typeTemplate = (rowData) => {
@@ -247,9 +250,9 @@ const MonthlyViewPage = () => {
           </div>
           <div className="col-12 lg:col-4">
             <Card title="Progression Cumulée du Mois">
-            <div style={{ position: 'relative', height: '300px' }}>
-              <Chart type="line" data={cumulativeChartData} options={chartOptions} />
-            </div>
+              <div style={{ position: 'relative', height: '300px' }}>
+                <Chart type="line" data={cumulativeChartData} options={chartOptions} />
+              </div>
             </Card>
           </div>
           <div className="col-12 lg:col-4">

@@ -270,49 +270,34 @@ router.get('/summary/:year/:month', isAuth, async (req, res) => {
     try {
         const oneTimeIncomeBefore = await Transaction.sum('amount', { where: { UserId: userId, type: 'income', transactionType: 'one-time', date: { [Op.lt]: startDateOfMonthStr } } });
         const oneTimeExpenseBefore = await Transaction.sum('amount', { where: { UserId: userId, type: 'expense', transactionType: 'one-time', date: { [Op.lt]: startDateOfMonthStr } } });
-        let startingBalance = (oneTimeIncomeBefore || 0) - (oneTimeExpenseBefore || 0);
         const recurringTransactionsBefore = await Transaction.findAll({
             where: { UserId: userId, transactionType: 'recurring', startDate: { [Op.lt]: startDateOfMonthStr } }
         });
-        recurringTransactionsBefore.forEach(r => {
-            let occurrences = 0;
-            const transactionStartDate = new Date(r.startDate);
-            const finalEndDate = r.endDate ? new Date(r.endDate) : new Date(startDateOfMonthStr);
-            let currentDate = new Date(transactionStartDate);
-            while (currentDate < new Date(startDateOfMonthStr) && currentDate <= finalEndDate) {
-                occurrences++;
-                if (r.frequency === 'monthly') currentDate.setMonth(currentDate.getMonth() + 1);
-                else if (r.frequency === 'yearly') currentDate.setFullYear(currentDate.getFullYear() + 1);
-                else break;
-            }
-            if (r.type === 'income') startingBalance += occurrences * r.amount;
-            else startingBalance -= occurrences * r.amount;
-        });
+        const recurringTotalsBefore = calculateRecurringTotals(
+            recurringTransactionsBefore,
+            new Date('1970-01-01'),
+            new Date(startDateOfMonth.getTime() - 1)
+        );
+        const startingBalance =
+            (oneTimeIncomeBefore || 0) - (oneTimeExpenseBefore || 0) +
+            (recurringTotalsBefore.income - recurringTotalsBefore.expense);
         const oneTimeIncomeMonth = await Transaction.sum('amount', { where: { UserId: userId, type: 'income', transactionType: 'one-time', date: { [Op.gte]: startDateOfMonthStr, [Op.lt]: startDateOfNextMonthStr } } });
         const oneTimeExpenseMonth = await Transaction.sum('amount', { where: { UserId: userId, type: 'expense', transactionType: 'one-time', date: { [Op.gte]: startDateOfMonthStr, [Op.lt]: startDateOfNextMonthStr } } });
         const potentiallyRecurringMonth = await Transaction.findAll({
             where: {
-                UserId: userId, transactionType: 'recurring', startDate: { [Op.lt]: startDateOfNextMonthStr },
+                UserId: userId,
+                transactionType: 'recurring',
+                startDate: { [Op.lt]: startDateOfNextMonthStr },
                 [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDateOfMonthStr } }]
             }
         });
-        let recurringIncomeMonth = 0;
-        let recurringExpenseMonth = 0;
-        potentiallyRecurringMonth.forEach(r => {
-            const transactionStartDate = new Date(r.startDate);
-            let appliesThisMonth = false;
-            if (r.frequency === 'monthly') appliesThisMonth = true;
-            else if (r.frequency === 'yearly') {
-                const transactionStartMonth = transactionStartDate.getUTCMonth() + 1;
-                if (transactionStartMonth === currentMonth) appliesThisMonth = true;
-            }
-            if (appliesThisMonth) {
-                if (r.type === 'income') recurringIncomeMonth += r.amount;
-                else recurringExpenseMonth += r.amount;
-            }
-        });
-        const totalIncome = (oneTimeIncomeMonth || 0) + recurringIncomeMonth;
-        const totalExpense = (oneTimeExpenseMonth || 0) + recurringExpenseMonth;
+        const recurringTotalsMonth = calculateRecurringTotals(
+            potentiallyRecurringMonth,
+            startDateOfMonth,
+            new Date(startDateOfNextMonth.getTime() - 1)
+        );
+        const totalIncome = (oneTimeIncomeMonth || 0) + recurringTotalsMonth.income;
+        const totalExpense = (oneTimeExpenseMonth || 0) + recurringTotalsMonth.expense;
         res.status(200).json({ startingBalance, totalIncome, totalExpense });
     } catch (error) {
         console.error("Erreur résumé mensuel:", error);
