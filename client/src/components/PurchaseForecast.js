@@ -45,7 +45,7 @@ const PurchaseForecast = ({ onUpdate }) => {
             fetchItems();
         } catch (error) { console.error("Erreur suppression item", error); }
     };
-
+    const totalCost = items.reduce((sum, item) => sum + item.price, 0);
     const itemTemplate = (item) => {
         return (
             <div className="col-12">
@@ -57,8 +57,8 @@ const PurchaseForecast = ({ onUpdate }) => {
                         <div className="flex sm:flex-column align-items-center sm:align-items-end gap-2 sm:gap-2">
                             <span className="font-semibold text-sm">{item.price.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
                             <div className='flex gap-2'>
-                                <Button icon="pi pi-check" className="p-button-rounded p-button-success p-button-sm" onClick={() => handlePurchase(item.id)} title="Acheter"/>
-                                <Button icon="pi pi-times" className="p-button-rounded p-button-danger p-button-sm" onClick={() => handleDelete(item.id)} title="Supprimer"/>
+                                <Button icon="pi pi-check" className="p-button-rounded p-button-success p-button-sm" onClick={() => handlePurchase(item.id)} title="Acheter" />
+                                <Button icon="pi pi-times" className="p-button-rounded p-button-danger p-button-sm" onClick={() => handleDelete(item.id)} title="Supprimer" />
                             </div>
                         </div>
                     </div>
@@ -69,17 +69,19 @@ const PurchaseForecast = ({ onUpdate }) => {
 
     return (
         <Card title="Prévisionnel d'achats" pt={{ content: { className: 'p-2' } }}>
-            <DataView value={items} itemTemplate={itemTemplate} emptyMessage="Aucun article." />
-            {/* CORRECTION ICI : On passe à une grille pour un meilleur contrôle */}
+            <div className="text-sm mb-2">
+                {items.length} article{items.length > 1 ? 's' : ''} – Total : {totalCost.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+            </div>
+            <DataView value={items} itemTemplate={itemTemplate} emptyMessage="Aucun achat prévu pour le moment." />
             <form onSubmit={handleAddItem} className="grid grid-nogutter mt-2 align-items-center">
                 <div className="col-6 pr-2">
-                    <InputText value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="Article" className="p-inputtext-sm w-full"/>
+                    <InputText value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="Article" className="p-inputtext-sm w-full" />
                 </div>
                 <div className="col-4 pr-2">
-                    <InputNumber value={price} onValueChange={(e) => setPrice(e.value)} placeholder="Prix" mode="currency" currency="EUR" locale="fr-FR" inputClassName="p-inputtext-sm w-full"/>
+                    <InputNumber value={price} onValueChange={(e) => setPrice(e.value)} placeholder="Prix" mode="currency" currency="EUR" locale="fr-FR" inputClassName="p-inputtext-sm w-full" />
                 </div>
                 <div className="col-2">
-                    <Button type="submit" icon="pi pi-plus" className="p-button-sm w-full"/>
+                    <Button type="submit" icon="pi pi-plus" className="p-button-sm w-full" />
                 </div>
             </form>
         </Card>
