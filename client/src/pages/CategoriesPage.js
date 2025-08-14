@@ -132,7 +132,7 @@ const CategoriesPage = () => {
             <h1>Gestion des Catégories</h1>
             <div className="card mt-4">
                 <Button label="Nouvelle Catégorie" icon="pi pi-plus" className="p-button-success mb-4" onClick={openNew} />
-                <DataTable value={categories} size="small" responsiveLayout="scroll">
+                <DataTable value={categories}  dataKey="id" size="small" responsiveLayout="scroll">
                     <Column field="name" header="Nom" sortable />
                     <Column header="Couleur" body={colorBodyTemplate} style={{width: '8rem', textAlign: 'center'}} />
                     <Column header="Suivi Mensuel" body={trackedBodyTemplate} style={{width: '10rem', textAlign: 'center'}} />

@@ -9,36 +9,64 @@ const { Op, fn, col, literal } = require('sequelize');
 router.get('/daily-flow/:year/:month', isAuth, async (req, res) => {
     const { year, month } = req.params;
     const userId = req.user.id;
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59);
-    const daysInMonth = new Date(year, month, 0).getDate();
+    const currentMonth = parseInt(month, 10);
+    const currentYear = parseInt(year, 10);
+
+    const startDate = new Date(Date.UTC(currentYear, currentMonth - 1, 1));
+    const endDate = new Date(Date.UTC(currentYear, currentMonth, 0, 23, 59, 59));
+    const daysInMonth = endDate.getUTCDate();
+    
     try {
         const flowData = {
             labels: Array.from({ length: daysInMonth }, (_, i) => i + 1),
             incomeData: new Array(daysInMonth).fill(0),
             expenseData: new Array(daysInMonth).fill(0)
         };
+
         const oneTimeTransactions = await Transaction.findAll({ where: { UserId: userId, transactionType: 'one-time', date: { [Op.between]: [startDate, endDate] } } });
         oneTimeTransactions.forEach(t => {
             const dayIndex = new Date(t.date).getUTCDate() - 1;
             if (t.type === 'income') flowData.incomeData[dayIndex] += t.amount;
             else flowData.expenseData[dayIndex] += t.amount;
         });
+
         const recurringTransactions = await Transaction.findAll({
             where: {
-                UserId: userId, transactionType: 'recurring', startDate: { [Op.lte]: endDate },
+                UserId: userId, 
+                transactionType: 'recurring', 
+                startDate: { [Op.lte]: endDate },
                 [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDate } }]
             }
         });
+
         recurringTransactions.forEach(r => {
-            if (r.dayOfMonth >= 1 && r.dayOfMonth <= daysInMonth) {
+            let shouldApply = false;
+            const transactionStartDate = new Date(r.startDate);
+
+            if (r.frequency === 'monthly') {
+                shouldApply = true;
+            } else if (r.frequency === 'yearly') {
+                const transactionStartMonth = transactionStartDate.getUTCMonth() + 1; // 0-indexed -> 1-indexed
+                if (transactionStartMonth === currentMonth) {
+                    shouldApply = true;
+                }
+            }
+
+            if (shouldApply && r.dayOfMonth >= 1 && r.dayOfMonth <= daysInMonth) {
                 const dayIndex = r.dayOfMonth - 1;
-                if (r.type === 'income') flowData.incomeData[dayIndex] += r.amount;
-                else flowData.expenseData[dayIndex] += r.amount;
+                if (r.type === 'income') {
+                    flowData.incomeData[dayIndex] += r.amount;
+                } else {
+                    flowData.expenseData[dayIndex] += r.amount;
+                }
             }
         });
+
         res.status(200).json(flowData);
-    } catch (error) { res.status(500).json({ message: "Erreur serveur" }); }
+    } catch (error) { 
+        console.error("Erreur GET /daily-flow:", error);
+        res.status(500).json({ message: "Erreur serveur" }); 
+    }
 });
 
 router.get('/category-breakdown', isAuth, async (req, res) => {
@@ -47,17 +75,11 @@ router.get('/category-breakdown', isAuth, async (req, res) => {
     if (!startDate || !endDate) return res.status(400).json({ message: "Les dates de début et de fin sont requises." });
 
     const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
     const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
 
     try {
         const finalBreakdown = new Map();
-
-        const oneTimeExpenses = await Transaction.findAll({
-            where: { UserId: userId, type: 'expense', transactionType: 'one-time', date: { [Op.between]: [start, end] } },
-            include: [Category]
-        });
+        const oneTimeExpenses = await Transaction.findAll({ where: { UserId: userId, type: 'expense', transactionType: 'one-time', date: { [Op.between]: [start, end] } }, include: [Category] });
 
         oneTimeExpenses.forEach(t => {
             t.Categories.forEach(cat => {
@@ -77,15 +99,36 @@ router.get('/category-breakdown', isAuth, async (req, res) => {
             include: [Category]
         });
 
-        recurringExpenses.forEach(r => {
-            if (!r.dayOfMonth) return;
+          recurringExpenses.forEach(r => {
             let occurrences = 0;
-            let current = new Date(r.startDate);
-            while (current <= end) {
-                if (current >= start) {
+            const [startYear, startMonth, startDay] = r.startDate.split('-').map(Number);
+            const finalEndDateStr = r.endDate || endDate;
+            const startPeriodStr = startDate;
+
+            // --- CORRECTION DÉFINITIVE DE LA BOUCLE POUR ÉVITER LE DÉCALAGE DE DATE ---
+            for (let i = 0; ; i++) {
+                let nextYear = startYear;
+                let nextMonth = startMonth;
+
+                if (r.frequency === 'monthly') {
+                    nextMonth += i;
+                    nextYear += Math.floor((nextMonth - 1) / 12);
+                    nextMonth = ((nextMonth - 1) % 12) + 1;
+                } else if (r.frequency === 'yearly') {
+                    nextYear += i;
+                } else {
+                    break;
+                }
+
+                const nextOccurrenceStr = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`;
+
+                if (nextOccurrenceStr > finalEndDateStr || nextOccurrenceStr > endDate) {
+                    break;
+                }
+
+                if (nextOccurrenceStr >= startPeriodStr) {
                     occurrences++;
                 }
-                current.setMonth(current.getMonth() + 1);
             }
 
             if (occurrences > 0) {
@@ -168,8 +211,18 @@ router.get('/budget-history', isAuth, async (req, res) => {
                     include: [{ model: Category, where: { id: categoryId } }]
                 });
 
-                // Les transactions récurrentes comptent pour chaque mois où elles sont actives
-                const recurringTotal = recurringExpenses.reduce((sum, t) => sum + t.amount, 0);
+                let recurringTotal = 0;
+                recurringExpenses.forEach(r => {
+                    if (r.frequency === 'monthly') {
+                        recurringTotal += r.amount;
+                    } else if (r.frequency === 'yearly') {
+                        const transactionMonth = new Date(r.startDate).getUTCMonth(); // 0-11
+                        const currentMonth = month - 1; // 0-11
+                        if (transactionMonth === currentMonth) {
+                            recurringTotal += r.amount;
+                        }
+                    }
+                });
 
                 historyItem.spent = (oneTimeExpenses || 0) + recurringTotal;
             }

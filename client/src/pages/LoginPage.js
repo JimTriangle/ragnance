@@ -1,13 +1,12 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate  } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
-
-// Composants PrimeReact
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
+import { Message } from 'primereact/message';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -22,10 +21,19 @@ const LoginPage = () => {
     setError('');
 
     try {
-      // ON UTILISE L'INSTANCE 'api' AU LIEU DE 'axios'
       const response = await api.post('/auth/login', { email, password });
       storeToken(response.data.authToken);
-      navigate('/dashboard'); 
+      
+      // --- LOGIQUE DE REDIRECTION INTELLIGENTE ---
+      // 1. On regarde si une destination a été sauvegardée
+      const redirectTo = sessionStorage.getItem('postLoginRedirect');
+      
+      // 2. On nettoie la session pour les prochaines fois
+      sessionStorage.removeItem('postLoginRedirect');
+      
+      // 3. On redirige vers la destination, ou vers le dashboard Budget par défaut
+      navigate(redirectTo || '/budget/dashboard');
+
     } catch (err) {
       setError(err.response?.data?.message || 'Une erreur est survenue.');
     }
@@ -33,7 +41,7 @@ const LoginPage = () => {
 
   return (
     <div className="flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-      <Card title="Connexion à Ragnance" style={{ width: '25rem' }}>
+      <Card title="Connexion" style={{ width: '25rem' }}>
         <form onSubmit={handleLogin} className="p-fluid">
           <div className="field">
             <span className="p-float-label">
@@ -47,9 +55,12 @@ const LoginPage = () => {
               <label htmlFor="password">Mot de passe</label>
             </span>
           </div>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
+          {error && <Message severity="error" text={error} />}
           <Button type="submit" label="Se connecter" className="mt-2" />
         </form>
+        <div className="mt-3 text-center">
+            <Link to="/">Retour à l'accueil</Link>
+        </div>
       </Card>
     </div>
   );

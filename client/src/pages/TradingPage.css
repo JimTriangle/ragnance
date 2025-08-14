@@ -1,0 +1,26 @@
+.trading-page-container .relative {
+    position: relative;
+}
+
+.coming-soon-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(40, 44, 52, 0.7);
+    color: #FFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-radius: 12px; /* Assorti au radius des cards */
+    z-index: 2;
+}
+
+.placeholder-text {
+    color: #6c757d;
+    font-style: italic;
+    filter: blur(2px); /* Effet de flou pour montrer que c'est en attente */
+}
