@@ -11,6 +11,7 @@ import { confirmDialog } from 'primereact/confirmdialog';
 import { Chart } from 'primereact/chart';
 import { InputText } from 'primereact/inputtext';
 import TransactionForm from '../components/TransactionForm';
+import { Dropdown } from 'primereact/dropdown';
 
 const MonthlyViewPage = () => {
   const [transactions, setTransactions] = useState([]);
@@ -26,6 +27,8 @@ const MonthlyViewPage = () => {
   const { showToast } = useContext(ToastContext);
 
   const [isNewModalVisible, setIsNewModalVisible] = useState(false);
+  const [allCategories, setAllCategories] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
   const chartOptions = {
     maintainAspectRatio: false,
@@ -118,6 +121,10 @@ const MonthlyViewPage = () => {
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    api.get('/categories').then(response => setAllCategories(response.data));
+  }, []);
+
   const changeMonth = (amount) => {
     setCurrentDate(prevDate => {
       const newDate = new Date(prevDate);
@@ -192,14 +199,18 @@ const MonthlyViewPage = () => {
   const monthName = currentDate.toLocaleString('fr-FR', { month: 'long' });
   const year = currentDate.getFullYear();
   const endOfMonthBalance = (summary.startingBalance || 0) + (summary.totalIncome || 0) - (summary.totalExpense || 0);
+  const categoryOptions = allCategories.map(c => ({ label: c.name, value: c.id }));
 
   const tableHeader = (
-    <div className="flex justify-content-between align-items-center">
+    <div className="flex flex-wrap justify-content-between align-items-center gap-2">
       <Button label="Ajouter une transaction" icon="pi pi-plus" className="p-button-success p-button-sm" onClick={() => setIsNewModalVisible(true)} />
-      <span className="p-input-icon-left">
-        <i className="pi pi-search" />
-        <InputText value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder="Rechercher..." className="p-inputtext-sm" />
-      </span>
+      <div className="flex align-items-center gap-2">
+        <Dropdown value={selectedCategoryId} options={categoryOptions} onChange={(e) => setSelectedCategoryId(e.value)} placeholder="Catégorie" showClear className="p-inputtext-sm" />
+        <span className="p-input-icon-left">
+          <i className="pi pi-search" />
+          <InputText value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder="Rechercher..." className="p-inputtext-sm" />
+        </span>
+      </div>
     </div>
   );
 
@@ -265,7 +276,7 @@ const MonthlyViewPage = () => {
         </div>
 
         <div className="card mt-4">
-          <DataTable value={transactions} loading={loading} size="small" header={tableHeader} globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50]} pt={{ bodyCell: { style: { padding: '0.25rem 0.5rem' } } }}>
+           <DataTable value={selectedCategoryId ? transactions.filter(t => t.Categories && t.Categories.some(c => c.id === selectedCategoryId)) : transactions} loading={loading} size="small" header={tableHeader} globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50]} pt={{ bodyCell: { style: { padding: '0.25rem 0.5rem' } } }}>
             <Column field="label" header="Libellé" body={labelBodyTemplate} sortable />
             <Column field="amount" header="Montant" body={(rowData) => formatCurrency(rowData.amount)} sortable />
             <Column field="type" header="Type" body={typeTemplate} sortable />

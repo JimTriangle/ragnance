@@ -8,6 +8,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { ColorPicker } from 'primereact/colorpicker';
 import { InputSwitch } from 'primereact/inputswitch';
+import { Tag } from 'primereact/tag';
 
 const CategoriesPage = () => {
     const [categories, setCategories] = useState([]);
@@ -112,9 +113,7 @@ const CategoriesPage = () => {
         );
     };
 
-    const colorBodyTemplate = (rowData) => {
-        return <div style={{ width: '2rem', height: '2rem', backgroundColor: rowData.color, borderRadius: '50%', border: '1px solid #ccc' }}></div>;
-    };
+    const nameBodyTemplate = (rowData) => <Tag value={rowData.name} style={{ background: rowData.color }} />;
     
     const dialogFooter = (<div><Button label="Annuler" icon="pi pi-times" className="p-button-text" onClick={hideDialog} /><Button label="Sauvegarder" icon="pi pi-check" onClick={saveCategory} /></div>);
 
@@ -128,8 +127,7 @@ const CategoriesPage = () => {
             <div className="card mt-4">
                 <Button label="Nouvelle Catégorie" icon="pi pi-plus" className="p-button-success mb-4" onClick={openNew} />
                 <DataTable value={categories}  dataKey="id" size="small" responsiveLayout="scroll">
-                    <Column field="name" header="Nom" sortable />
-                    <Column header="Couleur" body={colorBodyTemplate} style={{width: '8rem', textAlign: 'center'}} />
+                     <Column field="name" header="Nom" body={nameBodyTemplate} sortable />
                     <Column header="Suivi Mensuel" body={trackedBodyTemplate} style={{width: '10rem', textAlign: 'center'}} />
                     <Column body={actionBodyTemplate} header="Actions" style={{width: '8rem', textAlign: 'center'}}/>
                 </DataTable>

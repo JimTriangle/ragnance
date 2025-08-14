@@ -58,6 +58,10 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.get('/verify', isAuth, (req, res) => {
+  res.status(200).json({ user: req.user });
+});
+
 // ... (la route /change-password reste identique, mais avec le logging d'erreur)
 router.put('/change-password', isAuth, async (req, res) => {
     const { currentPassword, newPassword } = req.body;

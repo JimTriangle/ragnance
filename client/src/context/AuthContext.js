@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import api from '../services/api';
 
 export const AuthContext = createContext();
 
@@ -35,12 +36,20 @@ export const AuthProvider = ({ children }) => {
   }, [authenticateUser]);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
-    if (storedToken) {
-        authenticateUser(storedToken);
-    }
-    setIsLoading(false);
-  }, [authenticateUser]);
+    const verifyStoredToken = async () => {
+      const storedToken = localStorage.getItem('authToken');
+      if (storedToken) {
+        try {
+          await api.get('/auth/verify');
+          authenticateUser(storedToken);
+        } catch (error) {
+          logoutUser();
+        }
+      }
+      setIsLoading(false);
+    };
+    verifyStoredToken();
+  }, [authenticateUser, logoutUser]);
   
   return (
     <AuthContext.Provider value={{ isLoggedIn, user, token, isLoading, storeToken, logoutUser }}>
