@@ -8,7 +8,7 @@ import { Chart } from 'primereact/chart';
 import { SelectButton } from 'primereact/selectbutton';
 
 // Composants
-import ShoppingList from '../components/ShoppingList';
+import PurchaseForecast from '../components/PurchaseForecast';
 import BudgetTracker from '../components/BudgetTracker';
 import ProjectBudgetTracker from '../components/ProjectBudgetTracker';
 
@@ -119,7 +119,7 @@ const DashboardPage = () => {
                     <ProjectBudgetTracker budgets={projectBudgets} />
                 </div>
                 <div className="col-12 lg:col-4">
-                    <ShoppingList onUpdate={fetchData} />
+                    <PurchaseForecast onUpdate={fetchData} />
                 </div>
             </div>
         </div>

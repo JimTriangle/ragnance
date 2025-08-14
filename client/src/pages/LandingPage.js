@@ -81,7 +81,7 @@ const LandingPage = () => {
                     <h2>Astuces d'utilisation</h2>
                     <ul>
                         <li>💡 **Budgets Projet :** Idéal pour suivre les dépenses d'un événement ponctuel comme des vacances ou des travaux.</li>
-                        <li>🛒 **Liste de Courses Intelligente :** Ajoutez vos articles, et une fois achetés, ils se transforment automatiquement en transaction.</li>
+                        <li>🛒 **Prévisionnel d'Achats :** Ajoutez vos articles, et une fois achetés, ils se transforment automatiquement en transaction.</li>
                         <li>🔄 **Transactions Récurrentes :** Gagnez du temps en configurant vos charges fixes (loyer, abonnements...).</li>
                     </ul>
                 </section>

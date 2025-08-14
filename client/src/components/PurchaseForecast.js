@@ -6,7 +6,7 @@ import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { DataView } from 'primereact/dataview';
 
-const ShoppingList = ({ onUpdate }) => {
+const PurchaseForecast = ({ onUpdate }) => {
     const [items, setItems] = useState([]);
     const [itemName, setItemName] = useState('');
     const [price, setPrice] = useState(null);
@@ -68,7 +68,7 @@ const ShoppingList = ({ onUpdate }) => {
     };
 
     return (
-        <Card title="Liste de courses" pt={{ content: { className: 'p-2' } }}>
+        <Card title="Prévisionnel d'achats" pt={{ content: { className: 'p-2' } }}>
             <DataView value={items} itemTemplate={itemTemplate} emptyMessage="Aucun article." />
             {/* CORRECTION ICI : On passe à une grille pour un meilleur contrôle */}
             <form onSubmit={handleAddItem} className="grid grid-nogutter mt-2 align-items-center">
@@ -86,4 +86,4 @@ const ShoppingList = ({ onUpdate }) => {
     );
 };
 
-export default ShoppingList;
+export default PurchaseForecast;
