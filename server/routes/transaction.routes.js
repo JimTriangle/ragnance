@@ -31,10 +31,13 @@ const calculateRecurringTotals = (transactions, periodStart, periodEnd) => {
         const loopEndDate = tEndDate && tEndDate < periodEnd ? tEndDate : periodEnd;
 
         if (r.frequency === 'weekly') {
-            if (r.dayOfWeek === null || r.dayOfWeek === undefined) return;
+                       // Détermine le jour cible : utilise dayOfWeek si fourni, sinon dérive de startDate
+            const targetDay = (r.dayOfWeek === null || r.dayOfWeek === undefined)
+                ? new Date(r.startDate).getUTCDay()
+                : r.dayOfWeek;
 
             // Avance jusqu'au premier jour de la semaine correspondant dans la période
-            while (currentDate.getUTCDay() !== r.dayOfWeek) {
+            while (currentDate.getUTCDay() !== targetDay) {
                 currentDate.setUTCDate(currentDate.getUTCDate() + 1);
                 if (currentDate > loopEndDate) break;
             }
@@ -317,15 +320,16 @@ router.get('/stats/expenses-by-category', isAuth, async (req, res) => {
 });
 
 router.post('/', isAuth, async (req, res) => {
-    const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, dayOfWeek, categoryIds, ProjectBudgetId } = req.body;
+    const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, dayOfWeek: inputDayOfWeek, categoryIds, ProjectBudgetId } = req.body;
 
     // --- Validation et Normalisation ---
     let processedStartDate = startDate;
+    let processedDayOfWeek = inputDayOfWeek;
     if (transactionType === 'recurring') {
         if (!startDate) return res.status(400).json({ message: "La date de début est requise pour une transaction récurrente." });
 
-        if (frequency === 'weekly' && (dayOfWeek === null || dayOfWeek === undefined)) {
-            return res.status(400).json({ message: "Le jour de la semaine (dayOfWeek) est requis pour une transaction hebdomadaire." });
+       if (frequency === 'weekly' && (processedDayOfWeek === null || processedDayOfWeek === undefined)) {
+            processedDayOfWeek = new Date(startDate).getUTCDay();
         }
         if ((frequency === 'monthly' || frequency === 'yearly') && !dayOfMonth) {
             return res.status(400).json({ message: "Le jour du mois (dayOfMonth) est requis pour une transaction mensuelle ou annuelle." });
@@ -340,7 +344,7 @@ router.post('/', isAuth, async (req, res) => {
 
     try {
         const newTransaction = await Transaction.create({
-            label, amount, type, transactionType, frequency, dayOfMonth, dayOfWeek,
+            label, amount, type, transactionType, frequency, dayOfMonth, dayOfWeek: processedDayOfWeek,
             date: date || null,
             startDate: processedStartDate,
             endDate: endDate || null,
@@ -357,12 +361,13 @@ router.post('/', isAuth, async (req, res) => {
 });
 
 router.put('/:id', isAuth, async (req, res) => {
-    const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, dayOfWeek, categoryIds, ProjectBudgetId } = req.body;
+    const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, dayOfWeek: inputDayOfWeek, categoryIds, ProjectBudgetId } = req.body;
 
     let processedStartDate = startDate;
+    let processedDayOfWeek = inputDayOfWeek;
     if (transactionType === 'recurring') {
         if (!startDate) return res.status(400).json({ message: "La date de début est requise pour une transaction récurrente." });
-        if (frequency === 'weekly' && (dayOfWeek === null || dayOfWeek === undefined)) return res.status(400).json({ message: "Le jour de la semaine (dayOfWeek) est requis." });
+        if (frequency === 'weekly' && (processedDayOfWeek === null || processedDayOfWeek === undefined)) processedDayOfWeek = new Date(startDate).getUTCDay();
         if ((frequency === 'monthly' || frequency === 'yearly') && !dayOfMonth) return res.status(400).json({ message: "Le jour du mois (dayOfMonth) est requis." });
 
         if (frequency === 'monthly' || frequency === 'yearly') {
@@ -376,7 +381,7 @@ router.put('/:id', isAuth, async (req, res) => {
         if (!transaction) return res.status(404).json({ message: "Transaction non trouvée." });
 
         await transaction.update({
-            label, amount, type, transactionType, frequency, dayOfMonth, dayOfWeek,
+            label, amount, type, transactionType, frequency, dayOfMonth, dayOfWeek: processedDayOfWeek,
             date: date || null,
             startDate: processedStartDate,
             endDate: endDate || null,
