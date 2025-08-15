@@ -12,6 +12,7 @@ require('./models/ShoppingItem.model');
 require('./models/Budget.model');
 require('./models/ProjectBudget.model.js');
 require('./models/TransactionCategory.model');
+require('./models/ExchangeKey.model');
 
 const app = express();
 // On utilise la variable d'environnement pour le port
@@ -31,7 +32,15 @@ sequelize.authenticate()
 // (ex: sequelize-cli) pour suivre et appliquer les changements de schéma
 // de manière contrôlée et sécurisée sans risquer de perdre des données.
 sequelize.sync({ force: false })
-  .then(() => console.log('Tables de la BDD synchronisées.'));
+   .then(async () => {
+    console.log('Tables de la BDD synchronisées.');
+    // seed minimal pour les clés d\'exchange
+    try {
+      await require('./seed/exchangeKeysSeed')();
+    } catch (e) {
+      console.error('Seed exchange keys failed:', e.message);
+    }
+  });
 
 app.use(cors({
   origin: allowedOrigins,
@@ -52,6 +61,7 @@ app.use('/api/analysis', require('./routes/analysis.routes.js'));
 app.use('/api/dashboard', require('./routes/dashboard.routes.js'));
 app.use('/api/portfolios', require('./routes/portfolio.routes'));
 app.use('/api/markets', require('./routes/market.routes'));
+app.use('/api/exchanges', require('./routes/exchange.routes'));
 
 app.listen(PORT, () => {
   console.log(`Serveur Ragnance démarré sur http://localhost:${PORT}`);

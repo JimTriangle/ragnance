@@ -28,7 +28,7 @@ import AdminPage from './pages/AdminPage';
 import TradingDashboardPage from './pages/trading/TradingDashboardPage';
 import PortfolioListPage from './pages/trading/PortfolioListPage';
 import PortfolioDetailPage from './pages/trading/PortfolioDetailPage';
-import ApiConnectionsPage from './pages/trading/ApiConnectionsPage';
+import ExchangesPage from './pages/trading/ExchangesPage';
 import StrategyPage from './pages/trading/StrategyPage';
 import SimulationPage from './pages/trading/SimulationPage';
 import BotActivityPage from './pages/trading/BotActivityPage';
@@ -64,7 +64,7 @@ function App() {
                         <Route path="portfolios" element={<PortfolioListPage />} />
                         <Route path="portfolios/new" element={<PortfolioDetailPage />} />
                         <Route path="portfolios/:id" element={<PortfolioDetailPage />} />
-                        <Route path="api-connections" element={<ApiConnectionsPage />} />
+                        <Route path="exchanges" element={<ExchangesPage />} />
                         <Route path="strategy" element={<StrategyPage />} />
                         <Route path="simulation" element={<SimulationPage />} />
                         <Route path="bot-activity" element={<BotActivityPage />} />

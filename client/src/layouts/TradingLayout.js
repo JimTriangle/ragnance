@@ -8,7 +8,7 @@ const TradingHeader = () => {
             <div className="flex align-items-center flex-wrap">
                 <NavLink to="/trading" end className="p-button p-button-text main-nav-link">Dashboard</NavLink>
                 <NavLink to="/trading/portfolios" className="p-button p-button-text main-nav-link">Portefeuilles</NavLink>
-                <NavLink to="/trading/api-connections" className="p-button p-button-text main-nav-link">Connexions API</NavLink>
+                <NavLink to="/trading/exchanges" className="p-button p-button-text main-nav-link">Exchanges</NavLink>
                 <NavLink to="/trading/strategy" className="p-button p-button-text main-nav-link">Stratégie</NavLink>
                 <NavLink to="/trading/simulation" className="p-button p-button-text main-nav-link">Simulation</NavLink>
                 <NavLink to="/trading/bot-activity" className="p-button p-button-text main-nav-link">Bot</NavLink>
