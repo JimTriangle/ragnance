@@ -56,7 +56,7 @@ const TradingDashboardPage = () => {
     <div className="p-4 trading-page-container">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Dashboard Trading</h1>
-        <Button icon="pi pi-refresh" label="Actualiser" onClick={fetchData} size="small" />
+        <Button icon="pi pi-refresh" onClick={fetchData} size="small" rounded text aria-label="Actualiser" />
       </div>
       {lastUpdated && (
         <p className="text-sm text-gray-500 mb-4">Dernière mise à jour : {lastUpdated.toLocaleString()}</p>
