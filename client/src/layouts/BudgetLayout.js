@@ -1,12 +1,14 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Button } from 'primereact/button';
 import { ConfirmDialog } from 'primereact/confirmdialog';
+import { Dialog } from 'primereact/dialog';
 import ThemeToggle from '../components/ThemeToggle';
+import TransactionForm from '../components/TransactionForm';
 
 // Le Header spécifique à la section Budget, avec TOUS ses liens
-const BudgetHeader = () => {
+const BudgetHeader = ({ onAddTransaction }) => {
     const { user } = useContext(AuthContext);
     return (
         <div className="main-header flex justify-content-between align-items-center p-3" style={{ background: '#242931', borderBottom: '1px solid #495057' }}>
@@ -20,7 +22,8 @@ const BudgetHeader = () => {
                 <NavLink to="/budget/budget-analysis" className="p-button p-button-text main-nav-link">Analyse Budgets</NavLink>
                 {user?.role === 'admin' && <NavLink to="/budget/admin" className="p-button p-button-text p-button-danger ml-2 main-nav-link">Admin</NavLink>}
             </div>
-            <div className="flex align-items-center">
+            <div className="flex align-items-center gap-2">
+                <Button label=" Ajouter une transaction" icon="pi pi-plus" className="add-transaction-button p-button-sm p-button-primary" onClick={onAddTransaction} />
                 <ThemeToggle />
                 <UserInfo />
             </div>
@@ -43,13 +46,38 @@ const UserInfo = () => {
 
 // Le Layout qui assemble le Header et le contenu de la page
 const BudgetLayout = () => {
+    const [isModalVisible, setIsModalVisible] = useState(false);
+
+    const openModal = () => setIsModalVisible(true);
+    const closeModal = () => setIsModalVisible(false);
+
+    const handleComplete = () => {
+        closeModal();
+        window.dispatchEvent(new Event('transactionAdded'));
+    };
+
+    useEffect(() => {
+        const handleKeydown = (e) => {
+            if (e.key.toLowerCase() === 'n' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+                e.preventDefault();
+                openModal();
+            }
+        };
+        window.addEventListener('keydown', handleKeydown);
+        return () => window.removeEventListener('keydown', handleKeydown);
+    }, []);
+
     return (
         <div>
-            <BudgetHeader />
+            <BudgetHeader onAddTransaction={openModal} />
             <main>
                 <ConfirmDialog />
                 <Outlet /> {/* C'est ici que vos pages (Dashboard, MonthlyView...) s'afficheront */}
             </main>
+            <Button icon="pi pi-plus" className="fab-button p-button-rounded p-button-primary" onClick={openModal} />
+            <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '90vw', maxWidth: '500px' }} onHide={closeModal}>
+                <TransactionForm onComplete={handleComplete} />
+            </Dialog>
         </div>
     );
 };

@@ -14,6 +14,32 @@ code {
 
 /* CSS DÉFINITIF - APPROCHE AGRESSIVE */
 
+.main-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.add-transaction-button {
+  display: none;
+}
+
+.fab-button {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 1000;
+}
+
+@media (min-width: 768px) {
+  .add-transaction-button {
+    display: inline-flex;
+  }
+  .fab-button {
+    display: none;
+  }
+}
+
 /* On cible très spécifiquement nos liens de menu */
 .main-header .main-nav-link.p-button {
     /* On force les propriétés nécessaires à notre animation */
