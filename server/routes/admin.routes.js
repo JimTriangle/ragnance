@@ -68,16 +68,17 @@ router.delete('/users/:id', [isAuth, isAdmin], async (req, res) => {
 
 router.get('/schema', [isAuth, isAdmin], async (req, res) => {
     try {
-        const [tables] = await sequelize.query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
-        const schema = [];
-        for (const table of tables) {
-            const [columns] = await sequelize.query(`PRAGMA table_info(${table.name})`);
-            schema.push({
-                name: table.name,
+        const tableName = req.query.table;
+
+        if (tableName) {
+            const [columns] = await sequelize.query(`PRAGMA table_info(${tableName})`);
+            return res.status(200).json({
+                name: tableName,
                 columns: columns.map(col => ({ name: col.name, type: col.type }))
             });
         }
-        res.status(200).json(schema);
+        const [tables] = await sequelize.query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
+        res.status(200).json(tables.map(t => t.name));
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la récupération du schéma" });
     }

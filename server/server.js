@@ -71,7 +71,7 @@ app.use('/api/categories', isAuth, hasBudgetAccess, require('./routes/category.r
 app.use('/api/budgets', isAuth, hasBudgetAccess, require('./routes/budget.routes.js'));
 app.use('/api/project-budgets', isAuth, hasBudgetAccess, require('./routes/ProjectBudget.routes.js'));
 app.use('/api/analysis', isAuth, hasBudgetAccess, require('./routes/analysis.routes.js'));
-app.use('/api/dashboard', isAuth, hasBudgetAccess, require('./routes/dashboard.routes.js'));
+app.use('/api/dashboard', isAuth, hasTradingAccess, require('./routes/dashboard.routes.js'));
 app.use('/api/portfolios', isAuth, hasTradingAccess, require('./routes/portfolio.routes'));
 app.use('/api/markets', isAuth, hasTradingAccess, require('./routes/market.routes'));
 app.use('/api/exchanges', isAuth, hasTradingAccess, require('./routes/exchange.routes'));

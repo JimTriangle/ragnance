@@ -21,7 +21,9 @@ const AdminPage = () => {
     const toast = useRef(null);
     const [sqlQuery, setSqlQuery] = useState('');
     const [sqlResult, setSqlResult] = useState([]);
-    const [schema, setSchema] = useState([]);
+    const [tables, setTables] = useState([]);
+    const [selectedTable, setSelectedTable] = useState(null);
+    const [tableSchema, setTableSchema] = useState(null);
     const roles = [{ label: 'Utilisateur', value: 'user' }, { label: 'Admin', value: 'admin' }];
 
     const fetchUsers = async () => {
@@ -33,17 +35,33 @@ const AdminPage = () => {
         finally { setLoading(false); }
     };
 
-    const fetchSchema = async () => {
+    const fetchTables = async () => {
         try {
             const response = await api.get('/admin/schema');
-            setSchema(response.data);
-        } catch (error) { console.error('Erreur fetch schema', error); }
+            setTables(response.data.map(name => ({ label: name, value: name })));
+        } catch (error) { console.error('Erreur fetch tables', error); }
+    };
+
+    const fetchTableSchema = async (table) => {
+        if (!table) {
+            setTableSchema(null);
+            return;
+        }
+        try {
+            const response = await api.get(`/admin/schema?table=${table}`);
+            setTableSchema(response.data);
+        } catch (error) { console.error('Erreur fetch table schema', error); }
     };
 
     useEffect(() => {
         fetchUsers();
-        fetchSchema();
+        fetchTables();
     }, []);
+
+    useEffect(() => {
+        fetchTableSchema(selectedTable);
+    }, [selectedTable]);
+
     const openNew = () => {
         setSelectedUser(null);
         setUserData({ email: '', password: '', role: 'user', budgetAccess: false, tradingAccess: false });
@@ -158,16 +176,23 @@ const AdminPage = () => {
                     <div className="grid">
                         <div className="col-12 md:col-4">
                             <h2>Schéma de la base</h2>
-                            {schema.map((table) => (
-                                <div key={table.name} className="mb-3">
-                                    <h3>{table.name}</h3>
+                            <Dropdown
+                                value={selectedTable}
+                                options={tables}
+                                onChange={(e) => setSelectedTable(e.value)}
+                                placeholder="Sélectionnez une table"
+                                className="w-full mb-3"
+                            />
+                            {tableSchema && (
+                                <div className="mb-3">
+                                    <h3>{tableSchema.name}</h3>
                                     <ul className="ml-3">
-                                        {table.columns.map((col) => (
+                                        {tableSchema.columns.map((col) => (
                                             <li key={col.name}>{col.name} - {col.type}</li>
                                         ))}
                                     </ul>
                                 </div>
-                            ))}
+                              )}
                         </div>
                         <div className="col-12 md:col-8">
                             <h2>Exécuter une requête</h2>
