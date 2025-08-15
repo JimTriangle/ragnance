@@ -1,0 +1,50 @@
+const { signKraken } = require('./signer');
+
+const KRAKEN_REST = 'https://api.kraken.com';
+
+class KrakenClient {
+  constructor(privateKeyB64 = '', apiKey = '') {
+    this.privateKeyB64 = privateKeyB64;
+    this.apiKey = apiKey;
+  }
+
+  async public(path, params = {}) {
+    const url = new URL(`/0/public/${path}`, KRAKEN_REST);
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));
+    const res = await fetch(url, { method: 'GET' });
+    return res.json();
+  }
+
+  async private(path, data = {}) {
+    const urlPath = `/0/private/${path}`;
+    const body = new URLSearchParams({ nonce: Date.now().toString(), ...data });
+    const sig = signKraken(urlPath, body, this.privateKeyB64);
+    const url = new URL(urlPath, KRAKEN_REST);
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'API-Key': this.apiKey,
+        'API-Sign': sig,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+    return res.json();
+  }
+
+  time() {
+    return this.public('Time');
+  }
+
+  ohlc(pair, interval, since) {
+    const params = { pair, interval };
+    if (since !== undefined) params.since = since;
+    return this.public('OHLC', params);
+  }
+
+  balance() {
+    return this.private('Balance');
+  }
+}
+
+module.exports = { KrakenClient };
