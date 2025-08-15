@@ -34,7 +34,7 @@ const UserInfo = () => {
     const { user, logoutUser } = useContext(AuthContext);
     return (
         <>
-            <NavLink to="/budget/profile" className="p-button p-button-text main-nav-link">
+            <NavLink to="/trading/profile" className="p-button p-button-text main-nav-link">
                 <span className="mr-3">Bonjour, <strong>{user.email}</strong> !</span>
             </NavLink>
             <Button label="Déconnexion" icon="pi pi-sign-out" className="p-button-sm p-button-text" onClick={logoutUser} />
