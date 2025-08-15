@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs');
 const isAuth = require('../middleware/isAuth');
 const isAdmin = require('../middleware/isAdmin');
 const User = require('../models/User.model');
+const sequelize = require('../config/database');
+
 
 // GET /api/admin/users - Lister tous les utilisateurs (existant)
 router.get('/users', [isAuth, isAdmin], async (req, res) => {
@@ -61,6 +63,38 @@ router.delete('/users/:id', [isAuth, isAdmin], async (req, res) => {
         await user.destroy();
         res.status(200).json({ message: "Utilisateur supprimé." });
     } catch (error) { res.status(500).json({ message: "Erreur serveur" }); }
+});
+
+
+router.get('/schema', [isAuth, isAdmin], async (req, res) => {
+    try {
+        const [tables] = await sequelize.query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
+        const schema = [];
+        for (const table of tables) {
+            const [columns] = await sequelize.query(`PRAGMA table_info(${table.name})`);
+            schema.push({
+                name: table.name,
+                columns: columns.map(col => ({ name: col.name, type: col.type }))
+            });
+        }
+        res.status(200).json(schema);
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la récupération du schéma" });
+    }
+});
+
+// --- ROUTE : Exécuter une requête SQL arbitraire ---
+router.post('/sql', [isAuth, isAdmin], async (req, res) => {
+    const { query } = req.body;
+    if (!query) {
+        return res.status(400).json({ message: "Requête SQL manquante" });
+    }
+    try {
+        const [results] = await sequelize.query(query);
+        res.status(200).json({ results });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
 });
 
 module.exports = router;
