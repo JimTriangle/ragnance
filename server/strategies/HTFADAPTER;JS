@@ -1,0 +1,55 @@
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Utility to build a daily OHLCV series from a stream of lower timeframe candles.
+// Each input candle should be an array: [timestamp, open, high, low, close, volume]
+// The adapter keeps the last day as a partial candle until the day is closed.
+class HTFAdapter {
+  constructor() {
+    this.series = []; // completed daily candles
+    this.current = null; // partial candle for the current day
+  }
+
+  /**
+   * Update the daily candle series with new m5 candles.
+   * @param {Array<Array<number>>} m5Candles - array of [ts, o, h, l, c, v]
+   */
+  updateFromM5(m5Candles = []) {
+    for (const c of m5Candles) {
+      const [ts, o, h, l, cl, v] = c;
+      const dayTs = Math.floor(ts / DAY_MS) * DAY_MS;
+      if (!this.current || dayTs > this.current[0]) {
+        // push previous day if exists
+        if (this.current) this.series.push(this.current);
+        this.current = [dayTs, o, h, l, cl, v];
+      } else {
+        // update existing partial candle
+        if (h > this.current[2]) this.current[2] = h;
+        if (l < this.current[3]) this.current[3] = l;
+        this.current[4] = cl;
+        this.current[5] += v;
+      }
+    }
+  }
+
+  /**
+   * Get the daily OHLCV series including the current partial candle.
+   * @returns {Array<Array<number>>}
+   */
+  getDailySeries() {
+    const out = this.series.slice();
+    if (this.current) out.push(this.current);
+    return out;
+  }
+
+  /**
+   * Mark the current day as closed. The next update will start a new candle.
+   */
+  closeCurrentDay() {
+    if (this.current) {
+      this.series.push(this.current);
+      this.current = null;
+    }
+  }
+}
+
+module.exports = HTFAdapter;
