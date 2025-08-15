@@ -21,11 +21,11 @@ export const AuthProvider = ({ children }) => {
     setToken(tokenToAuth);
     setIsLoggedIn(true);
     try {
-        const decodedUser = jwtDecode(tokenToAuth);
-        setUser(decodedUser);
+      const decodedUser = jwtDecode(tokenToAuth);
+      setUser(decodedUser);
     } catch (error) {
-        console.error("Token invalide, déconnexion.", error);
-        logoutUser();
+      console.error("Token invalide, déconnexion.", error);
+      logoutUser();
     }
   }, [logoutUser]);
 
@@ -40,8 +40,9 @@ export const AuthProvider = ({ children }) => {
       const storedToken = localStorage.getItem('authToken');
       if (storedToken) {
         try {
-          await api.get('/auth/verify');
-          authenticateUser(storedToken);
+          await api.get('/auth/verify', {
+            headers: { Authorization: `Bearer ${storedToken}` }
+          });
         } catch (error) {
           logoutUser();
         }
@@ -50,7 +51,7 @@ export const AuthProvider = ({ children }) => {
     };
     verifyStoredToken();
   }, [authenticateUser, logoutUser]);
-  
+
   return (
     <AuthContext.Provider value={{ isLoggedIn, user, token, isLoading, storeToken, logoutUser }}>
       {children}

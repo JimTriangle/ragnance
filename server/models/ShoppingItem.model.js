@@ -11,6 +11,10 @@ const ShoppingItem = sequelize.define('ShoppingItem', {
     type: DataTypes.FLOAT,
     allowNull: false
   },
+    url: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   isPurchased: {
     type: DataTypes.BOOLEAN,
     defaultValue: false

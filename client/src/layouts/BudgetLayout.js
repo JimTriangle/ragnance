@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Button } from 'primereact/button';
 import { ConfirmDialog } from 'primereact/confirmdialog';
+import ThemeToggle from '../components/ThemeToggle';
 
 // Le Header spécifique à la section Budget, avec TOUS ses liens
 const BudgetHeader = () => {
@@ -20,6 +21,7 @@ const BudgetHeader = () => {
                 {user?.role === 'admin' && <NavLink to="/budget/admin" className="p-button p-button-text p-button-danger ml-2 main-nav-link">Admin</NavLink>}
             </div>
             <div className="flex align-items-center">
+                <ThemeToggle />
                 <UserInfo />
             </div>
         </div>

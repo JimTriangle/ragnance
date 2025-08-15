@@ -11,13 +11,20 @@ const BudgetTracker = ({ data = [] }) => {
             {data.length > 0 ? (
                 data.map(item => {
                     const percentage = item.budgetedAmount > 0 ? (item.spentAmount / item.budgetedAmount) * 100 : 0;
+                    const difference = item.budgetedAmount - item.spentAmount;
+                    const diffColor = difference >= 0 ? 'var(--green-400)' : 'var(--red-400)';
                     return (
                         <div key={item.categoryId} className="mb-3">
                             <div className="flex justify-content-between mb-1 text-sm">
                                 <span>{item.categoryName}</span>
-                                <span style={{ color: percentage > 100 ? 'var(--red-400)' : 'inherit' }}>
-                                    {formatCurrency(item.spentAmount)} / {formatCurrency(item.budgetedAmount)}
-                                </span>
+                                <div className="text-right">
+                                    <div style={{ color: percentage > 100 ? 'var(--red-400)' : 'inherit' }}>
+                                        {formatCurrency(item.spentAmount)} / {formatCurrency(item.budgetedAmount)}
+                                    </div>
+                                    <div style={{ color: diffColor }}>
+                                        {formatCurrency(difference)}
+                                    </div>
+                                </div>
                             </div>
                             <ProgressBar value={percentage} showValue={false} style={{ height: '0.75rem' }} color={item.categoryColor} />
                         </div>

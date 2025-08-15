@@ -10,6 +10,7 @@ const PurchaseForecast = ({ onUpdate }) => {
     const [items, setItems] = useState([]);
     const [itemName, setItemName] = useState('');
     const [price, setPrice] = useState(null);
+    const [url, setUrl] = useState('');
 
     const fetchItems = async () => {
         try {
@@ -24,9 +25,10 @@ const PurchaseForecast = ({ onUpdate }) => {
         e.preventDefault();
         if (!itemName || price === null || price <= 0) return;
         try {
-            await api.post('/shopping', { itemName, price });
+            await api.post('/shopping', { itemName, price, url });
             setItemName('');
             setPrice(null);
+            setUrl('');
             fetchItems();
         } catch (error) { console.error("Erreur ajout item", error); }
     };
@@ -52,7 +54,14 @@ const PurchaseForecast = ({ onUpdate }) => {
                 <div className="flex flex-column xl:flex-row xl:align-items-start p-2 gap-2">
                     <div className="flex flex-column sm:flex-row justify-content-between align-items-center xl:align-items-start flex-1 gap-2">
                         <div className="flex flex-column align-items-center sm:align-items-start gap-2">
-                            <div className="font-bold text-sm">{item.itemName}</div>
+                            <div className="font-bold text-sm">
+                                {item.itemName}
+                                {item.url && (
+                                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="ml-2">
+                                        <i className="pi pi-external-link" />
+                                    </a>
+                                )}
+                            </div>
                         </div>
                         <div className="flex sm:flex-column align-items-center sm:align-items-end gap-2 sm:gap-2">
                             <span className="font-semibold text-sm">{item.price.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
@@ -74,13 +83,16 @@ const PurchaseForecast = ({ onUpdate }) => {
             </div>
             <DataView value={items} itemTemplate={itemTemplate} emptyMessage="Aucun achat prévu pour le moment." />
             <form onSubmit={handleAddItem} className="grid grid-nogutter mt-2 align-items-center">
-                <div className="col-6 pr-2">
+                <div className="col-5 pr-2">
                     <InputText value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="Article" className="p-inputtext-sm w-full" />
                 </div>
-                <div className="col-4 pr-2">
+                <div className="col-3 pr-2">
                     <InputNumber value={price} onValueChange={(e) => setPrice(e.value)} placeholder="Prix" mode="currency" currency="EUR" locale="fr-FR" inputClassName="p-inputtext-sm w-full" />
                 </div>
-                <div className="col-2">
+                <div className="col-3 pr-2">
+                    <InputText value={url} onChange={(e) => setUrl(e.target.value)} placeholder="URL" className="p-inputtext-sm w-full" />
+                </div>
+                <div className="col-1">
                     <Button type="submit" icon="pi pi-plus" className="p-button-sm w-full" />
                 </div>
             </form>

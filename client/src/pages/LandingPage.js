@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import './LandingPage.css';
+import ThemeToggle from '../components/ThemeToggle';
 
 const LandingPage = () => {
     const navigate = useNavigate();
@@ -18,6 +19,9 @@ const LandingPage = () => {
     return (
         <div className="landing-container">
             <header className="landing-header">
+                <div className="flex justify-content-end">
+                    <ThemeToggle />
+                </div>
                 <img src="/logo192.png" alt="Ragnance Logo" className="logo" />
                 <h1>Bienvenue sur Ragnance</h1>
                 <p className="subtitle">Vos finances, deux approches, une seule plateforme.</p>
@@ -49,7 +53,7 @@ const LandingPage = () => {
                 {/* RÉINTÉGRATION DES SECTIONS DE PRÉSENTATION */}
                 <section className="tips">
                     <h2>Comment ça marche ?</h2>
-                    <p className="text-center" style={{maxWidth: '800px', margin: '0 auto 2rem auto', color: '#b0b0d0'}}>
+                    <p className="text-center" style={{ maxWidth: '800px', margin: '0 auto 2rem auto', color: '#b0b0d0' }}>
                         Ragnance Budget est conçu pour être intuitif. Voici les étapes clés pour bien démarrer :
                     </p>
                     <div className="grid">

@@ -4,19 +4,18 @@ import App from './App';
 
 import { PrimeReactProvider } from 'primereact/api';
 import { AuthProvider } from './context/AuthContext';
-import { ToastProvider } from './context/ToastContext'; // <-- AJOUTER
+import { ToastProvider } from './context/ToastContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 // --- ORDRE D'IMPORTATION DES STYLES (TRÈS IMPORTANT) ---
 
-// 1. Le thème de PrimeReact
-import 'primereact/resources/themes/vela-blue/theme.css';   
-// 2. Les styles de base des composants PrimeReact
+// 1. Les styles de base des composants PrimeReact
 import 'primereact/resources/primereact.min.css';
-// 3. Les icônes
+// 2. Les icônes
 import 'primeicons/primeicons.css';
-// 4. La grille et les utilitaires flex
-import 'primeflex/primeflex.css'; 
-// 5. NOTRE fichier de styles personnalisés, EN DERNIER
+// 3. La grille et les utilitaires flex
+import 'primeflex/primeflex.css';
+// 4. NOTRE fichier de styles personnalisés, EN DERNIER
 import './index.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -24,8 +23,10 @@ root.render(
   <React.StrictMode>
     <PrimeReactProvider>
       <AuthProvider>
-        <ToastProvider> {/* <-- AJOUTER */}
-          <App />
+        <ToastProvider>
+          <ThemeProvider>
+            <App />
+          </ThemeProvider>
         </ToastProvider>
       </AuthProvider>
     </PrimeReactProvider>

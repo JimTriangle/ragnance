@@ -7,12 +7,13 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
 import { Message } from 'primereact/message';
+import ThemeToggle from '../components/ThemeToggle';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  
+
   const { storeToken } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -23,14 +24,14 @@ const LoginPage = () => {
     try {
       const response = await api.post('/auth/login', { email, password });
       storeToken(response.data.authToken);
-      
+
       // --- LOGIQUE DE REDIRECTION INTELLIGENTE ---
       // 1. On regarde si une destination a été sauvegardée
       const redirectTo = sessionStorage.getItem('postLoginRedirect');
-      
+
       // 2. On nettoie la session pour les prochaines fois
       sessionStorage.removeItem('postLoginRedirect');
-      
+
       // 3. On redirige vers la destination, ou vers le dashboard Budget par défaut
       navigate(redirectTo || '/budget/dashboard');
 
@@ -40,7 +41,10 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+    <div className="flex justify-content-center align-items-center" style={{ height: '100vh', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+        <ThemeToggle />
+      </div>
       <Card title="Connexion" style={{ width: '25rem' }}>
         <form onSubmit={handleLogin} className="p-fluid">
           <div className="field">
@@ -51,7 +55,7 @@ const LoginPage = () => {
           </div>
           <div className="field">
             <span className="p-float-label">
-              <Password id="password" value={password} onChange={(e) => setPassword(e.target.value)} feedback={false} toggleMask/>
+              <Password id="password" value={password} onChange={(e) => setPassword(e.target.value)} feedback={false} toggleMask />
               <label htmlFor="password">Mot de passe</label>
             </span>
           </div>
@@ -59,7 +63,7 @@ const LoginPage = () => {
           <Button type="submit" label="Se connecter" className="mt-2" />
         </form>
         <div className="mt-3 text-center">
-            <Link to="/">Retour à l'accueil</Link>
+          <Link to="/">Retour à l'accueil</Link>
         </div>
       </Card>
     </div>

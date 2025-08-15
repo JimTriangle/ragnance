@@ -3,6 +3,8 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Button } from 'primereact/button';
 import { ConfirmDialog } from 'primereact/confirmdialog';
+import ThemeToggle from '../components/ThemeToggle';
+
 // Un exemple de Header pour la section Trading (à développer plus tard)
 const TradingHeader = () => {
     return (
@@ -16,6 +18,7 @@ const TradingHeader = () => {
                 <NavLink to="/trading/bot-activity" className="p-button p-button-text main-nav-link">Bot</NavLink>
             </div>
             <div className="flex align-items-center">
+                <ThemeToggle />
                 <UserInfo />
             </div>
         </div>
