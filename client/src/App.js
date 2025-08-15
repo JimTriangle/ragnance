@@ -2,8 +2,9 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 // Logique d'authentification
-import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+import BudgetRoute from './components/BudgetRoute';
+import TradingRoute from './components/TradingRoute';
 
 // Mises en page (Layouts)
 import BudgetLayout from './layouts/BudgetLayout';
@@ -46,7 +47,7 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
 
                 {/* --- SECTION BUDGET PROTÉGÉE --- */}
-                <Route path="/budget" element={<ProtectedRoute />}>
+                <Route path="/budget" element={<BudgetRoute />}>
                     <Route element={<BudgetLayout />}>
                         <Route path="dashboard" element={<DashboardPage />} />
                         <Route path="monthly" element={<MonthlyViewPage />} />
@@ -61,7 +62,7 @@ function App() {
                 </Route>
 
                 {/* --- SECTION TRADING PROTÉGÉE --- */}
-                <Route path="/trading" element={<ProtectedRoute />}>
+                <Route path="/trading" element={<TradingRoute />}>
                     <Route element={<TradingLayout />}>
                         <Route index element={<TradingDashboardPage />} />
                         <Route path="portfolios" element={<PortfolioListPage />} />

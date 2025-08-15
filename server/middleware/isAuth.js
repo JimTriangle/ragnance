@@ -25,7 +25,9 @@ module.exports = (req, res, next) => {
     req.user = {
       id: decodedToken.id,
       email: decodedToken.email,
-      role: decodedToken.role
+      role: decodedToken.role,
+      budgetAccess: decodedToken.budgetAccess,
+      tradingAccess: decodedToken.tradingAccess
     };
 
     // On passe à la suite (la route demandée)

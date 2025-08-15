@@ -45,7 +45,13 @@ router.post('/login', async (req, res) => {
     if (!isPasswordCorrect) {
       return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
     }
-    const payload = { id: user.id, email: user.email, role: user.role };
+     const payload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      budgetAccess: user.budgetAccess,
+      tradingAccess: user.tradingAccess
+    };
     const authToken = jwt.sign(
       payload,
       process.env.JWT_SECRET, // <-- ON UTILISE LA VARIABLE D'ENVIRONNEMENT

@@ -8,6 +8,7 @@ import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
 import { Message } from 'primereact/message';
 import ThemeToggle from '../components/ThemeToggle';
+import { jwtDecode } from 'jwt-decode';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -25,13 +26,22 @@ const LoginPage = () => {
       const response = await api.post('/auth/login', { email, password });
       storeToken(response.data.authToken);
 
+      const decoded = jwtDecode(response.data.authToken);
       // --- LOGIQUE DE REDIRECTION INTELLIGENTE ---
       // 1. On regarde si une destination a été sauvegardée
       const redirectTo = sessionStorage.getItem('postLoginRedirect');
 
       // 2. On nettoie la session pour les prochaines fois
       sessionStorage.removeItem('postLoginRedirect');
-
+      if (redirectTo) {
+        navigate(redirectTo);
+      } else if (decoded.budgetAccess) {
+        navigate('/budget/dashboard');
+      } else if (decoded.tradingAccess) {
+        navigate('/trading');
+      } else {
+        navigate('/');
+      }
       // 3. On redirige vers la destination, ou vers le dashboard Budget par défaut
       navigate(redirectTo || '/budget/dashboard');
 
@@ -49,13 +59,13 @@ const LoginPage = () => {
         <form onSubmit={handleLogin} className="p-fluid">
           <div className="field">
             <span className="p-float-label">
-              <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+               <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" />
               <label htmlFor="email">Email</label>
             </span>
           </div>
           <div className="field">
             <span className="p-float-label">
-              <Password id="password" value={password} onChange={(e) => setPassword(e.target.value)} feedback={false} toggleMask />
+              <Password id="password" value={password} onChange={(e) => setPassword(e.target.value)} feedback={false} toggleMask autoComplete="current-password" />
               <label htmlFor="password">Mot de passe</label>
             </span>
           </div>

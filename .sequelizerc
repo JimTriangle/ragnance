@@ -1,0 +1,9 @@
+
+const path = require("path");
+
+module.exports = {
+  'config':        path.resolve('server/config/config.js'),   // on utilise un JS, pas un JSON
+  'models-path':   path.resolve('server/models'),
+  'seeders-path':  path.resolve('server/seeders'),
+  'migrations-path': path.resolve('server/migration'),
+};

@@ -18,6 +18,10 @@ require('./models/TransactionCategory.model');
 require('./models/ExchangeKey.model');
 require('./models/Strategy.model');
 
+const isAuth = require('./middleware/isAuth');
+const hasBudgetAccess = require('./middleware/hasBudgetAccess');
+const hasTradingAccess = require('./middleware/hasTradingAccess');
+
 const app = express();
 // On utilise la variable d'environnement pour le port
 const PORT = process.env.PORT || 5000;
@@ -60,21 +64,21 @@ app.use(express.json());
 
 // ... (toutes les déclarations de routes)
 app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api/transactions', require('./routes/transaction.routes.js'));
-app.use('/api/shopping', require('./routes/shopping.routes.js'));
+app.use('/api/transactions', isAuth, hasBudgetAccess, require('./routes/transaction.routes.js'));
+app.use('/api/shopping', isAuth, hasBudgetAccess, require('./routes/shopping.routes.js'));
 app.use('/api/admin', require('./routes/admin.routes.js'));
-app.use('/api/categories', require('./routes/category.routes.js'));
-app.use('/api/budgets', require('./routes/budget.routes.js'));
-app.use('/api/project-budgets', require('./routes/ProjectBudget.routes.js'));
-app.use('/api/analysis', require('./routes/analysis.routes.js'));
-app.use('/api/dashboard', require('./routes/dashboard.routes.js'));
-app.use('/api/portfolios', require('./routes/portfolio.routes'));
-app.use('/api/markets', require('./routes/market.routes'));
-app.use('/api/exchanges', require('./routes/exchange.routes'));
-app.use('/api/backtests', require('./routes/backtest.routes'));
-app.use('/api', require('./routes/strategy.routes'));
-app.use('/api', require('./routes/strategies.routes'));
-app.use('/api/bot', require('./routes/bot.routes'));
+app.use('/api/categories', isAuth, hasBudgetAccess, require('./routes/category.routes.js'));
+app.use('/api/budgets', isAuth, hasBudgetAccess, require('./routes/budget.routes.js'));
+app.use('/api/project-budgets', isAuth, hasBudgetAccess, require('./routes/ProjectBudget.routes.js'));
+app.use('/api/analysis', isAuth, hasBudgetAccess, require('./routes/analysis.routes.js'));
+app.use('/api/dashboard', isAuth, hasBudgetAccess, require('./routes/dashboard.routes.js'));
+app.use('/api/portfolios', isAuth, hasTradingAccess, require('./routes/portfolio.routes'));
+app.use('/api/markets', isAuth, hasTradingAccess, require('./routes/market.routes'));
+app.use('/api/exchanges', isAuth, hasTradingAccess, require('./routes/exchange.routes'));
+app.use('/api/backtests', isAuth, hasTradingAccess, require('./routes/backtest.routes'));
+app.use('/api', isAuth, hasTradingAccess, require('./routes/strategy.routes'));
+app.use('/api', isAuth, hasTradingAccess, require('./routes/strategies.routes'));
+app.use('/api/bot', isAuth, hasTradingAccess, require('./routes/bot.routes'));
 
 const openapiDocument = yaml.load(path.join(__dirname, 'openapi.yaml'));
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));

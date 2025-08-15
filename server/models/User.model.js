@@ -21,6 +21,14 @@ const User = sequelize.define('User', {
     validate: {
       isIn: [['user', 'admin']] // La valeur doit être 'user' ou 'admin'
     }
+  },
+  budgetAccess: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  tradingAccess: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
   }
   // Les champs 'createdAt' et 'updatedAt' sont ajoutés automatiquement
 });
