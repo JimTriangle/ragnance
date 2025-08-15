@@ -5,6 +5,7 @@ import KpiCard from '../../components/trading/KpiCard';
 import EquityChart from '../../components/trading/EquityChart';
 import PnlDailyChart from '../../components/trading/PnlDailyChart';
 import SummaryTable from '../../components/trading/SummaryTable';
+import api from '../../services/api';
 import './TradingStyles.css';
 
 const TradingDashboardPage = () => {
@@ -22,33 +23,27 @@ const TradingDashboardPage = () => {
   const [error, setError] = useState(null);
 
   const fetchData = useCallback(async () => {
-    const params = new URLSearchParams({
+    const params = {
       from: new Date(filters.from).toISOString(),
       to: new Date(filters.to).toISOString(),
       exchange: filters.exchange || ''
-    }).toString();
-   
+    };
+
     try {
-      const resSummary = await fetch(`/api/dashboard/summary?${params}`);
-      if (!resSummary.ok) {
-        throw new Error(resSummary.status === 401 ? 'Unauthorized' : 'Failed to load summary');
-      }
-      const dataSummary = await resSummary.json();
+      const { data: dataSummary } = await api.get('/dashboard/summary', { params });
       setSummary(dataSummary);
 
-      const resEquity = await fetch(`/api/dashboard/equity-curve?${params}`);
-      if (resEquity.ok) {
-        const dataEquity = await resEquity.json();
+      try {
+        const { data: dataEquity } = await api.get('/dashboard/equity-curve', { params });
         setEquity(dataEquity.points || []);
-      } else {
+      } catch {
         setEquity([]);
       }
 
-      const resPnl = await fetch(`/api/dashboard/pnl-daily?${params}`);
-      if (resPnl.ok) {
-        const dataPnl = await resPnl.json();
+      try {
+        const { data: dataPnl } = await api.get('/dashboard/pnl-daily', { params });
         setPnlDaily(dataPnl.days || []);
-      } else {
+       } catch {
         setPnlDaily([]);
       }
 
@@ -56,7 +51,7 @@ const TradingDashboardPage = () => {
       setError(null);
     } catch (err) {
       console.error('Error fetching dashboard data', err);
-      setError(err.message);
+      setError(err.response?.status === 401 ? 'Unauthorized' : err.message);
       setSummary(null);
       setEquity([]);
       setPnlDaily([]);
@@ -74,7 +69,7 @@ const TradingDashboardPage = () => {
     }
   }, [summary, fetchData]);
 
-   if (error) {
+  if (error) {
     return <div className="p-4 trading-page-container">{error}</div>;
   }
 
@@ -104,13 +99,13 @@ const TradingDashboardPage = () => {
           />
         </div>
         <div className="col-12 md:col-4">
-                    <KpiCard
+          <KpiCard
             label="PnL Jour"
             value={summary?.pnl?.day != null ? summary.pnl.day.toFixed(2) : '-'}
           />
         </div>
         <div className="col-12 md:col-4">
-           <KpiCard label="Trades" value={summary?.tradesCount ?? '-'} />
+          <KpiCard label="Trades" value={summary?.tradesCount ?? '-'} />
         </div>
       </div>
       <div className="grid mt-4">

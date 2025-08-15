@@ -58,7 +58,7 @@ const BudgetLayout = () => {
 
     useEffect(() => {
         const handleKeydown = (e) => {
-            if (e.key.toLowerCase() === 'n' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+               if (e.key?.toLowerCase() === 'n' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
                 e.preventDefault();
                 openModal();
             }
