@@ -12,8 +12,11 @@ const ExchangeKey = sequelize.define('ExchangeKey', {
     allowNull: false,
   },
   exchange: {
-    type: DataTypes.ENUM('KRAKEN', 'BINANCE'),
+    type: DataTypes.STRING,
     allowNull: false,
+    validate: {
+      isIn: [['KRAKEN', 'BINANCE']],
+    },
   },
   label: {
     type: DataTypes.STRING,

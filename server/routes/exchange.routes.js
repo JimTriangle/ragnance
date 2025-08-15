@@ -6,6 +6,8 @@ const ExchangeKey = require('../models/ExchangeKey.model');
 const { encrypt, decrypt, mask } = require('../utils/encryption');
 const createClient = require('../services/exchanges/ccxtClient');
 const rateMap = new Map();
+
+
 function checkRateLimit(userId, exchange) {
   const key = `${userId}:${exchange}`;
   const now = Date.now();
@@ -60,7 +62,8 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const { exchange, label, apiKey, apiSecret, sandbox } = req.body;
+  let { exchange, label, apiKey, apiSecret, sandbox } = req.body;
+  exchange = (exchange || '').toUpperCase();
   if (!process.env.ENCRYPTION_KEY) {
     return res.status(500).json({ error: { code: 'ENCRYPTION_MISSING', message: 'Encryption key missing' } });
   }
@@ -72,16 +75,20 @@ router.post('/', async (req, res) => {
   const id = 'ek_' + crypto.randomUUID();
   const apiSecretEnc = encrypt(apiSecret);
   const now = new Date().toISOString();
-  await ExchangeKey.create({
-    id,
-    userId: req.user.id,
-    exchange,
-    label,
-    apiKey,
-    apiSecretEnc,
-    sandbox: !!sandbox,
-    meta: { lastTestAt: now, lastTestStatus: 'VALID', lastTestMessage: 'OK' },
-  });
+  try {
+    await ExchangeKey.create({
+      id,
+      userId: req.user.id,
+      exchange,
+      label,
+      apiKey,
+      apiSecretEnc,
+      sandbox: !!sandbox,
+      meta: { lastTestAt: now, lastTestStatus: 'VALID', lastTestMessage: 'OK' },
+    });
+  } catch (err) {
+    return res.status(400).json({ error: { code: 'CREATE_FAILED', message: err.message } });
+  }
   res.status(201).json({ id });
 });
 
