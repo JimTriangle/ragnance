@@ -75,8 +75,23 @@ const ExchangesPage = () => {
           <li>Testez la connexion avant d'enregistrer.</li>
         </ol>
         <p className="mt-2">
-          <a href="https://www.binance.com/en/my/settings/api-management" target="_blank" rel="noreferrer" className="underline">
+          <a
+            href="https://www.binance.com/en/my/settings/api-management"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
             Guide Binance
+          </a>
+        </p>
+        <p>
+          <a
+            href="https://support.kraken.com/hc/en-us/articles/360000919866-How-to-create-an-API-key"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            Guide Kraken
           </a>
         </p>
       </div>
