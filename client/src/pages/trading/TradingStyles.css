@@ -24,3 +24,12 @@
     font-style: italic;
     filter: blur(2px); /* Effet de flou pour montrer que c'est en attente */
 }
+
+.trading-datatable {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.trading-datatable .p-datatable-thead > tr > th {
+    background-color: var(--surface-200);
+}

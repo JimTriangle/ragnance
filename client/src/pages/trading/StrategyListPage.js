@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from 'primereact/button';
+import { Card } from 'primereact/card';
 import StrategyList from '../../components/trading/StrategyList';
 import ConfirmDialog from '../../components/trading/ConfirmDialog';
 import { fetchStrategies, getStrategy, createStrategy, deleteStrategy } from '../../services/strategies';
@@ -30,9 +32,16 @@ const StrategyListPage = () => {
     <div className="p-4 trading-page-container">
       <div className="flex justify-content-between mb-3">
         <h1 className="text-2xl font-bold">Stratégies</h1>
-        <button className="p-button" onClick={() => navigate('/trading/strategies/new')}>Nouvelle stratégie</button>
+        <Button label="Nouvelle stratégie" onClick={() => navigate('/trading/strategies/new')} />
       </div>
-      <StrategyList items={items} onEdit={(id) => navigate(`/trading/strategies/${id}`)} onDuplicate={handleDuplicate} onDelete={(id) => setConfirmId(id)} />
+      <Card>
+        <StrategyList
+          items={items}
+          onEdit={(id) => navigate(`/trading/strategies/${id}`)}
+          onDuplicate={handleDuplicate}
+          onDelete={(id) => setConfirmId(id)}
+        />
+      </Card>
       <ConfirmDialog visible={!!confirmId} onHide={() => setConfirmId(null)} onConfirm={handleDelete} message="Supprimer cette stratégie ?" />
     </div>
   );
