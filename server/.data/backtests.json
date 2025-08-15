@@ -1,0 +1,908 @@
+[
+  {
+    "id": "bt_1",
+    "status": "DONE",
+    "params": {
+      "strategyId": "EMA_CROSS",
+      "exchange": "BINANCE",
+      "pair": "BTC/USDT",
+      "timeframe": "1h",
+      "from": "2025-07-16T01:16:06.661Z",
+      "to": "2025-08-15T01:16:06.661Z",
+      "initialCapital": 1000,
+      "feeBps": 10,
+      "slippageBps": 5,
+      "positionSizing": {
+        "mode": "FixedFraction",
+        "riskPctPerTrade": 1
+      },
+      "rules": {
+        "allowShort": false,
+        "orderType": "market",
+        "limitOffsetBps": 0,
+        "maxConcurrentPositions": 1
+      },
+      "split": {
+        "enabled": false,
+        "ratio": 0.8
+      }
+    },
+    "kpis": {
+      "currency": "USDT",
+      "pnlValue": 32.49,
+      "pnlPct": 3.25,
+      "trades": 31,
+      "winrate": 0.61,
+      "maxDrawdownPct": -1.84,
+      "sharpe": 0,
+      "profitFactor": 1.47,
+      "avgTradePct": 0.1,
+      "avgWinPct": 0.53,
+      "avgLossPct": -0.57,
+      "exposurePct": 100
+    },
+    "period": {
+      "from": "2025-07-16T01:16:06.661Z",
+      "to": "2025-08-15T01:16:06.661Z"
+    },
+    "createdAt": "2025-08-15T01:16:06.662Z",
+    "endedAt": "2025-08-15T01:16:06.662Z",
+    "equity": [
+      {
+        "t": "2025-07-16T01:16:06.661Z",
+        "equity": 1004.2
+      },
+      {
+        "t": "2025-07-17T01:16:06.661Z",
+        "equity": 1013.72
+      },
+      {
+        "t": "2025-07-18T01:16:06.661Z",
+        "equity": 1007.64
+      },
+      {
+        "t": "2025-07-19T01:16:06.661Z",
+        "equity": 1017.21
+      },
+      {
+        "t": "2025-07-20T01:16:06.661Z",
+        "equity": 1022.45
+      },
+      {
+        "t": "2025-07-21T01:16:06.661Z",
+        "equity": 1029.5
+      },
+      {
+        "t": "2025-07-22T01:16:06.661Z",
+        "equity": 1037.04
+      },
+      {
+        "t": "2025-07-23T01:16:06.661Z",
+        "equity": 1038.75
+      },
+      {
+        "t": "2025-07-24T01:16:06.661Z",
+        "equity": 1032.2
+      },
+      {
+        "t": "2025-07-25T01:16:06.661Z",
+        "equity": 1038.17
+      },
+      {
+        "t": "2025-07-26T01:16:06.661Z",
+        "equity": 1029.82
+      },
+      {
+        "t": "2025-07-27T01:16:06.661Z",
+        "equity": 1025.1
+      },
+      {
+        "t": "2025-07-28T01:16:06.661Z",
+        "equity": 1028.59
+      },
+      {
+        "t": "2025-07-29T01:16:06.661Z",
+        "equity": 1019.82
+      },
+      {
+        "t": "2025-07-30T01:16:06.661Z",
+        "equity": 1027.54
+      },
+      {
+        "t": "2025-07-31T01:16:06.661Z",
+        "equity": 1037.13
+      },
+      {
+        "t": "2025-08-01T01:16:06.661Z",
+        "equity": 1027.28
+      },
+      {
+        "t": "2025-08-02T01:16:06.661Z",
+        "equity": 1019.63
+      },
+      {
+        "t": "2025-08-03T01:16:06.661Z",
+        "equity": 1025.18
+      },
+      {
+        "t": "2025-08-04T01:16:06.661Z",
+        "equity": 1024.2
+      },
+      {
+        "t": "2025-08-05T01:16:06.661Z",
+        "equity": 1025.36
+      },
+      {
+        "t": "2025-08-06T01:16:06.661Z",
+        "equity": 1025.09
+      },
+      {
+        "t": "2025-08-07T01:16:06.661Z",
+        "equity": 1031.16
+      },
+      {
+        "t": "2025-08-08T01:16:06.661Z",
+        "equity": 1025.31
+      },
+      {
+        "t": "2025-08-09T01:16:06.661Z",
+        "equity": 1024.95
+      },
+      {
+        "t": "2025-08-10T01:16:06.661Z",
+        "equity": 1026.68
+      },
+      {
+        "t": "2025-08-11T01:16:06.661Z",
+        "equity": 1032
+      },
+      {
+        "t": "2025-08-12T01:16:06.661Z",
+        "equity": 1022.88
+      },
+      {
+        "t": "2025-08-13T01:16:06.661Z",
+        "equity": 1026.18
+      },
+      {
+        "t": "2025-08-14T01:16:06.661Z",
+        "equity": 1029.95
+      },
+      {
+        "t": "2025-08-15T01:16:06.661Z",
+        "equity": 1032.49
+      }
+    ],
+    "drawdown": [
+      {
+        "t": "2025-07-16T01:16:06.661Z",
+        "ddPct": 0
+      },
+      {
+        "t": "2025-07-17T01:16:06.661Z",
+        "ddPct": 0
+      },
+      {
+        "t": "2025-07-18T01:16:06.661Z",
+        "ddPct": -0.6
+      },
+      {
+        "t": "2025-07-19T01:16:06.661Z",
+        "ddPct": 0
+      },
+      {
+        "t": "2025-07-20T01:16:06.661Z",
+        "ddPct": 0
+      },
+      {
+        "t": "2025-07-21T01:16:06.661Z",
+        "ddPct": 0
+      },
+      {
+        "t": "2025-07-22T01:16:06.661Z",
+        "ddPct": 0
+      },
+      {
+        "t": "2025-07-23T01:16:06.661Z",
+        "ddPct": 0
+      },
+      {
+        "t": "2025-07-24T01:16:06.661Z",
+        "ddPct": -0.63
+      },
+      {
+        "t": "2025-07-25T01:16:06.661Z",
+        "ddPct": -0.06
+      },
+      {
+        "t": "2025-07-26T01:16:06.661Z",
+        "ddPct": -0.86
+      },
+      {
+        "t": "2025-07-27T01:16:06.661Z",
+        "ddPct": -1.31
+      },
+      {
+        "t": "2025-07-28T01:16:06.661Z",
+        "ddPct": -0.98
+      },
+      {
+        "t": "2025-07-29T01:16:06.661Z",
+        "ddPct": -1.82
+      },
+      {
+        "t": "2025-07-30T01:16:06.661Z",
+        "ddPct": -1.08
+      },
+      {
+        "t": "2025-07-31T01:16:06.661Z",
+        "ddPct": -0.16
+      },
+      {
+        "t": "2025-08-01T01:16:06.661Z",
+        "ddPct": -1.1
+      },
+      {
+        "t": "2025-08-02T01:16:06.661Z",
+        "ddPct": -1.84
+      },
+      {
+        "t": "2025-08-03T01:16:06.661Z",
+        "ddPct": -1.31
+      },
+      {
+        "t": "2025-08-04T01:16:06.661Z",
+        "ddPct": -1.4
+      },
+      {
+        "t": "2025-08-05T01:16:06.661Z",
+        "ddPct": -1.29
+      },
+      {
+        "t": "2025-08-06T01:16:06.661Z",
+        "ddPct": -1.32
+      },
+      {
+        "t": "2025-08-07T01:16:06.661Z",
+        "ddPct": -0.73
+      },
+      {
+        "t": "2025-08-08T01:16:06.661Z",
+        "ddPct": -1.29
+      },
+      {
+        "t": "2025-08-09T01:16:06.661Z",
+        "ddPct": -1.33
+      },
+      {
+        "t": "2025-08-10T01:16:06.661Z",
+        "ddPct": -1.16
+      },
+      {
+        "t": "2025-08-11T01:16:06.661Z",
+        "ddPct": -0.65
+      },
+      {
+        "t": "2025-08-12T01:16:06.661Z",
+        "ddPct": -1.53
+      },
+      {
+        "t": "2025-08-13T01:16:06.661Z",
+        "ddPct": -1.21
+      },
+      {
+        "t": "2025-08-14T01:16:06.661Z",
+        "ddPct": -0.85
+      },
+      {
+        "t": "2025-08-15T01:16:06.661Z",
+        "ddPct": -0.6
+      }
+    ],
+    "pnlDaily": {
+      "days": [
+        {
+          "date": "2025-07-16",
+          "pnl": 4.2
+        },
+        {
+          "date": "2025-07-17",
+          "pnl": 9.53
+        },
+        {
+          "date": "2025-07-18",
+          "pnl": -6.08
+        },
+        {
+          "date": "2025-07-19",
+          "pnl": 9.57
+        },
+        {
+          "date": "2025-07-20",
+          "pnl": 5.23
+        },
+        {
+          "date": "2025-07-21",
+          "pnl": 7.06
+        },
+        {
+          "date": "2025-07-22",
+          "pnl": 7.54
+        },
+        {
+          "date": "2025-07-23",
+          "pnl": 1.71
+        },
+        {
+          "date": "2025-07-24",
+          "pnl": -6.55
+        },
+        {
+          "date": "2025-07-25",
+          "pnl": 5.96
+        },
+        {
+          "date": "2025-07-26",
+          "pnl": -8.35
+        },
+        {
+          "date": "2025-07-27",
+          "pnl": -4.72
+        },
+        {
+          "date": "2025-07-28",
+          "pnl": 3.49
+        },
+        {
+          "date": "2025-07-29",
+          "pnl": -8.77
+        },
+        {
+          "date": "2025-07-30",
+          "pnl": 7.72
+        },
+        {
+          "date": "2025-07-31",
+          "pnl": 9.59
+        },
+        {
+          "date": "2025-08-01",
+          "pnl": -9.85
+        },
+        {
+          "date": "2025-08-02",
+          "pnl": -7.65
+        },
+        {
+          "date": "2025-08-03",
+          "pnl": 5.55
+        },
+        {
+          "date": "2025-08-04",
+          "pnl": -0.97
+        },
+        {
+          "date": "2025-08-05",
+          "pnl": 1.15
+        },
+        {
+          "date": "2025-08-06",
+          "pnl": -0.27
+        },
+        {
+          "date": "2025-08-07",
+          "pnl": 6.07
+        },
+        {
+          "date": "2025-08-08",
+          "pnl": -5.85
+        },
+        {
+          "date": "2025-08-09",
+          "pnl": -0.36
+        },
+        {
+          "date": "2025-08-10",
+          "pnl": 1.73
+        },
+        {
+          "date": "2025-08-11",
+          "pnl": 5.32
+        },
+        {
+          "date": "2025-08-12",
+          "pnl": -9.13
+        },
+        {
+          "date": "2025-08-13",
+          "pnl": 3.3
+        },
+        {
+          "date": "2025-08-14",
+          "pnl": 3.77
+        },
+        {
+          "date": "2025-08-15",
+          "pnl": 2.54
+        }
+      ],
+      "monthly": [
+        {
+          "ym": "2025-07",
+          "pnl": 37.13
+        },
+        {
+          "ym": "2025-08",
+          "pnl": -4.65
+        }
+      ]
+    },
+    "trades": [
+      {
+        "id": "tr_0",
+        "tEntry": "2025-07-16T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 100,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-16T01:16:06.661Z",
+        "priceExit": 101,
+        "pnl": 4.2,
+        "retPct": 0.42,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_1",
+        "tEntry": "2025-07-17T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 101,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-17T01:16:06.661Z",
+        "priceExit": 102,
+        "pnl": 9.53,
+        "retPct": 0.95,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_2",
+        "tEntry": "2025-07-18T01:16:06.661Z",
+        "side": "SHORT",
+        "priceEntry": 102,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-18T01:16:06.661Z",
+        "priceExit": 103,
+        "pnl": -6.08,
+        "retPct": -0.61,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_3",
+        "tEntry": "2025-07-19T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 103,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-19T01:16:06.661Z",
+        "priceExit": 104,
+        "pnl": 9.57,
+        "retPct": 0.96,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_4",
+        "tEntry": "2025-07-20T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 104,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-20T01:16:06.661Z",
+        "priceExit": 105,
+        "pnl": 5.23,
+        "retPct": 0.52,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_5",
+        "tEntry": "2025-07-21T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 105,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-21T01:16:06.661Z",
+        "priceExit": 106,
+        "pnl": 7.06,
+        "retPct": 0.71,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_6",
+        "tEntry": "2025-07-22T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 106,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-22T01:16:06.661Z",
+        "priceExit": 107,
+        "pnl": 7.54,
+        "retPct": 0.75,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_7",
+        "tEntry": "2025-07-23T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 107,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-23T01:16:06.661Z",
+        "priceExit": 108,
+        "pnl": 1.71,
+        "retPct": 0.17,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_8",
+        "tEntry": "2025-07-24T01:16:06.661Z",
+        "side": "SHORT",
+        "priceEntry": 108,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-24T01:16:06.661Z",
+        "priceExit": 109,
+        "pnl": -6.55,
+        "retPct": -0.65,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_9",
+        "tEntry": "2025-07-25T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 109,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-25T01:16:06.661Z",
+        "priceExit": 110,
+        "pnl": 5.96,
+        "retPct": 0.6,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_10",
+        "tEntry": "2025-07-26T01:16:06.661Z",
+        "side": "SHORT",
+        "priceEntry": 110,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-26T01:16:06.661Z",
+        "priceExit": 111,
+        "pnl": -8.35,
+        "retPct": -0.83,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_11",
+        "tEntry": "2025-07-27T01:16:06.661Z",
+        "side": "SHORT",
+        "priceEntry": 111,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-27T01:16:06.661Z",
+        "priceExit": 112,
+        "pnl": -4.72,
+        "retPct": -0.47,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_12",
+        "tEntry": "2025-07-28T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 112,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-28T01:16:06.661Z",
+        "priceExit": 113,
+        "pnl": 3.49,
+        "retPct": 0.35,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_13",
+        "tEntry": "2025-07-29T01:16:06.661Z",
+        "side": "SHORT",
+        "priceEntry": 113,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-29T01:16:06.661Z",
+        "priceExit": 114,
+        "pnl": -8.77,
+        "retPct": -0.88,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_14",
+        "tEntry": "2025-07-30T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 114,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-30T01:16:06.661Z",
+        "priceExit": 115,
+        "pnl": 7.72,
+        "retPct": 0.77,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_15",
+        "tEntry": "2025-07-31T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 115,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-07-31T01:16:06.661Z",
+        "priceExit": 116,
+        "pnl": 9.59,
+        "retPct": 0.96,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_16",
+        "tEntry": "2025-08-01T01:16:06.661Z",
+        "side": "SHORT",
+        "priceEntry": 116,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-01T01:16:06.661Z",
+        "priceExit": 117,
+        "pnl": -9.85,
+        "retPct": -0.99,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_17",
+        "tEntry": "2025-08-02T01:16:06.661Z",
+        "side": "SHORT",
+        "priceEntry": 117,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-02T01:16:06.661Z",
+        "priceExit": 118,
+        "pnl": -7.65,
+        "retPct": -0.77,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_18",
+        "tEntry": "2025-08-03T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 118,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-03T01:16:06.661Z",
+        "priceExit": 119,
+        "pnl": 5.55,
+        "retPct": 0.55,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_19",
+        "tEntry": "2025-08-04T01:16:06.661Z",
+        "side": "SHORT",
+        "priceEntry": 119,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-04T01:16:06.661Z",
+        "priceExit": 120,
+        "pnl": -0.97,
+        "retPct": -0.1,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_20",
+        "tEntry": "2025-08-05T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 120,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-05T01:16:06.661Z",
+        "priceExit": 121,
+        "pnl": 1.15,
+        "retPct": 0.12,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_21",
+        "tEntry": "2025-08-06T01:16:06.661Z",
+        "side": "SHORT",
+        "priceEntry": 121,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-06T01:16:06.661Z",
+        "priceExit": 122,
+        "pnl": -0.27,
+        "retPct": -0.03,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_22",
+        "tEntry": "2025-08-07T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 122,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-07T01:16:06.661Z",
+        "priceExit": 123,
+        "pnl": 6.07,
+        "retPct": 0.61,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_23",
+        "tEntry": "2025-08-08T01:16:06.661Z",
+        "side": "SHORT",
+        "priceEntry": 123,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-08T01:16:06.661Z",
+        "priceExit": 124,
+        "pnl": -5.85,
+        "retPct": -0.58,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_24",
+        "tEntry": "2025-08-09T01:16:06.661Z",
+        "side": "SHORT",
+        "priceEntry": 124,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-09T01:16:06.661Z",
+        "priceExit": 125,
+        "pnl": -0.36,
+        "retPct": -0.04,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_25",
+        "tEntry": "2025-08-10T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 125,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-10T01:16:06.661Z",
+        "priceExit": 126,
+        "pnl": 1.73,
+        "retPct": 0.17,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_26",
+        "tEntry": "2025-08-11T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 126,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-11T01:16:06.661Z",
+        "priceExit": 127,
+        "pnl": 5.32,
+        "retPct": 0.53,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_27",
+        "tEntry": "2025-08-12T01:16:06.661Z",
+        "side": "SHORT",
+        "priceEntry": 127,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-12T01:16:06.661Z",
+        "priceExit": 128,
+        "pnl": -9.13,
+        "retPct": -0.91,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_28",
+        "tEntry": "2025-08-13T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 128,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-13T01:16:06.661Z",
+        "priceExit": 129,
+        "pnl": 3.3,
+        "retPct": 0.33,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_29",
+        "tEntry": "2025-08-14T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 129,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-14T01:16:06.661Z",
+        "priceExit": 130,
+        "pnl": 3.77,
+        "retPct": 0.38,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      },
+      {
+        "id": "tr_30",
+        "tEntry": "2025-08-15T01:16:06.661Z",
+        "side": "LONG",
+        "priceEntry": 130,
+        "qty": 1,
+        "fee": 0.1,
+        "tExit": "2025-08-15T01:16:06.661Z",
+        "priceExit": 131,
+        "pnl": 2.54,
+        "retPct": 0.25,
+        "durationBars": 1,
+        "entryReason": "mock",
+        "exitReason": "mock"
+      }
+    ]
+  }
+]
