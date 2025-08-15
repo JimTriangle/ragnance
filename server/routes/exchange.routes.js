@@ -64,9 +64,6 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   let { exchange, label, apiKey, apiSecret, sandbox } = req.body;
   exchange = (exchange || '').toUpperCase();
-  if (!process.env.ENCRYPTION_KEY) {
-    return res.status(500).json({ error: { code: 'ENCRYPTION_MISSING', message: 'Encryption key missing' } });
-  }
   try {
     await performTest({ exchange, apiKey, apiSecret, sandbox });
   } catch (err) {
@@ -122,9 +119,6 @@ async function rotateSecretHandler(req, res) {
   const { apiKey, apiSecret } = req.body;
   const key = await ExchangeKey.findOne({ where: { id: req.params.id, userId: req.user.id } });
   if (!key) return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Key not found' } });
-  if (!process.env.ENCRYPTION_KEY) {
-    return res.status(500).json({ error: { code: 'ENCRYPTION_MISSING', message: 'Encryption key missing' } });
-  }
   try {
     await performTest({ exchange: key.exchange, apiKey, apiSecret, sandbox: key.sandbox });
   } catch (err) {

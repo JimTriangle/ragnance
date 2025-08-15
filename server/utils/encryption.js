@@ -1,10 +1,23 @@
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+
+const KEY_PATH = path.resolve(__dirname, '../var/encryption_key');
+
 
 function getKey() {
-  if (!process.env.ENCRYPTION_KEY) {
-    throw new Error('ENCRYPTION_KEY missing');
+  let raw = process.env.ENCRYPTION_KEY;
+  if (!raw) {
+    try {
+      raw = fs.readFileSync(KEY_PATH, 'utf8').trim();
+    } catch (err) {
+      const generated = crypto.randomBytes(32).toString('hex');
+      fs.mkdirSync(path.dirname(KEY_PATH), { recursive: true });
+      fs.writeFileSync(KEY_PATH, generated);
+      raw = generated;
+    }
   }
-  return crypto.createHash('sha256').update(process.env.ENCRYPTION_KEY).digest();
+  return crypto.createHash('sha256').update(raw).digest();
 }
 
 function encrypt(secret) {
