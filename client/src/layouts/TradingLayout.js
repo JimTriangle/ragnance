@@ -12,7 +12,7 @@ const TradingHeader = () => {
             <div className="flex align-items-center flex-wrap">
                 <NavLink to="/trading" end className="p-button p-button-text main-nav-link">Dashboard</NavLink>
                 <NavLink to="/trading/portfolios" className="p-button p-button-text main-nav-link">Portefeuilles</NavLink>
-                <NavLink to="/trading/exchanges" className="p-button p-button-text main-nav-link">Exchanges</NavLink>
+                <NavLink to="/trading/exchanges" className="p-button p-button-text main-nav-link">Clés API (Exchanges)</NavLink>
                 <NavLink to="/trading/strategies" className="p-button p-button-text main-nav-link">Stratégies</NavLink>
                 <NavLink to="/trading/backtests" className="p-button p-button-text main-nav-link">Backtests</NavLink>
                 <NavLink to="/trading/bot-activity" className="p-button p-button-text main-nav-link">Bot</NavLink>

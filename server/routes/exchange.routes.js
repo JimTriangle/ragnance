@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const ccxt = require('ccxt');
 const isAuth = require('../middleware/isAuth');
 const ExchangeKey = require('../models/ExchangeKey.model');
 const { encrypt, decrypt, mask } = require('../utils/encryption');
-
+const createClient = require('../services/exchanges/ccxtClient');
 const rateMap = new Map();
 function checkRateLimit(userId, exchange) {
   const key = `${userId}:${exchange}`;
@@ -22,14 +21,7 @@ async function performTest({ exchange, apiKey, apiSecret, sandbox }) {
   if (process.env.MOCK_MODE === 'true') {
     return { ok: true, exchangeTime: Date.now() };
   }
-  const exClass = ccxt[exchange.toLowerCase()];
-  if (!exClass) {
-    const err = new Error('Exchange not supported');
-    err.code = 'EXCHANGE_NOT_SUPPORTED';
-    throw err;
-  }
-  const ex = new exClass({ apiKey, secret: apiSecret, timeout: 7000 });
-  if (sandbox && ex.setSandboxMode) ex.setSandboxMode(true);
+  const ex = createClient({ exchange, apiKey, secret: apiSecret, sandbox });
   await ex.loadMarkets();
   await ex.fetchBalance();
   return { ok: true, exchangeTime: Date.now() };
@@ -41,7 +33,7 @@ router.get('/', async (req, res) => {
   const items = await ExchangeKey.findAll({ where: { userId: req.user.id }, order: [['createdAt', 'ASC']] });
   const response = items.map((k) => {
     let secretMask = '****';
-    try { secretMask = mask(decrypt(k.apiSecretEnc)); } catch (e) {}
+    try { secretMask = mask(decrypt(k.apiSecretEnc)); } catch (e) { }
     return {
       id: k.id,
       exchange: k.exchange,
@@ -85,7 +77,7 @@ router.get('/:id', async (req, res) => {
   const key = await ExchangeKey.findOne({ where: { id: req.params.id, userId: req.user.id } });
   if (!key) return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Key not found' } });
   let secretMask = '****';
-  try { secretMask = mask(decrypt(key.apiSecretEnc)); } catch (e) {}
+  try { secretMask = mask(decrypt(key.apiSecretEnc)); } catch (e) { }
   res.json({
     id: key.id,
     exchange: key.exchange,
@@ -107,7 +99,7 @@ router.put('/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
-router.patch('/:id/secret', async (req, res) => {
+async function rotateSecretHandler(req, res) {
   const { apiKey, apiSecret } = req.body;
   const key = await ExchangeKey.findOne({ where: { id: req.params.id, userId: req.user.id } });
   if (!key) return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Key not found' } });
@@ -125,7 +117,10 @@ router.patch('/:id/secret', async (req, res) => {
   key.meta = { ...(key.meta || {}), lastTestAt: now, lastTestStatus: 'VALID', lastTestMessage: 'OK' };
   await key.save();
   res.json({ ok: true });
-});
+}
+
+router.patch('/:id/secret', rotateSecretHandler);
+router.post('/:id/rotate-secret', rotateSecretHandler);
 
 router.delete('/:id', async (req, res) => {
   const key = await ExchangeKey.findOne({ where: { id: req.params.id, userId: req.user.id } });
@@ -144,7 +139,7 @@ router.post('/test', async (req, res) => {
       sandbox = sandbox !== undefined ? sandbox : existing.sandbox;
       if (!apiKey || !apiSecret) {
         apiKey = existing.apiKey;
-        try { apiSecret = decrypt(existing.apiSecretEnc); } catch (e) {}
+        try { apiSecret = decrypt(existing.apiSecretEnc); } catch (e) { }
       }
     }
   }
@@ -165,6 +160,34 @@ router.post('/test', async (req, res) => {
       existing.meta = { ...(existing.meta || {}), lastTestAt: now, lastTestStatus: 'ERROR', lastTestMessage: err.message };
       await existing.save();
     }
+    res.status(400).json({ error: { code: 'AUTH_FAILED', message: err.message } });
+  }
+});
+
+router.post('/:id/test', async (req, res) => {
+  const id = req.params.id;
+  let { apiKey, apiSecret, sandbox } = req.body;
+  const existing = await ExchangeKey.findOne({ where: { id, userId: req.user.id } });
+  if (!existing) return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Key not found' } });
+  const exchange = existing.exchange;
+  sandbox = sandbox !== undefined ? sandbox : existing.sandbox;
+  if (!apiKey || !apiSecret) {
+    apiKey = existing.apiKey;
+    try { apiSecret = decrypt(existing.apiSecretEnc); } catch (e) { }
+  }
+  if (!checkRateLimit(req.user.id, exchange)) {
+    return res.status(429).json({ error: { code: 'RATE_LIMIT', message: 'Too many tests, try later' } });
+  }
+  try {
+    const result = await performTest({ exchange, apiKey, apiSecret, sandbox });
+    const now = new Date().toISOString();
+    existing.meta = { ...(existing.meta || {}), lastTestAt: now, lastTestStatus: 'VALID', lastTestMessage: 'OK' };
+    await existing.save();
+    res.json({ ok: true, exchangeTime: result.exchangeTime });
+  } catch (err) {
+    const now = new Date().toISOString();
+    existing.meta = { ...(existing.meta || {}), lastTestAt: now, lastTestStatus: 'ERROR', lastTestMessage: err.message };
+    await existing.save();
     res.status(400).json({ error: { code: 'AUTH_FAILED', message: err.message } });
   }
 });

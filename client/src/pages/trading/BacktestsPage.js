@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import axios from 'axios';
+import api from '../../services/api';
 import './TradingStyles.css';
 
 const BacktestsPage = () => {
@@ -12,7 +12,7 @@ const BacktestsPage = () => {
   useEffect(() => {
     async function load() {
       try {
-        const res = await axios.get('/api/backtests');
+        const res = await api.get('/backtests');
         setBacktests(res.data.items || []);
       } catch (e) {
         console.error('Failed to load backtests', e);

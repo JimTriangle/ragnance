@@ -6,7 +6,8 @@ import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { TabView, TabPanel } from 'primereact/tabview';
-import axios from 'axios';
+import api from '../../services/api';
+
 
 const AllocationEditor = ({value, onChange}) => {
   const addRow = () => onChange([...value, {asset:'', percent:0}]);
@@ -40,7 +41,7 @@ const PairEditor = ({value, onChange, exchange}) => {
   const [results,setResults]=useState([]);
   useEffect(()=>{
     const t=setTimeout(()=>{
-      axios.get('/api/markets',{params:{exchange,query}}).then(res=>setResults(res.data.items));
+      api.get('/markets',{params:{exchange,query}}).then(res=>setResults(res.data.items));
     },300);
     return ()=>clearTimeout(t);
   },[query,exchange]);
@@ -93,24 +94,24 @@ const PortfolioDetailPage = () => {
 
   useEffect(()=>{
     if(!isNew){
-      axios.get(`/api/portfolios/${id}`).then(res=>{
+       api.get(`/portfolios/${id}`).then(res=>{
         setPortfolio(res);
         setAllocations(res.allocations||[]);
         setPairs(res.pairs||[]);
       });
-      axios.get(`/api/portfolios/${id}/balance`).then(res=>setBalance(res));
+      api.get(`/portfolios/${id}/balance`).then(res=>setBalance(res));
     }
   },[id,isNew]);
 
   const saveInfo = () => {
     if(isNew){
-      axios.post('/api/portfolios',portfolio).then(res=>navigate(`/trading/portfolios/${res.data.id}`));
+      api.post('/portfolios',portfolio).then(res=>navigate(`/trading/portfolios/${res.data.id}`));
     }else{
-      axios.put(`/api/portfolios/${id}`,portfolio).then(()=>navigate('/trading/portfolios'));
+      api.put(`/portfolios/${id}`,portfolio).then(()=>navigate('/trading/portfolios'));
     }
   };
-  const saveAlloc = () => axios.put(`/api/portfolios/${id}/allocations`,{allocations}).then(()=>{});
-  const savePairs = () => axios.put(`/api/portfolios/${id}/pairs`,{pairs}).then(()=>{});
+  const saveAlloc = () => api.put(`/portfolios/${id}/allocations`,{allocations}).then(()=>{});
+  const savePairs = () => api.put(`/portfolios/${id}/pairs`,{pairs}).then(()=>{});
 
   return (
     <div className="p-4 trading-page-container">

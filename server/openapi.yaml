@@ -1,0 +1,363 @@
+openapi: 3.0.3
+info:
+  title: Ragnance API
+  version: "1.0.0"
+  description: |
+    Endpoints pour gérer les connexions Exchanges (clés API) et leurs tests.
+servers:
+  - url: /api/v1
+tags:
+  - name: Exchanges
+    description: Gestion des clés API d'exchanges (Binance, Bybit, etc.)
+
+paths:
+  /exchanges:
+    get:
+      tags: [Exchanges]
+      summary: List exchange keys
+      operationId: listExchangeKeys
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Array of exchange keys (secrets never returned)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ExchangeKey"
+    post:
+      tags: [Exchanges]
+      summary: Create exchange key
+      operationId: createExchangeKey
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExchangeKeyCreate"
+            examples:
+              example:
+                value:
+                  exchange: binance
+                  label: "Binance perso"
+                  apiKey: "AKXXXXXXXXXXXXXXXX"
+                  secret: "SKYYYYYYYYYYYYYYYY"
+                  sandbox: true
+      responses:
+        "201":
+          description: Exchange key created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeKey"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /exchanges/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    get:
+      tags: [Exchanges]
+      summary: Get exchange key
+      operationId: getExchangeKey
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Exchange key (no secret)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeKey"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Exchanges]
+      summary: Update exchange key (label/sandbox, pas le secret)
+      operationId: updateExchangeKey
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExchangeKeyUpdate"
+            examples:
+              example:
+                value:
+                  label: "Binance perso (prod)"
+                  sandbox: false
+      responses:
+        "200":
+          description: Updated exchange key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeKey"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Exchanges]
+      summary: Delete exchange key
+      operationId: deleteExchangeKey
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: boolean
+                    example: true
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /exchanges/test:
+    post:
+      tags: [Exchanges]
+      summary: Test exchange key before saving
+      operationId: testExchangeKeyTransient
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExchangeTestRequest"
+            examples:
+              example:
+                value:
+                  exchange: binance
+                  apiKey: "AKXXXXXXXXXXXXXXXX"
+                  secret: "SKYYYYYYYYYYYYYYYY"
+                  sandbox: true
+      responses:
+        "200":
+          description: Test result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeTestResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /exchanges/{id}/test:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    post:
+      tags: [Exchanges]
+      summary: Test existing exchange key
+      operationId: testExchangeKeyStored
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Test result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeTestResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /exchanges/{id}/rotate-secret:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    post:
+      tags: [Exchanges]
+      summary: Rotate exchange secret
+      operationId: rotateExchangeSecret
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RotateSecretRequest"
+            examples:
+              example:
+                value:
+                  secret: "SK-NEW-SECRET-XXXXXXXX"
+      responses:
+        "200":
+          description: Secret rotated, returns updated key (no secret)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeKey"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdParam:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+      description: Exchange key id (UUID)
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            example:
+              value:
+                code: "VALIDATION_ERROR"
+                message: "exchange is required"
+                details:
+                  - path: "exchange"
+                    message: "Required"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            example:
+              value:
+                code: "NOT_FOUND"
+                message: "Key not found"
+
+  schemas:
+    ExchangeKey:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "3a9f6f9e-1d8e-4d0a-9a3e-4c9b9b3d5a23"
+        exchange:
+          type: string
+          example: "binance"
+        label:
+          type: string
+          example: "Binance perso"
+        sandbox:
+          type: boolean
+          example: true
+        lastTestStatus:
+          type: string
+          enum: [VALID, INVALID, UNKNOWN]
+          example: VALID
+        lastTestAt:
+          type: string
+          format: date-time
+          example: "2025-08-10T12:34:56Z"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ExchangeKeyCreate:
+      type: object
+      required: [exchange, apiKey, secret]
+      properties:
+        exchange:
+          type: string
+          example: "binance"
+        label:
+          type: string
+          example: "Binance perso"
+        apiKey:
+          type: string
+          description: "Write-only"
+        secret:
+          type: string
+          description: "Write-only"
+        sandbox:
+          type: boolean
+          default: false
+
+    ExchangeKeyUpdate:
+      type: object
+      properties:
+        label:
+          type: string
+        sandbox:
+          type: boolean
+
+    RotateSecretRequest:
+      type: object
+      required: [secret]
+      properties:
+        secret:
+          type: string
+          description: New secret to store (write-only)
+
+    ExchangeTestRequest:
+      type: object
+      required: [exchange, apiKey, secret]
+      properties:
+        exchange:
+          type: string
+          example: "binance"
+        apiKey:
+          type: string
+        secret:
+          type: string
+        sandbox:
+          type: boolean
+          default: false
+
+    ExchangeTestResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [VALID, INVALID]
+          example: VALID
+        message:
+          type: string
+          example: "loadMarkets ok"
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: "EXCHANGE_TEST_FAILED"
+        message:
+          type: string
+          example: "Failed to validate API key"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              message:
+                type: string

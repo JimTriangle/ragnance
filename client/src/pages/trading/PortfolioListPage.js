@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import axios from 'axios';
+import api from '../../services/api';
 import './TradingStyles.css';
 
 const PortfolioListPage = () => {
@@ -11,13 +11,13 @@ const PortfolioListPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('/api/portfolios').then(res => setItems(res.data.items));
+     api.get('/portfolios').then(res => setItems(res.data.items));
   }, []);
 
   const budgetBody = row => row.budget.toFixed(2);
 
   const deletePortfolio = id => {
-    axios.delete(`/api/portfolios/${id}`).then(() => {
+    api.delete(`/portfolios/${id}`).then(() => {
       setItems(items.filter(i => i.id !== id));
     });
   };

@@ -64,7 +64,22 @@ const ExchangesPage = () => {
 
   return (
     <div className="p-4 trading-page-container">
-      <h1 className="text-2xl font-bold mb-4">Connexions Exchanges</h1>
+      <h1 className="text-2xl font-bold mb-4">Clés API (Exchanges)</h1>
+      <div className="mb-4 p-3 border-round surface-50">
+        <h2 className="text-xl mb-2">Comment connecter un exchange ?</h2>
+        <ol className="ml-4 list-decimal">
+          <li>Créez une clé API depuis le site de votre exchange.</li>
+          <li>Activez le mode sandbox/testnet si disponible.</li>
+          <li>Copiez la clé et le secret générés.</li>
+          <li>Cliquez sur "Nouvelle clé" puis collez vos identifiants.</li>
+          <li>Testez la connexion avant d'enregistrer.</li>
+        </ol>
+        <p className="mt-2">
+          <a href="https://www.binance.com/en/my/settings/api-management" target="_blank" rel="noreferrer" className="underline">
+            Guide Binance
+          </a>
+        </p>
+      </div>
       <Card>
         {editing ? (
           <ExchangeKeyForm initialData={editing} onSave={handleSave} onCancel={handleCancel} />

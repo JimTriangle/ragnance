@@ -1,5 +1,8 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
+const swaggerUi = require('swagger-ui-express');
+const yaml = require('yamljs');
 
 const cors =require('cors');
 const sequelize = require('./config/database');
@@ -72,6 +75,9 @@ app.use('/api/backtests', require('./routes/backtest.routes'));
 app.use('/api', require('./routes/strategy.routes'));
 app.use('/api', require('./routes/strategies.routes'));
 app.use('/api/bot', require('./routes/bot.routes'));
+
+const openapiDocument = yaml.load(path.join(__dirname, 'openapi.yaml'));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
 
 app.listen(PORT, () => {
   console.log(`Serveur Ragnance démarré sur http://localhost:${PORT}`);

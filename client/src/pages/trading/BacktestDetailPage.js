@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../services/api';
 import './TradingStyles.css';
 
 const BacktestDetailPage = () => {
@@ -12,11 +12,11 @@ const BacktestDetailPage = () => {
   useEffect(() => {
     async function load() {
       try {
-        const s = await axios.get(`/api/backtests/${id}`);
+        const s = await api.get(`/backtests/${id}`);
         setSummary(s.data);
-        const eq = await axios.get(`/api/backtests/${id}/equity`);
+        const eq = await api.get(`/backtests/${id}/equity`);
         setEquity(eq.data.points || []);
-        const tr = await axios.get(`/api/backtests/${id}/trades`);
+        const tr = await api.get(`/backtests/${id}/trades`);
         setTrades(tr.data.items || []);
       } catch (e) {
         console.error('Failed to load backtest', e);

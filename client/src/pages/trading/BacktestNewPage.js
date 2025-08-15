@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../services/api';
 import './TradingStyles.css';
 
 const BacktestNewPage = () => {
@@ -32,7 +32,7 @@ const BacktestNewPage = () => {
         rules: { allowShort: false, orderType: 'market', limitOffsetBps: 0, maxConcurrentPositions: 1 },
         split: { enabled: false, ratio: 0.8 }
       };
-      const res = await axios.post('/api/backtests', body);
+      const res = await api.post('/backtests', body);
       navigate(`/trading/backtests/${res.data.id}`);
     } catch (err) {
       console.error('Failed to create backtest', err);

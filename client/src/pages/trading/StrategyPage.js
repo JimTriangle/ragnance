@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card } from 'primereact/card';
 
-import axios from 'axios';
+import api from '../../services/api';
 import './TradingStyles.css';
 
 const sampleDSL = {
@@ -38,7 +38,7 @@ const StrategyPage = () => {
   const [signals, setSignals] = useState([]);
   const handlePreview = async () => {
     try {
-      const res = await axios.post('/api/strategies/preview', {
+      const res = await api.post('/strategies/preview', {
         kind: 'RULES_ENGINE',
         params: JSON.parse(dsl),
         ohlcv: []
