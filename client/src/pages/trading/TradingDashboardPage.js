@@ -1,61 +1,81 @@
-import React from 'react';
-import { Card } from 'primereact/card';
-import { Chart } from 'primereact/chart';
-import ComingSoonOverlay from '../../components/ComingSoonOverlay';
+import React, { useEffect, useState } from 'react';
+import FiltersBar from '../../components/trading/FiltersBar';
+import KpiCard from '../../components/trading/KpiCard';
+import EquityChart from '../../components/trading/EquityChart';
+import PnlDailyChart from '../../components/trading/PnlDailyChart';
+import SummaryTable from '../../components/trading/SummaryTable';
 import './TradingStyles.css';
 
 const TradingDashboardPage = () => {
-    const performanceData = {
-        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-        datasets: [
-            {
-                label: 'Balance',
-                data: [100, 105, 102, 110, 108, 115, 120],
-                fill: true,
-                backgroundColor: 'rgba(46, 204, 113, 0.2)',
-                borderColor: '#2ECC71',
-                tension: 0.4
-            }
-        ]
+    const today = new Date();
+    const defaultFrom = new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000);
+    const [filters, setFilters] = useState({
+        from: defaultFrom.toISOString().slice(0, 10),
+        to: today.toISOString().slice(0, 10),
+        exchange: ''
+    });
+    const [summary, setSummary] = useState(null);
+    const [equity, setEquity] = useState([]);
+    const [pnlDaily, setPnlDaily] = useState([]);
+
+    const fetchData = () => {
+        const params = new URLSearchParams({
+            from: new Date(filters.from).toISOString(),
+            to: new Date(filters.to).toISOString(),
+            exchange: filters.exchange || ''
+        }).toString();
+
+        fetch(`/api/dashboard/summary?${params}`)
+            .then(res => res.json())
+            .then(setSummary);
+        fetch(`/api/dashboard/equity-curve?${params}`)
+            .then(res => res.json())
+            .then(data => setEquity(data.points));
+        fetch(`/api/dashboard/pnl-daily?${params}`)
+            .then(res => res.json())
+            .then(data => setPnlDaily(data.days));
     };
 
-    const performanceOptions = {
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            x: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-            y: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+    useEffect(() => {
+        fetchData();
+    }, [filters]);
+
+    useEffect(() => {
+        if (summary && summary.robots.some(r => r.status === 'RUNNING')) {
+            const id = setInterval(fetchData, 15000);
+            return () => clearInterval(id);
         }
-    };
+    }, [summary, filters]);
+
+    if (!summary) {
+        return <div className="p-4 trading-page-container">Loading...</div>;
+    }
 
     return (
         <div className="p-4 trading-page-container">
             <h1 className="text-2xl font-bold mb-4">Dashboard Trading</h1>
+            <FiltersBar filters={filters} onChange={setFilters} />
             <div className="grid">
-                <div className="col-12 lg:col-8">
-                    <Card title="Performance du Portefeuille" className="h-full">
-                        <div style={{ position: 'relative', height: '300px' }}>
-                            <Chart type="line" data={performanceData} options={performanceOptions} />
-                        </div>
-                    </Card>
+                <div className="col-12 md:col-4">
+                    <KpiCard label="Equity" value={`${summary.equity.current.toFixed(2)} ${summary.currency}`} />
                 </div>
-                <div className="col-12 lg:col-4">
-                    <Card title="Indicateurs" className="h-full">
-                        <div className="flex flex-column gap-2">
-                            <div>Balance : 0 €</div>
-                            <div>PnL : 0 €</div>
-                            <div>Trades : 0</div>
-                        </div>
-                    </Card>
+                <div className="col-12 md:col-4">
+                    <KpiCard label="PnL Jour" value={summary.pnl.day.toFixed(2)} />
                 </div>
-                <div className="col-12 mt-4">
-                    <Card title="Activité Récente" className="relative">
-                        <ComingSoonOverlay />
-                        <p className="placeholder-text">
-                            Historique des opérations et performances détaillées à venir.
-                        </p>
-                    </Card>
+                <div className="col-12 md:col-4">
+                    <KpiCard label="Trades" value={summary.tradesCount} />
                 </div>
+            </div>
+            <div className="grid mt-4">
+                <div className="col-12 lg:col-6">
+                    <EquityChart points={equity} />
+                </div>
+                <div className="col-12 lg:col-6">
+                    <PnlDailyChart days={pnlDaily} />
+                </div>
+            </div>
+            <div className="mt-4">
+                <SummaryTable robots={summary.robots} backtests={summary.backtests} />
             </div>
         </div>
     );

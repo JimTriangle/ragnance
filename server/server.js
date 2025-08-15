@@ -49,6 +49,7 @@ app.use('/api/categories', require('./routes/category.routes.js'));
 app.use('/api/budgets', require('./routes/budget.routes.js'));
 app.use('/api/project-budgets', require('./routes/ProjectBudget.routes.js'));
 app.use('/api/analysis', require('./routes/analysis.routes.js'));
+app.use('/api/dashboard', require('./routes/dashboard.routes.js'));
 
 app.listen(PORT, () => {
   console.log(`Serveur Ragnance démarré sur http://localhost:${PORT}`);
