@@ -71,6 +71,8 @@ app.use('/api/exchanges', require('./routes/exchange.routes'));
 app.use('/api/backtests', require('./routes/backtest.routes'));
 app.use('/api', require('./routes/strategy.routes'));
 app.use('/api', require('./routes/strategies.routes'));
+app.use('/api/bot', require('./routes/bot.routes'));
+
 app.listen(PORT, () => {
   console.log(`Serveur Ragnance démarré sur http://localhost:${PORT}`);
 });
