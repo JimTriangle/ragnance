@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { Button } from 'primereact/button';
 import FiltersBar from '../../components/trading/FiltersBar';
 import KpiCard from '../../components/trading/KpiCard';
 import EquityChart from '../../components/trading/EquityChart';
@@ -7,24 +8,24 @@ import SummaryTable from '../../components/trading/SummaryTable';
 import './TradingStyles.css';
 
 const TradingDashboardPage = () => {
-    const today = new Date();
-    const defaultFrom = new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000);
-    const [filters, setFilters] = useState({
-        from: defaultFrom.toISOString().slice(0, 10),
-        to: today.toISOString().slice(0, 10),
-        exchange: ''
-    });
-    const [summary, setSummary] = useState(null);
-    const [equity, setEquity] = useState([]);
-    const [pnlDaily, setPnlDaily] = useState([]);
-
+  const today = new Date();
+  const defaultFrom = new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000);
+  const [filters, setFilters] = useState({
+    from: defaultFrom.toISOString().slice(0, 10),
+    to: today.toISOString().slice(0, 10),
+    exchange: ''
+  });
+  const [summary, setSummary] = useState(null);
+  const [equity, setEquity] = useState([]);
+  const [pnlDaily, setPnlDaily] = useState([]);
+  const [lastUpdated, setLastUpdated] = useState(null);
   const fetchData = useCallback(() => {
     const params = new URLSearchParams({
       from: new Date(filters.from).toISOString(),
       to: new Date(filters.to).toISOString(),
       exchange: filters.exchange || ''
     }).toString();
- fetch(`/api/dashboard/summary?${params}`)
+    fetch(`/api/dashboard/summary?${params}`)
       .then(res => res.json())
       .then(setSummary);
     fetch(`/api/dashboard/equity-curve?${params}`)
@@ -33,6 +34,7 @@ const TradingDashboardPage = () => {
     fetch(`/api/dashboard/pnl-daily?${params}`)
       .then(res => res.json())
       .then(data => setPnlDaily(data.days));
+    setLastUpdated(new Date());
   }, [filters]);
 
   useEffect(() => {
@@ -52,7 +54,13 @@ const TradingDashboardPage = () => {
 
   return (
     <div className="p-4 trading-page-container">
-      <h1 className="text-2xl font-bold mb-4">Dashboard Trading</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Dashboard Trading</h1>
+        <Button icon="pi pi-refresh" label="Actualiser" onClick={fetchData} size="small" />
+      </div>
+      {lastUpdated && (
+        <p className="text-sm text-gray-500 mb-4">Dernière mise à jour : {lastUpdated.toLocaleString()}</p>
+      )}
       <FiltersBar filters={filters} onChange={setFilters} />
       <div className="grid">
         <div className="col-12 md:col-4">
