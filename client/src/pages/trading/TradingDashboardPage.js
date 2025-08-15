@@ -19,22 +19,48 @@ const TradingDashboardPage = () => {
   const [equity, setEquity] = useState([]);
   const [pnlDaily, setPnlDaily] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
-  const fetchData = useCallback(() => {
+  const [error, setError] = useState(null);
+
+  const fetchData = useCallback(async () => {
     const params = new URLSearchParams({
       from: new Date(filters.from).toISOString(),
       to: new Date(filters.to).toISOString(),
       exchange: filters.exchange || ''
     }).toString();
-    fetch(`/api/dashboard/summary?${params}`)
-      .then(res => res.json())
-      .then(setSummary);
-    fetch(`/api/dashboard/equity-curve?${params}`)
-      .then(res => res.json())
-      .then(data => setEquity(data.points));
-    fetch(`/api/dashboard/pnl-daily?${params}`)
-      .then(res => res.json())
-      .then(data => setPnlDaily(data.days));
-    setLastUpdated(new Date());
+   
+    try {
+      const resSummary = await fetch(`/api/dashboard/summary?${params}`);
+      if (!resSummary.ok) {
+        throw new Error(resSummary.status === 401 ? 'Unauthorized' : 'Failed to load summary');
+      }
+      const dataSummary = await resSummary.json();
+      setSummary(dataSummary);
+
+      const resEquity = await fetch(`/api/dashboard/equity-curve?${params}`);
+      if (resEquity.ok) {
+        const dataEquity = await resEquity.json();
+        setEquity(dataEquity.points || []);
+      } else {
+        setEquity([]);
+      }
+
+      const resPnl = await fetch(`/api/dashboard/pnl-daily?${params}`);
+      if (resPnl.ok) {
+        const dataPnl = await resPnl.json();
+        setPnlDaily(dataPnl.days || []);
+      } else {
+        setPnlDaily([]);
+      }
+
+      setLastUpdated(new Date());
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching dashboard data', err);
+      setError(err.message);
+      setSummary(null);
+      setEquity([]);
+      setPnlDaily([]);
+    }
   }, [filters]);
 
   useEffect(() => {
@@ -42,11 +68,15 @@ const TradingDashboardPage = () => {
   }, [fetchData]);
 
   useEffect(() => {
-    if (summary && summary.robots.some(r => r.status === 'RUNNING')) {
+    if (summary?.robots?.some(r => r.status === 'RUNNING')) {
       const id = setInterval(fetchData, 15000);
       return () => clearInterval(id);
     }
   }, [summary, fetchData]);
+
+   if (error) {
+    return <div className="p-4 trading-page-container">{error}</div>;
+  }
 
   if (!summary) {
     return <div className="p-4 trading-page-container">Loading...</div>;
@@ -64,13 +94,23 @@ const TradingDashboardPage = () => {
       <FiltersBar filters={filters} onChange={setFilters} />
       <div className="grid">
         <div className="col-12 md:col-4">
-          <KpiCard label="Equity" value={`${summary.equity.current.toFixed(2)} ${summary.currency}`} />
+          <KpiCard
+            label="Equity"
+            value={
+              summary?.equity?.current != null
+                ? `${summary.equity.current.toFixed(2)} ${summary.currency}`
+                : '-'
+            }
+          />
         </div>
         <div className="col-12 md:col-4">
-          <KpiCard label="PnL Jour" value={summary.pnl.day.toFixed(2)} />
+                    <KpiCard
+            label="PnL Jour"
+            value={summary?.pnl?.day != null ? summary.pnl.day.toFixed(2) : '-'}
+          />
         </div>
         <div className="col-12 md:col-4">
-          <KpiCard label="Trades" value={summary.tradesCount} />
+           <KpiCard label="Trades" value={summary?.tradesCount ?? '-'} />
         </div>
       </div>
       <div className="grid mt-4">
@@ -82,7 +122,7 @@ const TradingDashboardPage = () => {
         </div>
       </div>
       <div className="mt-4">
-        <SummaryTable robots={summary.robots} backtests={summary.backtests} />
+        <SummaryTable robots={summary?.robots || []} backtests={summary?.backtests || []} />
       </div>
     </div>
   );
