@@ -43,5 +43,3 @@ ExchangeKey.belongsTo(User, { foreignKey: { name: 'userId', allowNull: false }, 
 User.hasMany(ExchangeKey, { foreignKey: { name: 'userId', allowNull: false } });
 
 module.exports = ExchangeKey;
-
-module.exports = ExchangeKey;

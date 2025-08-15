@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import PrimeReact from 'primereact/api';
+import 'primereact/resources/themes/saga-blue/theme.css';
 
 export const ThemeContext = createContext();
 
