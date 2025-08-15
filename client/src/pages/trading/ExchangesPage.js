@@ -95,11 +95,21 @@ const ExchangesPage = () => {
           </a>
         </p>
       </div>
-      <Card>
+      <Card style={editing ? { width: '25rem', margin: '0 auto' } : undefined}>
         {editing ? (
-          <ExchangeKeyForm initialData={editing} onSave={handleSave} onCancel={handleCancel} />
+          <ExchangeKeyForm
+            initialData={editing}
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
         ) : (
-          <ExchangeKeyList items={items} onNew={handleNew} onEdit={handleEdit} onTest={handleTest} onDelete={handleDelete} />
+          <ExchangeKeyList
+            items={items}
+            onNew={handleNew}
+            onEdit={handleEdit}
+            onTest={handleTest}
+            onDelete={handleDelete}
+          />
         )}
       </Card>
       <ConfirmDialog visible={!!confirmDelete} onHide={() => setConfirmDelete(null)} onConfirm={confirmDeleteAction} message="Supprimer cette clé ?" />
