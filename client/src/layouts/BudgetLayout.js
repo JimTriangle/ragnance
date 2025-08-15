@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Button } from 'primereact/button';
 import { ConfirmDialog } from 'primereact/confirmdialog';
@@ -10,6 +10,7 @@ import TransactionForm from '../components/TransactionForm';
 // Le Header spécifique à la section Budget, avec TOUS ses liens
 const BudgetHeader = ({ onAddTransaction }) => {
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     return (
         <div className="main-header flex justify-content-between align-items-center p-3" style={{ background: '#242931', borderBottom: '1px solid #495057' }}>
             <div className="flex align-items-center flex-wrap">
@@ -24,6 +25,9 @@ const BudgetHeader = ({ onAddTransaction }) => {
             </div>
             <div className="flex align-items-center gap-2">
                 <Button label=" Ajouter une transaction" icon="pi pi-plus" className="add-transaction-button p-button-sm p-button-primary" onClick={onAddTransaction} />
+                {user?.tradingAccess && (
+                    <Button label="Trading" className="p-button-sm p-button-secondary" onClick={() => navigate('/trading')} />
+                )}
                 <ThemeToggle />
                 <UserInfo />
             </div>
@@ -58,7 +62,7 @@ const BudgetLayout = () => {
 
     useEffect(() => {
         const handleKeydown = (e) => {
-               if (e.key?.toLowerCase() === 'n' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+            if (e.key?.toLowerCase() === 'n' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
                 e.preventDefault();
                 openModal();
             }

@@ -1,5 +1,5 @@
-import React, { useContext }  from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Button } from 'primereact/button';
 import { ConfirmDialog } from 'primereact/confirmdialog';
@@ -7,6 +7,8 @@ import ThemeToggle from '../components/ThemeToggle';
 
 // Un exemple de Header pour la section Trading (à développer plus tard)
 const TradingHeader = () => {
+    const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     return (
         <div className="main-header flex justify-content-between align-items-center p-3" style={{ background: '#1a1d24', borderBottom: '1px solid #495057' }}>
             <div className="flex align-items-center flex-wrap">
@@ -18,6 +20,9 @@ const TradingHeader = () => {
                 <NavLink to="/trading/bot-activity" className="p-button p-button-text main-nav-link">Bot</NavLink>
             </div>
             <div className="flex align-items-center">
+                {user?.budgetAccess && (
+                    <Button label="Budget" className="p-button-sm p-button-secondary mr-2" onClick={() => navigate('/budget/dashboard')} />
+                )}
                 <ThemeToggle />
                 <UserInfo />
             </div>

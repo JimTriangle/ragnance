@@ -26,7 +26,7 @@ const ProfilePage = () => {
     };
     
     return (
-        <div className="p-4">
+        <div className="p-4 col-4">
             <Toast ref={toast} />
             <h1>Mon Profil</h1>
             <Card className="mt-4">
