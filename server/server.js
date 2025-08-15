@@ -13,6 +13,7 @@ require('./models/Budget.model');
 require('./models/ProjectBudget.model.js');
 require('./models/TransactionCategory.model');
 require('./models/ExchangeKey.model');
+require('./models/Strategy.model');
 
 const app = express();
 // On utilise la variable d'environnement pour le port
@@ -40,6 +41,11 @@ sequelize.sync({ force: false })
     } catch (e) {
       console.error('Seed exchange keys failed:', e.message);
     }
+    try {
+      await require('./seed/strategySeed')();
+    } catch (e) {
+      console.error('Seed strategies failed:', e.message);
+    }
   });
 
 app.use(cors({
@@ -63,7 +69,8 @@ app.use('/api/portfolios', require('./routes/portfolio.routes'));
 app.use('/api/markets', require('./routes/market.routes'));
 app.use('/api/exchanges', require('./routes/exchange.routes'));
 app.use('/api/backtests', require('./routes/backtest.routes'));
-
+app.use('/api', require('./routes/strategy.routes'));
+app.use('/api', require('./routes/strategies.routes'));
 app.listen(PORT, () => {
   console.log(`Serveur Ragnance démarré sur http://localhost:${PORT}`);
 });

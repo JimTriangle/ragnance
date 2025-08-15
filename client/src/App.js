@@ -29,7 +29,8 @@ import TradingDashboardPage from './pages/trading/TradingDashboardPage';
 import PortfolioListPage from './pages/trading/PortfolioListPage';
 import PortfolioDetailPage from './pages/trading/PortfolioDetailPage';
 import ExchangesPage from './pages/trading/ExchangesPage';
-import StrategyPage from './pages/trading/StrategyPage';
+import StrategyListPage from './pages/trading/StrategyListPage';
+import StrategyEditPage from './pages/trading/StrategyEditPage';
 import BacktestsPage from './pages/trading/BacktestsPage';
 import BacktestNewPage from './pages/trading/BacktestNewPage';
 import BacktestDetailPage from './pages/trading/BacktestDetailPage';
@@ -67,7 +68,9 @@ function App() {
                         <Route path="portfolios/new" element={<PortfolioDetailPage />} />
                         <Route path="portfolios/:id" element={<PortfolioDetailPage />} />
                         <Route path="exchanges" element={<ExchangesPage />} />
-                        <Route path="strategy" element={<StrategyPage />} />
+                        <Route path="strategies" element={<StrategyListPage />} />
+                        <Route path="strategies/new" element={<StrategyEditPage />} />
+                        <Route path="strategies/:id" element={<StrategyEditPage />} />
                         <Route path="backtests" element={<BacktestsPage />} />
                         <Route path="backtests/new" element={<BacktestNewPage />} />
                         <Route path="backtests/:id" element={<BacktestDetailPage />} />
