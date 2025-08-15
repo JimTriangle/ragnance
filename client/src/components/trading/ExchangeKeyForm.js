@@ -22,6 +22,7 @@ const ExchangeKeyForm = ({ initialData = {}, onSave, onCancel }) => {
   const [testOk, setTestOk] = useState(false);
   const [loadingTest, setLoadingTest] = useState(false);
   const [cooldown, setCooldown] = useState(false);
+  const [info, setInfo] = useState('');
   const [error, setError] = useState('');
   const [replaceSecret, setReplaceSecret] = useState(!initialData.id);
 
@@ -34,12 +35,17 @@ const ExchangeKeyForm = ({ initialData = {}, onSave, onCancel }) => {
     setLoadingTest(true);
     setCooldown(true);
     setError('');
+    setInfo('');
     try {
       await testExchangeKey({ ...form, id: initialData.id });
       setTestOk(true);
+      setInfo('Connexion réussie');
+      console.log('Test de connexion réussi');
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Test failed');
+      const msg = err.response?.data?.error?.message || 'Test failed';
+      setError(msg);
       setTestOk(false);
+      console.error('Test de connexion échoué:', msg);
     }
     setLoadingTest(false);
     setTimeout(() => setCooldown(false), 3000);
@@ -88,6 +94,7 @@ const ExchangeKeyForm = ({ initialData = {}, onSave, onCancel }) => {
         <InputSwitch id="sandbox" checked={form.sandbox} onChange={(e) => handleChange('sandbox', e.value)} />
       </div>
       {error && <small className="p-error" aria-live="polite">{error}</small>}
+      {info && !error && <small className="p-success" aria-live="polite">{info}</small>}
       <div className="flex mt-4">
         <Button label="Tester la connexion" onClick={handleTest} disabled={loadingTest || cooldown} className="mr-2" />
         <Button label="Enregistrer" onClick={() => onSave(form)} disabled={!canSave()} />

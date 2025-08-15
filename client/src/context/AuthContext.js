@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }) => {
           await api.get('/auth/verify', {
             headers: { Authorization: `Bearer ${storedToken}` }
           });
+        authenticateUser(storedToken);
         } catch (error) {
           logoutUser();
         }

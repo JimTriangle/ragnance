@@ -34,6 +34,7 @@ module.exports = (req, res, next) => {
     next();
   } catch (err) {
     // En cas d'erreur (token manquant, invalide...), on bloque la requête
-    res.status(401).json({ message: 'Accès refusé. Token invalide ou manquant.' });
+    console.error('Auth error:', err.message);
+    return res.status(401).json({ message: 'Accès refusé. Token invalide ou manquant.' });
   }
 };
