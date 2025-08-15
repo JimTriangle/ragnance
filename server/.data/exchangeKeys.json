@@ -1,0 +1,4 @@
+[
+  {"id": "ek_binance_1", "exchange": "BINANCE", "baseCurrency": "USDT"},
+  {"id": "ek_kraken_1", "exchange": "KRAKEN", "baseCurrency": "EUR"}
+]

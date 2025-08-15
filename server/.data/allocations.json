@@ -1,0 +1,6 @@
+{
+  "pf_1": [
+    {"asset": "BTC", "percent": 50},
+    {"asset": "ETH", "percent": 50}
+  ]
+}

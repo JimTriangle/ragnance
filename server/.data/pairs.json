@@ -1,0 +1,6 @@
+{
+  "pf_1": [
+    {"symbol": "BTC/USDT", "enabled": true},
+    {"symbol": "ETH/USDT", "enabled": true}
+  ]
+}
