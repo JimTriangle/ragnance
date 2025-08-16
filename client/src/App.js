@@ -77,6 +77,7 @@ function App() {
                         <Route path="backtests/:id" element={<BacktestDetailPage />} />
                         <Route path="bot-activity" element={<BotActivityPage />} />
                         <Route path="profile" element={<ProfilePage />} />
+                        <Route element={<AdminRoute />}><Route path="admin" element={<AdminPage />} /></Route>
                     </Route>
                 </Route>
 

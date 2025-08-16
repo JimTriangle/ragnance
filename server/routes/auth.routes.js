@@ -45,7 +45,7 @@ router.post('/login', async (req, res) => {
     if (!isPasswordCorrect) {
       return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
     }
-     const payload = {
+    const payload = {
       id: user.id,
       email: user.email,
       role: user.role,
@@ -57,6 +57,8 @@ router.post('/login', async (req, res) => {
       process.env.JWT_SECRET, // <-- ON UTILISE LA VARIABLE D'ENVIRONNEMENT
       { algorithm: 'HS256', expiresIn: '6h' }
     );
+    user.lastLogin = new Date();
+    await user.save();
     res.status(200).json({ authToken: authToken });
   } catch (error) {
     console.error("Erreur lors de la connexion:", error);
@@ -70,29 +72,29 @@ router.get('/verify', isAuth, (req, res) => {
 
 // ... (la route /change-password reste identique, mais avec le logging d'erreur)
 router.put('/change-password', isAuth, async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
-    const userId = req.user.id;
-    if (!currentPassword || !newPassword) {
-        return res.status(400).json({ message: "Veuillez fournir l'ancien et le nouveau mot de passe." });
+  const { currentPassword, newPassword } = req.body;
+  const userId = req.user.id;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: "Veuillez fournir l'ancien et le nouveau mot de passe." });
+  }
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé." });
     }
-    try {
-        const user = await User.findByPk(userId);
-        if (!user) {
-            return res.status(404).json({ message: "Utilisateur non trouvé." });
-        }
-        const isPasswordCorrect = await bcrypt.compare(currentPassword, user.password);
-        if (!isPasswordCorrect) {
-            return res.status(401).json({ message: "L'ancien mot de passe est incorrect." });
-        }
-        const salt = await bcrypt.genSalt(10);
-        const hashedNewPassword = await bcrypt.hash(newPassword, salt);
-        user.password = hashedNewPassword;
-        await user.save();
-        res.status(200).json({ message: "Mot de passe modifié avec succès." });
-    } catch (error) {
-        console.error("Erreur chg pwd:", error);
-        res.status(500).json({ message: "Erreur lors du changement de mot de passe." });
+    const isPasswordCorrect = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ message: "L'ancien mot de passe est incorrect." });
     }
+    const salt = await bcrypt.genSalt(10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedNewPassword;
+    await user.save();
+    res.status(200).json({ message: "Mot de passe modifié avec succès." });
+  } catch (error) {
+    console.error("Erreur chg pwd:", error);
+    res.status(500).json({ message: "Erreur lors du changement de mot de passe." });
+  }
 });
 
 module.exports = router;

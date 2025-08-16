@@ -29,6 +29,10 @@ const User = sequelize.define('User', {
   tradingAccess: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
+  },
+  lastLogin: {
+    type: DataTypes.DATE,
+    allowNull: true,
   }
   // Les champs 'createdAt' et 'updatedAt' sont ajoutés automatiquement
 });

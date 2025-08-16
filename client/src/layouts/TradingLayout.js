@@ -18,6 +18,7 @@ const TradingHeader = () => {
                 <NavLink to="/trading/strategies" className="p-button p-button-text main-nav-link">Stratégies</NavLink>
                 <NavLink to="/trading/backtests" className="p-button p-button-text main-nav-link">Backtests</NavLink>
                 <NavLink to="/trading/bot-activity" className="p-button p-button-text main-nav-link">Bot</NavLink>
+                {user?.role === 'admin' && <NavLink to="/trading/admin" className="p-button p-button-text p-button-danger ml-2 main-nav-link">Admin</NavLink>}
             </div>
             <div className="flex align-items-center">
                 {user?.budgetAccess && (

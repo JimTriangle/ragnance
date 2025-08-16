@@ -24,6 +24,8 @@ const AdminPage = () => {
     const [tables, setTables] = useState([]);
     const [selectedTable, setSelectedTable] = useState(null);
     const [tableSchema, setTableSchema] = useState(null);
+    const [newsletterSubject, setNewsletterSubject] = useState('');
+    const [newsletterMessage, setNewsletterMessage] = useState('');
     const roles = [{ label: 'Utilisateur', value: 'user' }, { label: 'Admin', value: 'admin' }];
 
     const fetchUsers = async () => {
@@ -105,6 +107,17 @@ const AdminPage = () => {
         }
     };
 
+    const sendNewsletter = async () => {
+        try {
+            await api.post('/admin/newsletter', { subject: newsletterSubject, message: newsletterMessage });
+            toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Newsletter envoyée' });
+            setNewsletterSubject('');
+            setNewsletterMessage('');
+        } catch (error) {
+            toast.current.show({ severity: 'error', summary: 'Erreur', detail: error.response?.data?.message || 'Échec' });
+        }
+    };
+
     const renderSqlResult = () => {
         if (!Array.isArray(sqlResult) || sqlResult.length === 0) return null;
         const columns = Object.keys(sqlResult[0]);
@@ -153,6 +166,7 @@ const AdminPage = () => {
                             <Column field="budgetAccess" header="Budget" sortable />
                             <Column field="tradingAccess" header="Trading" sortable />
                             <Column field="createdAt" header="Créé le" body={(rowData) => new Date(rowData.createdAt).toLocaleDateString('fr-FR')} sortable />
+                            <Column field="lastLogin" header="Dernière connexion" body={(rowData) => rowData.lastLogin ? new Date(rowData.lastLogin).toLocaleString('fr-FR') : ''} sortable />
                             <Column body={actionBodyTemplate} header="Actions" />
                         </DataTable>
                     </div>
@@ -192,7 +206,7 @@ const AdminPage = () => {
                                         ))}
                                     </ul>
                                 </div>
-                              )}
+                            )}
                         </div>
                         <div className="col-12 md:col-8">
                             <h2>Exécuter une requête</h2>
@@ -200,6 +214,20 @@ const AdminPage = () => {
                             <Button label="Exécuter" className="mt-2" onClick={executeSQL} />
                             {renderSqlResult()}
                         </div>
+                    </div>
+                </TabPanel>
+                <TabPanel header="Newsletter">
+                    <div className="card mt-4">
+                        <div className="field">
+                            <span className="p-float-label">
+                                <InputText id="subject" value={newsletterSubject} onChange={(e) => setNewsletterSubject(e.target.value)} className="w-full" />
+                                <label htmlFor="subject">Sujet</label>
+                            </span>
+                        </div>
+                        <div className="field mt-4">
+                            <InputTextarea value={newsletterMessage} rows={5} className="w-full" onChange={(e) => setNewsletterMessage(e.target.value)} />
+                        </div>
+                        <Button label="Envoyer" className="mt-2" onClick={sendNewsletter} />
                     </div>
                 </TabPanel>
             </TabView>

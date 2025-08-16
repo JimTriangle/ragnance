@@ -5,7 +5,7 @@ const isAuth = require('../middleware/isAuth');
 const isAdmin = require('../middleware/isAdmin');
 const User = require('../models/User.model');
 const sequelize = require('../config/database');
-
+const transporter = require('../utils/email');
 
 // GET /api/admin/users - Lister tous les utilisateurs (existant)
 router.get('/users', [isAuth, isAdmin], async (req, res) => {
@@ -95,6 +95,27 @@ router.post('/sql', [isAuth, isAdmin], async (req, res) => {
         res.status(200).json({ results });
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+});
+
+// --- ROUTE : Envoyer une newsletter à tous les utilisateurs ---
+router.post('/newsletter', [isAuth, isAdmin], async (req, res) => {
+    const { subject, message } = req.body;
+    if (!subject || !message) {
+        return res.status(400).json({ message: 'Sujet et message requis.' });
+    }
+    try {
+        const users = await User.findAll({ attributes: ['email'] });
+        const mails = users.map(u => transporter.sendMail({
+            from: process.env.SMTP_FROM,
+            to: u.email,
+            subject,
+            text: message,
+        }));
+        await Promise.all(mails);
+        res.status(200).json({ message: 'Newsletter envoyée.' });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de l'envoi de la newsletter" });
     }
 });
 
