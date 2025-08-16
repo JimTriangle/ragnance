@@ -79,6 +79,10 @@ app.use('/api/backtests', isAuth, hasTradingAccess, require('./routes/backtest.r
 app.use('/api', isAuth, hasTradingAccess, require('./routes/strategy.routes'));
 app.use('/api', isAuth, hasTradingAccess, require('./routes/strategies.routes'));
 app.use('/api/bot', isAuth, hasTradingAccess, require('./routes/bot.routes'));
+if (process.env.ADX_EMA_RSI_ENABLED === 'true') {
+  app.use('/api', isAuth, hasTradingAccess, require('./routes/strategyInstance.routes'));
+}
+
 
 const openapiDocument = yaml.load(path.join(__dirname, 'openapi.yaml'));
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));

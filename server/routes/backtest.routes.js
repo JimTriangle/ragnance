@@ -1,7 +1,23 @@
 const express = require('express');
-const { runBacktest, loadBacktest } = require('../services/backtest/runner');
+const { runBacktest, loadBacktest, listBacktests } = require('../services/backtest/runner');
 
 const router = express.Router();
+
+router.get('/', async (req, res) => {
+  try {
+    const arr = await listBacktests();
+    const items = arr.map(bt => ({
+      id: bt.id,
+      pair: bt.params && bt.params.pair,
+      timeframe: bt.params && bt.params.timeframe,
+      pnlPct: bt.kpis && bt.kpis.pnlPct,
+      createdAt: bt.createdAt
+    }));
+    res.json({ items });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 router.post('/', async (req, res) => {
   try {

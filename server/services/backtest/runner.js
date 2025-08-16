@@ -34,6 +34,10 @@ async function loadBacktest(id) {
   return arr.find(x => x.id === id) || null;
 }
 
+async function listBacktests() {
+  return await readJsonArray(DATA_PATH);
+}
+
 async function fetchAllOHLC(kc, pair, interval, from, to) {
   let since = Math.floor(from / 1000);
   const candles = [];
@@ -93,4 +97,4 @@ async function runBacktest(p) {
   return result;
 }
 
-module.exports = { runBacktest, loadBacktest };
+module.exports = { runBacktest, loadBacktest, listBacktests };
