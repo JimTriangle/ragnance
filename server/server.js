@@ -104,12 +104,12 @@ sequelize.sync({ force: false })
       console.error('Seed strategies failed:', e.message);
     }
   });
-/*
+
 app.use(cors({
   origin: allowedOrigins,
   credentials: true
 }));
-*/
+/*
 app.use((req, res, next) => {
 
   const origin = req.headers.origin;
@@ -129,7 +129,7 @@ app.use((req, res, next) => {
   next();
 
 });
-
+*/
 app.use(express.json()); 
 
 // ... (toutes les déclarations de routes)
