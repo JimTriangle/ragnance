@@ -1,0 +1,21 @@
+.log-panel {
+  font-family: monospace;
+  background: #111;
+  color: #fff;
+  padding: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.log-line { white-space: pre-wrap; }
+.badge {
+  background: #374151;
+  border-radius: 4px;
+  padding: 0 4px;
+  margin: 0 4px;
+}
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}

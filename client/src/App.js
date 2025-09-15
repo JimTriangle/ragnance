@@ -36,7 +36,7 @@ import BacktestsPage from './pages/trading/BacktestsPage';
 import BacktestNewPage from './pages/trading/BacktestNewPage';
 import BacktestDetailPage from './pages/trading/BacktestDetailPage';
 import BotActivityPage from './pages/trading/BotActivityPage';
-
+import BotsPage from './pages/trading/BotsPage';
 
 function App() {
     return (
@@ -80,7 +80,11 @@ function App() {
                         <Route element={<AdminRoute />}><Route path="admin" element={<AdminPage />} /></Route>
                     </Route>
                 </Route>
-
+                <Route path="/bots" element={<TradingRoute />}>
+                    <Route element={<TradingLayout />}>
+                        <Route index element={<BotsPage />} />
+                    </Route>
+                </Route>
                 {/* Si une URL ne correspond à rien, on renvoie vers l'accueil */}
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>

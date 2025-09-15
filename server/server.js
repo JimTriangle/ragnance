@@ -3,7 +3,7 @@ const express = require('express');
 const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const yaml = require('yamljs');
-
+const http = require('http');
 const cors =require('cors');
 const sequelize = require('./config/database');
 
@@ -25,8 +25,8 @@ const hasTradingAccess = require('./middleware/hasTradingAccess');
 const app = express();
 // On utilise la variable d'environnement pour le port
 const PORT = process.env.PORT || 5000;
-
-const allowedOrigins = ['http://ragnance.fr', 'https://ragnance.fr', 'https://www.ragnance.fr'];
+const { setupBotLogWebSocket } = require('./services/botLogs');
+const allowedOrigins = ['http://ragnance.fr', 'https://ragnance.fr', 'https://www.ragnance.fr','http://www.ragnance.fr'];
 if (process.env.NODE_ENV === 'development') {
   allowedOrigins.push('http://localhost:3000');
 }
@@ -59,6 +59,7 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true
 }));
+app.options('*', cors({ origin: allowedOrigins, credentials: true }));
 
 app.use(express.json()); 
 
@@ -79,6 +80,7 @@ app.use('/api/backtests', isAuth, hasTradingAccess, require('./routes/backtest.r
 app.use('/api', isAuth, hasTradingAccess, require('./routes/strategy.routes'));
 app.use('/api', isAuth, hasTradingAccess, require('./routes/strategies.routes'));
 app.use('/api/bot', isAuth, hasTradingAccess, require('./routes/bot.routes'));
+app.use('/api/bots', isAuth, hasTradingAccess, require('./routes/bots.routes'));
 if (process.env.ADX_EMA_RSI_ENABLED === 'true') {
   app.use('/api', isAuth, hasTradingAccess, require('./routes/strategyInstance.routes'));
 }
@@ -87,7 +89,10 @@ if (process.env.ADX_EMA_RSI_ENABLED === 'true') {
 const openapiDocument = yaml.load(path.join(__dirname, 'openapi.yaml'));
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+setupBotLogWebSocket(server);
+
+server.listen(PORT, () => {
   console.log(`Serveur Ragnance démarré sur http://localhost:${PORT}`);
 });
 
