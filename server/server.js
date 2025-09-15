@@ -109,27 +109,17 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true
 }));
-/*
+
 app.use((req, res, next) => {
-
-  const origin = req.headers.origin;
-
-  if (allowedOrigins.includes(origin)) {
-
-    res.setHeader('Access-Control-Allow-Origin', origin);
-
-  }
-
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-
+  res.setHeader("Access-Control-Allow-Origin", "https://ragnance.fr");
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
-
 });
-*/
+
 app.use(express.json()); 
 
 // ... (toutes les déclarations de routes)
