@@ -1,7 +1,7 @@
 import axios from "axios";
 
 
-const productionUrl = 'https://ragnance.fr/api'; 
+const productionUrl = 'https://www.ragnance.fr/api'; 
 
 const baseURL = process.env.NODE_ENV === 'development'
   ? 'http://localhost:5000/api'
