@@ -28,8 +28,53 @@ const hasBudgetAccess = require('./middleware/hasBudgetAccess');
 const hasTradingAccess = require('./middleware/hasTradingAccess');
 
 const app = express();
-// On utilise la variable d'environnement pour le port
-const PORT = process.env.PORT || 5000;
+const DEFAULT_PORT = 5000;
+
+const resolvePort = () => {
+  const candidates = [
+    { key: 'SERVER_PORT', value: process.env.SERVER_PORT },
+    { key: 'API_PORT', value: process.env.API_PORT },
+    { key: 'BACKEND_PORT', value: process.env.BACKEND_PORT },
+    { key: 'PORT', value: process.env.PORT }
+  ];
+
+  for (const { key, value } of candidates) {
+    if (value === undefined || value === null || value === '') {
+      continue;
+    }
+
+    const parsed = Number.parseInt(value, 10);
+
+    if (Number.isNaN(parsed)) {
+      console.warn(
+        `La valeur "${value}" fournie pour ${key} n'est pas un numéro de port valide. Utilisation du port par défaut ${DEFAULT_PORT}.`
+      );
+      return DEFAULT_PORT;
+    }
+
+    if (
+      key === 'PORT' &&
+      parsed === 3000 &&
+      process.env.NODE_ENV === 'development' &&
+      !process.env.SERVER_PORT &&
+      !process.env.API_PORT &&
+      !process.env.BACKEND_PORT
+    ) {
+      console.warn(
+        'La variable d\'environnement PORT=3000 correspond au port par défaut du client. ' +
+        `Utilisation du port par défaut ${DEFAULT_PORT} pour éviter les conflits. ` +
+        'Définissez SERVER_PORT (ou API_PORT/BACKEND_PORT) pour forcer un autre port.'
+      );
+      return DEFAULT_PORT;
+    }
+
+    return parsed;
+  }
+
+  return DEFAULT_PORT;
+};
+
+const PORT = resolvePort();
 const { setupBotLogWebSocket } = require('./services/botLogs.js');
 const allowedOrigins = ['http://ragnance.fr', 'https://ragnance.fr', 'https://www.ragnance.fr','http://www.ragnance.fr'];
 if (process.env.NODE_ENV === 'development') {
