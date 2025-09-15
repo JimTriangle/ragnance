@@ -9,7 +9,7 @@ const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const yaml = require('yamljs');
 const http = require('http');
-const cors =require('cors');
+const cors = require('cors');
 const sequelize = require('./config/database');
 
 // ... (tous les require des modèles)
@@ -76,8 +76,14 @@ const resolvePort = () => {
 
 const PORT = resolvePort();
 const { setupBotLogWebSocket } = require('./services/botLogs.js');
-const allowedOrigins = ['http://ragnance.fr', 'https://ragnance.fr', 'https://www.ragnance.fr','http://www.ragnance.fr'];
-if (process.env.NODE_ENV === 'development') {
+const defaultAllowedOrigins = ['https://ragnance.fr'];
+const envAllowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
+  : [];
+
+const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...envAllowedOrigins])];
+
+if (process.env.NODE_ENV === 'development' && !allowedOrigins.includes('http://localhost:3000')) {
   allowedOrigins.push('http://localhost:3000');
 }
 
@@ -90,7 +96,7 @@ sequelize.authenticate()
 // (ex: sequelize-cli) pour suivre et appliquer les changements de schéma
 // de manière contrôlée et sécurisée sans risquer de perdre des données.
 sequelize.sync({ force: false })
-   .then(async () => {
+  .then(async () => {
     console.log('Tables de la BDD synchronisées.');
     // seed minimal pour les clés d\'exchange
     try {
@@ -106,10 +112,17 @@ sequelize.sync({ force: false })
   });
 
 app.use(cors({
-  origin: allowedOrigins,
+    origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, origin || true);
+    }
+
+    console.warn(`Requête CORS refusée pour l'origine "${origin}".`);
+    return callback(null, false);
+  },
   credentials: true
 }));
-
+/*
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "https://ragnance.fr");
   res.setHeader("Vary", "Origin");
@@ -119,8 +132,8 @@ app.use((req, res, next) => {
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
-
-app.use(express.json()); 
+*/
+app.use(express.json());
 
 // ... (toutes les déclarations de routes)
 app.use('/api/auth', require('./routes/auth.routes'));
