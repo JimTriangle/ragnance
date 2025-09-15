@@ -5,6 +5,11 @@ router.get('/', (req, res) => {
   res.json(getBots());
 });
 
+router.get('/:id/logs', (req, res) => {
+  const { id } = req.params;
+  res.json(getLogs(id));
+});
+
 router.get('/:id/logs/stream', (req, res) => {
   const { id } = req.params;
   res.setHeader('Content-Type', 'text/event-stream');

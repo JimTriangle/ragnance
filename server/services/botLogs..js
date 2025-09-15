@@ -95,4 +95,10 @@ function setupBotLogWebSocket(server) {
   });
 }
 
-module.exports = { getBots, getLogs, subscribe, setupBotLogWebSocket };
+module.exports = {
+  getBots,
+  getLogs,
+  subscribe,
+  setupBotLogWebSocket,
+  addLog,
+};
