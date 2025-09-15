@@ -1,5 +1,6 @@
 const router = require('express').Router();
-const { getBots, getLogs, subscribe } = require('../services/botLogs');
+const { getBots, getLogs, subscribe } = require('../services/botLogs.js');
+
 
 router.get('/', (req, res) => {
   res.json(getBots());

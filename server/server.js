@@ -30,7 +30,7 @@ const hasTradingAccess = require('./middleware/hasTradingAccess');
 const app = express();
 // On utilise la variable d'environnement pour le port
 const PORT = process.env.PORT || 5000;
-const { setupBotLogWebSocket } = require('./services/botLogs');
+const { setupBotLogWebSocket } = require('./services/botLogs.js');
 const allowedOrigins = ['http://ragnance.fr', 'https://ragnance.fr', 'https://www.ragnance.fr','http://www.ragnance.fr'];
 if (process.env.NODE_ENV === 'development') {
   allowedOrigins.push('http://localhost:3000');
