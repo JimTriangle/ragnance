@@ -1,4 +1,9 @@
 require('dotenv').config();
+
+// Définir un environnement par défaut uniquement s'il n'est pas déjà précisé
+// afin de permettre le démarrage du serveur en mode production lorsque
+// NODE_ENV=production est fourni en dehors de ce script.
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 const express = require('express');
 const path = require('path');
 const swaggerUi = require('swagger-ui-express');
