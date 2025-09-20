@@ -1,4 +1,14 @@
-require('dotenv').config();
+try {
+  require('dotenv').config();
+} catch (error) {
+  if (error?.code === 'MODULE_NOT_FOUND') {
+    console.warn(
+      "Module 'dotenv' introuvable. Les variables d'environnement doivent être fournies par le système."
+    );
+  } else {
+    throw error;
+  }
+}
 
 // Définir un environnement par défaut uniquement s'il n'est pas déjà précisé
 // afin de permettre le démarrage du serveur en mode production lorsque
