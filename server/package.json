@@ -4,7 +4,8 @@
   "description": "Backend pour l'application Ragnance",
   "main": "server.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=development node server.js",
+    "dev": "cross-env NODE_ENV=development nodemon server.js",
+    "start": "cross-env NODE_ENV=production node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "add-url-column": "node addUrlColumnToShoppingItems.js",
     "migrate": "npx sequelize-cli db:migrate",
