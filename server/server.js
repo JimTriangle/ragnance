@@ -1,4 +1,4 @@
-try {
+/*try {
   require('dotenv').config();
 } catch (error) {
   if (error?.code === 'MODULE_NOT_FOUND') {
@@ -8,7 +8,7 @@ try {
   } else {
     throw error;
   }
-}
+}*/
 
 // Définir un environnement par défaut uniquement s'il n'est pas déjà précisé
 // afin de permettre le démarrage du serveur en mode production lorsque
