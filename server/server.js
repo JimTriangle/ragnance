@@ -1,6 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
 // Définir un environnement par défaut uniquement s'il n'est pas déjà précisé
 // afin de permettre le démarrage du serveur en mode production lorsque
 // NODE_ENV=production est fourni en dehors de ce script.
