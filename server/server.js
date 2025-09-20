@@ -77,7 +77,7 @@ const resolvePort = () => {
 
 const PORT = resolvePort();
 const { setupBotLogWebSocket } = require('./services/botLogs.js');
-const defaultAllowedOrigins = ['https://ragnance.fr'];
+const defaultAllowedOrigins = ['https://ragnance.fr', 'https://www.ragnance.fr'];
 const envAllowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
   : [];
