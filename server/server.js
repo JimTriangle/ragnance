@@ -26,6 +26,9 @@ const hasBudgetAccess = require('./middleware/hasBudgetAccess');
 const hasTradingAccess = require('./middleware/hasTradingAccess');
 
 const app = express();
+app.set('trust proxy', 1); // important derrière Nginx
+app.disable('x-powered-by');
+
 const DEFAULT_PORT = 5000;
 
 const resolvePort = () => {
@@ -109,28 +112,14 @@ sequelize.sync({ force: false })
     }
   });
 
-app.use(cors({
-    origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, origin || true);
-    }
+// CORS géré par Nginx en production.
+// Laisse actif en dev si tu veux.
+if (process.env.NODE_ENV !== 'production') {
+  const cors = require('cors');
+  app.use(cors({ origin: true, credentials: true }));
+}
 
-    console.warn(`Requête CORS refusée pour l'origine "${origin}".`);
-    return callback(null, false);
-  },
-  credentials: true
-}));
-/*
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "https://ragnance.fr");
-  res.setHeader("Vary", "Origin");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
-  if (req.method === "OPTIONS") return res.sendStatus(204);
-  next();
-});
-*/
+
 app.use(express.json());
 
 // ... (toutes les déclarations de routes)
@@ -161,6 +150,20 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
 
 const server = http.createServer(app);
 setupBotLogWebSocket(server);
+
+// 404 propre pour /api (si aucune route ne match)
+app.use('/api', (req, res, next) => {
+  if (res.headersSent) return next();
+  res.status(404).json({ message: 'Not found' });
+});
+
+// Gestion d'erreurs globale (évite les crash donc les 502)
+app.use((err, req, res, next) => {
+  console.error('Unhandled error on', req.method, req.originalUrl, '\n', err);
+  if (res.headersSent) return;
+  res.status(500).json({ message: 'Internal server error' });
+});
+
 
 server.listen(PORT, () => {
   console.log(`Serveur Ragnance démarré sur http://localhost:${PORT}`);
