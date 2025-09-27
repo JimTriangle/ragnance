@@ -42,9 +42,6 @@ const LoginPage = () => {
       } else {
         navigate('/');
       }
-      // 3. On redirige vers la destination, ou vers le dashboard Budget par défaut
-      navigate(redirectTo || '/budget/dashboard');
-
     } catch (err) {
       setError(err.response?.data?.message || 'Une erreur est survenue.');
     }
