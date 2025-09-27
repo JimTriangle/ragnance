@@ -4,7 +4,7 @@ const isAuth = require('../middleware/isAuth');
 const Transaction = require('../models/Transaction.model');
 const Category = require('../models/Category.model');
 const { Op, fn, col } = require('sequelize');
-const sequelize = require('../config/database'); const sequelize = require('../config/database');
+const sequelize = require('../config/database'); 
 
 /**
  * [Conservé] Helper pour calculer le total des transactions récurrentes sur une période.
