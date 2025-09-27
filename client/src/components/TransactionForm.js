@@ -86,10 +86,18 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
       }
     }
 
+    const sanitizedCategoryIds = Array.isArray(selectedCategories)
+      ? Array.from(new Set(selectedCategories.filter(id => id !== null && id !== undefined))).map(id => Number(id)).filter(id => !Number.isNaN(id))
+      : [];
+
+    const normalizedProjectBudgetId = selectedProjectBudget === null || selectedProjectBudget === undefined
+      ? null
+      : Number(selectedProjectBudget);
+      
     const transactionData = {
       label, amount, type, transactionType,
-      categoryIds: selectedCategories,
-      ProjectBudgetId: selectedProjectBudget
+      categoryIds: sanitizedCategoryIds,
+      ProjectBudgetId: Number.isNaN(normalizedProjectBudgetId) ? null : normalizedProjectBudgetId
     };
 
 const formatDateForAPI = (d) => {

@@ -3,8 +3,8 @@ const router = express.Router();
 const isAuth = require('../middleware/isAuth');
 const Transaction = require('../models/Transaction.model');
 const Category = require('../models/Category.model');
-const ProjectBudget = require('../models/ProjectBudget.model');
 const { Op, fn, col } = require('sequelize');
+const sequelize = require('../config/database'); const sequelize = require('../config/database');
 
 /**
  * [Conservé] Helper pour calculer le total des transactions récurrentes sur une période.
@@ -326,6 +326,35 @@ router.get('/stats/expenses-by-day', isAuth, async (req, res) => {
     }
 });
 
+const sanitizeCategoryIds = async (categoryIds, userId, context = 'POST /transactions') => {
+    if (!Array.isArray(categoryIds) || categoryIds.length === 0) {
+        return [];
+    }
+
+    const normalizedIds = [...new Set(
+        categoryIds
+            .map(id => {
+                const parsed = Number.parseInt(id, 10);
+                return Number.isNaN(parsed) ? null : parsed;
+            })
+            .filter(id => id !== null)
+    )];
+
+    if (normalizedIds.length === 0) {
+        return [];
+    }
+
+    const categories = await Category.findAll({ where: { id: normalizedIds, UserId: userId } });
+    const validIds = categories.map(category => category.id);
+
+    if (validIds.length !== normalizedIds.length) {
+        const invalidIds = normalizedIds.filter(id => !validIds.includes(id));
+        console.warn(`${context}: catégories invalides ignorées pour l'utilisateur ${userId}: ${invalidIds.join(', ')}`);
+    }
+
+    return validIds;
+};
+
 router.get('/stats/expenses-by-category', isAuth, async (req, res) => {
     const userId = req.user.id;
     const today = new Date();
@@ -396,17 +425,23 @@ router.post('/', isAuth, async (req, res) => {
     }
 
     try {
-        const newTransaction = await Transaction.create({
-            label, amount, type, transactionType, frequency, dayOfMonth, dayOfWeek: processedDayOfWeek,
-            date: date || null,
-            startDate: processedStartDate,
-            endDate: endDate || null,
-            ProjectBudgetId: ProjectBudgetId || null,
-            UserId: req.user.id
+        let createdTransaction;
+        await sequelize.transaction(async (t) => {
+            const newTransaction = await Transaction.create({
+                label, amount, type, transactionType, frequency, dayOfMonth, dayOfWeek: processedDayOfWeek,
+                date: date || null,
+                startDate: processedStartDate,
+                endDate: endDate || null,
+                ProjectBudgetId: ProjectBudgetId || null,
+                UserId: req.user.id
+            }, { transaction: t });
+
+            const validCategoryIds = await sanitizeCategoryIds(categoryIds, req.user.id);
+            await newTransaction.setCategories(validCategoryIds, { transaction: t });
+
+            createdTransaction = await Transaction.findByPk(newTransaction.id, { include: [Category], transaction: t });
         });
-        if (categoryIds && categoryIds.length > 0) await newTransaction.setCategories(categoryIds);
-        const result = await Transaction.findByPk(newTransaction.id, { include: [Category] });
-        res.status(201).json(result);
+        return res.status(201).json(createdTransaction);
     } catch (error) {
         console.error("Erreur POST /transactions:", error);
         res.status(500).json({ message: "Erreur lors de la création." });
@@ -430,21 +465,40 @@ router.put('/:id', isAuth, async (req, res) => {
     }
 
     try {
-        const transaction = await Transaction.findOne({ where: { id: req.params.id, UserId: req.user.id } });
-        if (!transaction) return res.status(404).json({ message: "Transaction non trouvée." });
+        let updatedTransaction;
+        await sequelize.transaction(async (t) => {
+            const transaction = await Transaction.findOne({ where: { id: req.params.id, UserId: req.user.id }, transaction: t });
+            if (!transaction) {
+                const error = new Error('TRANSACTION_NOT_FOUND');
+                error.statusCode = 404;
+                throw error;
+            }
 
-        await transaction.update({
-            label, amount, type, transactionType, frequency, dayOfMonth, dayOfWeek: processedDayOfWeek,
-            date: date || null,
-            startDate: processedStartDate,
-            endDate: endDate || null,
-            ProjectBudgetId
+            await transaction.update({
+                label, amount, type, transactionType, frequency, dayOfMonth, dayOfWeek: processedDayOfWeek,
+                date: date || null,
+                startDate: processedStartDate,
+                endDate: endDate || null,
+                ProjectBudgetId
+            }, { transaction: t });
+
+            if (categoryIds !== undefined) {
+                const validCategoryIds = await sanitizeCategoryIds(categoryIds, req.user.id, 'PUT /transactions');
+                await transaction.setCategories(validCategoryIds, { transaction: t });
+            }
+
+            updatedTransaction = await Transaction.findByPk(req.params.id, { include: [Category], transaction: t });
         });
 
-        if (categoryIds) await transaction.setCategories(categoryIds);
-        const updatedTransaction = await Transaction.findByPk(req.params.id, { include: [Category] });
-        res.status(200).json(updatedTransaction);
+        if (!updatedTransaction) {
+            return res.status(404).json({ message: "Transaction non trouvée." });
+        }
+
+        return res.status(200).json(updatedTransaction);
     } catch (error) {
+        if (error?.statusCode === 404 || error?.message === 'TRANSACTION_NOT_FOUND') {
+            return res.status(404).json({ message: "Transaction non trouvée." });
+        }
         console.error("Erreur PUT /transactions:", error);
         res.status(500).json({ message: 'Erreur lors de la modification.' });
     }
