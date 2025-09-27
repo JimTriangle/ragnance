@@ -1,13 +1,19 @@
 import axios from "axios";
+const normalizeBaseUrl = (url) => url.replace(/\/+$/, '');
 
+const resolveProductionUrl = () => {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return `${normalizeBaseUrl(window.location.origin)}/api`;
+  }
 
-const productionUrl = 'https://www.ragnance.fr/api'; 
+  return 'https://ragnance.fr/api';
+};
 
 const baseURL = process.env.NODE_ENV === 'development'
-  ? 'http://localhost:5000/api/'
-  : productionUrl;
+  ? 'http://localhost:5000/api'
+  : resolveProductionUrl();
 const api = axios.create({
-  baseURL,
+  baseURL: normalizeBaseUrl(baseURL),
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });

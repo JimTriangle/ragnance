@@ -1,25 +1,41 @@
-# --- HTTP: redirection vers HTTPS ---
+# =========================
+#  RAGNANCE - NGINX CONF
+# =========================
+
+# ---------- http{} (dans nginx.conf OU au début du site si autorisé) ----------
+# Refléter l'Origin uniquement si autorisée
+map $http_origin $cors_origin {
+    default "";
+    "~^https://(www\.)?ragnance\.fr$" $http_origin;
+}
+
+# Gérer correctement l'upgrade (WebSocket, etc.)
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ""      close;
+}
+
+# ---------- HTTP -> HTTPS ----------
 server {
     listen 80;
     listen [::]:80;
     server_name ragnance.fr www.ragnance.fr;
-
-    return 301 https://ragnance.fr$request_uri;
+    return 301 https://$host$request_uri;
 }
 
-# --- HTTPS: site + API ---
+# ---------- HTTPS : SPA + API ----------
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
     server_name ragnance.fr www.ragnance.fr;
 
-    # --- SSL Certbot ---
-    ssl_certificate /etc/letsencrypt/live/ragnance.fr/fullchain.pem;
+    # SSL (Certbot)
+    ssl_certificate     /etc/letsencrypt/live/ragnance.fr/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/ragnance.fr/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
-    # --- Front (SPA) ---
+    # ----------- FRONT (SPA) -----------
     root /var/www/ragnance;
     index index.html;
 
@@ -27,11 +43,11 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # --- API sans slash (/api) ---
-    location = /api {
-        # Réponse pour les preflights (si jamais nécessaire)
+    # ----------- API (couvre /api ET /api/...) -----------
+    location ^~ /api {
+        # Preflight OPTIONS
         if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://ragnance.fr" always;
+            add_header Access-Control-Allow-Origin $cors_origin always;
             add_header Access-Control-Allow-Credentials "true" always;
             add_header Access-Control-Allow-Methods "GET,POST,PUT,PATCH,DELETE,OPTIONS" always;
             add_header Access-Control-Allow-Headers "Content-Type,Authorization,X-Requested-With" always;
@@ -39,34 +55,40 @@ server {
             return 204;
         }
 
-        proxy_pass http://127.0.0.1:5000;   # proxy direct sans strip de /api
+        # CORS : on masque ceux de l'upstream et on met les nôtres
+        proxy_hide_header Access-Control-Allow-Origin;
+        proxy_hide_header Access-Control-Allow-Credentials;
+        proxy_hide_header Access-Control-Expose-Headers;
+        proxy_hide_header Access-Control-Allow-Headers;
+        proxy_hide_header Access-Control-Allow-Methods;
+        proxy_hide_header Vary;
+
+        add_header Access-Control-Allow-Origin $cors_origin always;
+        add_header Access-Control-Allow-Credentials "true" always;
+        add_header Access-Control-Expose-Headers "Content-Length,Content-Range" always;
+        add_header Vary "Origin" always;
+
+        # Proxy (⚠️ pas de slash final -> on GARDE /api)
+        proxy_pass http://127.0.0.1:5000;
         proxy_http_version 1.1;
+
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
+        proxy_set_header Connection $connection_upgrade;
+
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
 
-    # --- API avec slash (/api/...) ---
-    location /api/ {
-        if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://ragnance.fr" always;
-            add_header Access-Control-Allow-Credentials "true" always;
-            add_header Access-Control-Allow-Methods "GET,POST,PUT,PATCH,DELETE,OPTIONS" always;
-            add_header Access-Control-Allow-Headers "Content-Type,Authorization,X-Requested-With" always;
-            add_header Vary "Origin" always;
-            return 204;
-        }
+        # Timeouts/proxy plus tolérants pour éviter 502 sur requêtes lourdes
+        proxy_connect_timeout   5s;
+        proxy_send_timeout     120s;
+        proxy_read_timeout     120s;
 
-        proxy_pass http://127.0.0.1:5000;   # garde le prefixe /api
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        # (Optionnel) si tu fais du SSE/stream, désactive le buffering
+        # proxy_buffering off;
+
+        # (Optionnel) retry sur erreurs transitoires
+        proxy_next_upstream error timeout http_502 http_503 http_504;
     }
 }

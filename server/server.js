@@ -7,7 +7,6 @@ const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const yaml = require('yamljs');
 const http = require('http');
-const cors = require('cors');
 const sequelize = require('./config/database');
 
 // ... (tous les require des modèles)
@@ -82,11 +81,32 @@ const envAllowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
   : [];
 
-const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...envAllowedOrigins])];
+const allowedOrigins = new Set([...defaultAllowedOrigins, ...envAllowedOrigins]);
 
-if (process.env.NODE_ENV === 'development' && !allowedOrigins.includes('http://localhost:3000')) {
-  allowedOrigins.push('http://localhost:3000');
-}
+const devRegexOrigins = [
+  /^http:\/\/localhost(?::\d+)?$/,
+  /^http:\/\/127\.0\.0\.1(?::\d+)?$/
+];
+
+const cors = require('cors');
+const buildCorsOptions = () => ({
+  origin(origin, callback) {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.has(origin) || devRegexOrigins.some(regex => regex.test(origin))) {
+      return callback(null, true);
+    }
+
+    const error = new Error(`Origin ${origin} non autorisé par la configuration CORS côté serveur.`);
+    return callback(error);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'Content-Range']
+});
 
 sequelize.authenticate()
   .then(() => console.log('Connexion à la base de données SQLite réussie.'))
@@ -113,12 +133,24 @@ sequelize.sync({ force: false })
   });
 
 // CORS géré par Nginx en production.
-// Laisse actif en dev si tu veux.
+// En développement, on calque les règles d'origine sur la configuration Nginx
+// pour éviter des divergences d'en-têtes entre les environnements.
 if (process.env.NODE_ENV !== 'production') {
-  const cors = require('cors');
-  app.use(cors({ origin: true, credentials: true }));
-}
+  const corsOptions = buildCorsOptions();
+  const corsMiddleware = cors(corsOptions);
 
+  app.use((req, res, next) => {
+    corsMiddleware(req, res, err => {
+      if (err) {
+        console.warn(`CORS rejeté en développement pour l'origine ${req.headers.origin || 'inconnue'} :`, err.message);
+        return res.status(403).json({ message: 'Origine non autorisée par le serveur de développement.' });
+      }
+      next();
+    });
+  });
+
+  app.options('*', cors(corsOptions));
+}
 
 app.use(express.json());
 
