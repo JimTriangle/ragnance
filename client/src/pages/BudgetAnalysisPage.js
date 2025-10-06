@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import api from '../services/api';
+import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import { Card } from 'primereact/card';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -27,20 +28,24 @@ const BudgetAnalysisPage = () => {
         }
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await api.get('/analysis/budget-history');
-                setData(response.data.analysis);
-                setSuggestions(response.data.suggestions);
-            } catch (error) {
-                showToast('error', 'Erreur', 'Impossible de charger les données d\'analyse');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await api.get('/analysis/budget-history');
+            setData(response.data.analysis);
+            setSuggestions(response.data.suggestions);
+        } catch (error) {
+            showToast('error', 'Erreur', 'Impossible de charger les données d\'analyse');
+        } finally {
+            setLoading(false);
+        }
     }, [showToast]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    useTransactionRefresh(fetchData);
 
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
@@ -66,7 +71,7 @@ const BudgetAnalysisPage = () => {
             ]
         };
     };
-    
+
     const differenceBodyTemplate = (rowData) => {
         const diff = rowData.budgeted - rowData.spent;
         const color = diff >= 0 ? 'var(--green-400)' : 'var(--red-400)';
@@ -85,16 +90,16 @@ const BudgetAnalysisPage = () => {
                     <div className="text-center mb-3">
                         <p className="text-sm text-gray-500">{suggestion.reason}</p>
                         <div className="flex justify-content-center align-items-center gap-3 mt-2">
-                             <Tag value={formatCurrency(suggestion.currentBudget)} />
-                             <i className="pi pi-arrow-right"></i>
-                             <Tag severity={suggestion.type === 'increase' ? 'warning' : 'info'} value={formatCurrency(suggestion.suggestedBudget)} />
+                            <Tag value={formatCurrency(suggestion.currentBudget)} />
+                            <i className="pi pi-arrow-right"></i>
+                            <Tag severity={suggestion.type === 'increase' ? 'warning' : 'info'} value={formatCurrency(suggestion.suggestedBudget)} />
                         </div>
                     </div>
-                    <Button 
-                        label="Gérer les budgets" 
-                        icon="pi pi-pencil" 
-                        className={`p-button-sm w-full ${color}`} 
-                        onClick={() => navigate('/budgets')} 
+                    <Button
+                        label="Gérer les budgets"
+                        icon="pi pi-pencil"
+                        className={`p-button-sm w-full ${color}`}
+                        onClick={() => navigate('/budgets')}
                     />
                 </Card>
             </div>
@@ -104,12 +109,12 @@ const BudgetAnalysisPage = () => {
     if (loading) {
         return (
             <div className="p-4">
-                 <Skeleton width="10rem" height="2rem" className="mb-4" />
-                 <div className="grid">
+                <Skeleton width="10rem" height="2rem" className="mb-4" />
+                <div className="grid">
                     <div className="col-12 lg:col-6 xl:col-4"><Skeleton height="15rem" /></div>
                     <div className="col-12 lg:col-6 xl:col-4"><Skeleton height="15rem" /></div>
-                 </div>
-                 <Skeleton height="20rem" className="mt-4" />
+                </div>
+                <Skeleton height="20rem" className="mt-4" />
             </div>
         )
     }
@@ -128,7 +133,7 @@ const BudgetAnalysisPage = () => {
             )}
 
             <div className="mt-4">
-                 <h2 className="text-xl mb-3">Historique par catégorie</h2>
+                <h2 className="text-xl mb-3">Historique par catégorie</h2>
                 {data.map(categoryData => (
                     <Card key={categoryData.info.id} title={categoryData.info.name} className="mb-4">
                         <div className="grid">
@@ -137,11 +142,11 @@ const BudgetAnalysisPage = () => {
                                     <Column body={monthBodyTemplate} header="Mois" />
                                     <Column field="budgeted" header="Budget" body={(rowData) => formatCurrency(rowData.budgeted)} />
                                     <Column field="spent" header="Dépensé" body={(rowData) => formatCurrency(rowData.spent)} />
-                                    <Column header="Différence" body={differenceBodyTemplate}/>
+                                    <Column header="Différence" body={differenceBodyTemplate} />
                                 </DataTable>
                             </div>
                             <div className="col-12 lg:col-6">
-                                 <Chart type="line" data={getChartData(categoryData.history)} options={chartOptions} />
+                                <Chart type="line" data={getChartData(categoryData.history)} options={chartOptions} />
                             </div>
                         </div>
                     </Card>

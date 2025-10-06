@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../services/api';
+import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -13,7 +14,7 @@ import { Tag } from 'primereact/tag';
 const CategoriesPage = () => {
     const [categories, setCategories] = useState([]);
     const [isDialogVisible, setIsDialogVisible] = useState(false);
-    
+
     // AJOUT : États pour gérer l'édition
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
@@ -24,12 +25,14 @@ const CategoriesPage = () => {
     const [isTracked, setIsTracked] = useState(false);
     const toast = useRef(null);
 
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         const response = await api.get('/categories');
         setCategories(response.data);
-    };
+    }, []);
 
-    useEffect(() => { fetchCategories(); }, []);
+    useEffect(() => { fetchCategories(); }, [fetchCategories]);
+
+    useTransactionRefresh(fetchCategories);
 
     const openNew = () => {
         setIsEditMode(false);
@@ -59,7 +62,7 @@ const CategoriesPage = () => {
     // MODIFIÉ : La sauvegarde gère la création ET la modification
     const saveCategory = async () => {
         if (!name) return;
-        
+
         const payload = { name, color: `#${color}`, isTrackedMonthly: isTracked };
 
         try {
@@ -114,7 +117,7 @@ const CategoriesPage = () => {
     };
 
     const nameBodyTemplate = (rowData) => <Tag value={rowData.name} style={{ background: rowData.color }} />;
-    
+
     const dialogFooter = (<div><Button label="Annuler" icon="pi pi-times" className="p-button-text" onClick={hideDialog} /><Button label="Sauvegarder" icon="pi pi-check" onClick={saveCategory} /></div>);
 
     // MODIFIÉ : Le titre du dialogue est maintenant dynamique
@@ -126,10 +129,10 @@ const CategoriesPage = () => {
             <h1>Gestion des Catégories</h1>
             <div className="card mt-4">
                 <Button label="Nouvelle Catégorie" icon="pi pi-plus" className="p-button-success mb-4" onClick={openNew} />
-                <DataTable value={categories}  dataKey="id" size="small" responsiveLayout="scroll">
-                     <Column field="name" header="Nom" body={nameBodyTemplate} sortable />
-                    <Column header="Suivi Mensuel" body={trackedBodyTemplate} style={{width: '10rem', textAlign: 'center'}} />
-                    <Column body={actionBodyTemplate} header="Actions" style={{width: '8rem', textAlign: 'center'}}/>
+                <DataTable value={categories} dataKey="id" size="small" responsiveLayout="scroll">
+                    <Column field="name" header="Nom" body={nameBodyTemplate} sortable />
+                    <Column header="Suivi Mensuel" body={trackedBodyTemplate} style={{ width: '10rem', textAlign: 'center' }} />
+                    <Column body={actionBodyTemplate} header="Actions" style={{ width: '8rem', textAlign: 'center' }} />
                 </DataTable>
             </div>
 

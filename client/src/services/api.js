@@ -39,12 +39,32 @@ const resolveProductionUrl = () => {
 const baseURL = process.env.NODE_ENV === 'development'
   ? 'http://localhost:5000/api'
   : resolveProductionUrl();
-  
+
 const api = axios.create({
   baseURL: normalizeBaseUrl(baseURL),
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });
+
+export const setAuthToken = (token) => {
+  if (token) {
+    api.defaults.headers.common.Authorization = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common.Authorization;
+  }
+};
+
+if (typeof window !== 'undefined') {
+  try {
+    const existingToken = window.localStorage?.getItem('authToken');
+    if (existingToken) {
+      setAuthToken(existingToken);
+    }
+  } catch (error) {
+    // localStorage peut ne pas être disponible (mode navigation privée strict, etc.)
+    console.warn('Impossible de lire le token dans le stockage local :', error);
+  }
+}
 
 api.interceptors.request.use(
   (config) => {

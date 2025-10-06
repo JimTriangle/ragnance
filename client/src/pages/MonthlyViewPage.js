@@ -12,6 +12,8 @@ import { Chart } from 'primereact/chart';
 import { InputText } from 'primereact/inputtext';
 import TransactionForm from '../components/TransactionForm';
 import { Dropdown } from 'primereact/dropdown';
+import useTransactionRefresh from '../hooks/useTransactionRefresh';
+
 
 const MonthlyViewPage = () => {
   const [transactions, setTransactions] = useState([]);
@@ -120,6 +122,8 @@ const MonthlyViewPage = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useTransactionRefresh(fetchData);
 
   useEffect(() => {
     api.get('/categories').then(response => setAllCategories(response.data));
@@ -276,7 +280,7 @@ const MonthlyViewPage = () => {
         </div>
 
         <div className="card mt-4">
-           <DataTable value={selectedCategoryId ? transactions.filter(t => t.Categories && t.Categories.some(c => c.id === selectedCategoryId)) : transactions} loading={loading} size="small" header={tableHeader} globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50]} pt={{ bodyCell: { style: { padding: '0.25rem 0.5rem' } } }}>
+          <DataTable value={selectedCategoryId ? transactions.filter(t => t.Categories && t.Categories.some(c => c.id === selectedCategoryId)) : transactions} loading={loading} size="small" header={tableHeader} globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50]} pt={{ bodyCell: { style: { padding: '0.25rem 0.5rem' } } }}>
             <Column field="label" header="Libellé" body={labelBodyTemplate} sortable />
             <Column field="amount" header="Montant" body={(rowData) => formatCurrency(rowData.amount)} sortable />
             <Column field="type" header="Type" body={typeTemplate} sortable />

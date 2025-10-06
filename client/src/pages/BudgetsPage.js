@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../services/api';
+import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import { ToastContext } from '../context/ToastContext';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
@@ -30,11 +31,13 @@ const BudgetsPage = () => {
         } catch (error) { console.error("Erreur fetch budgets", error); }
     }, [currentDate]);
 
-    useEffect(() => { 
-        fetchData(); 
+    useEffect(() => {
+        fetchData();
     }, [fetchData]);
 
-     useEffect(() => {
+    useTransactionRefresh(fetchData);
+
+    useEffect(() => {
         window.addEventListener('focus', fetchData);
         return () => {
             window.removeEventListener('focus', fetchData);
@@ -67,7 +70,7 @@ const BudgetsPage = () => {
             showToast('error', 'Erreur', 'Échec de la sauvegarde');
         }
     };
-    
+
     const changeMonth = (amount) => {
         setCurrentDate(prevDate => {
             const newDate = new Date(prevDate);
@@ -75,7 +78,7 @@ const BudgetsPage = () => {
             return newDate;
         });
     };
-    
+
     const budgetEditor = (rowData) => {
         return <InputNumber
             value={budgets[rowData.id] || null}

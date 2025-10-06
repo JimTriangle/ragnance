@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import api from '../services/api';
+import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
@@ -28,6 +29,8 @@ const ProjectBudgetsPage = () => {
     useEffect(() => {
         fetchBudgets();
     }, [fetchBudgets]);
+
+    useTransactionRefresh(fetchBudgets);
 
     const openNew = () => {
         setBudgetData({ id: null, name: '', totalAmount: null, dateRange: [] });

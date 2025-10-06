@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
+import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import { Card } from 'primereact/card';
 import { Calendar } from 'primereact/calendar';
 import { Button } from 'primereact/button';
@@ -48,6 +49,8 @@ const AnalysisPage = () => {
         fetchData();
     }, [fetchData]);
 
+    useTransactionRefresh(fetchData);
+    
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
     return (

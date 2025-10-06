@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { ToastContext } from '../context/ToastContext';
 import api from '../services/api';
+import useTransactionRefresh from '../hooks/useTransactionRefresh';
 
 // Imports PrimeReact
 import { Card } from 'primereact/card';
@@ -74,6 +75,13 @@ const DashboardPage = () => {
     useEffect(() => { fetchData(); }, [fetchData]);
     useEffect(() => { fetchLineChartData(chartPeriod); }, [chartPeriod, fetchLineChartData]);
 
+    const refreshAfterTransaction = useCallback(() => {
+        fetchData();
+        fetchLineChartData(chartPeriod);
+    }, [fetchData, fetchLineChartData, chartPeriod]);
+
+    useTransactionRefresh(refreshAfterTransaction);
+    
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
     return (
@@ -110,7 +118,7 @@ const DashboardPage = () => {
                 </div>
             </div>
             <div className="grid mt-4">
-                 <div className="col-12 lg:col-4">
+                <div className="col-12 lg:col-4">
                     <Card title="Suivi des Budgets Mensuels" className="h-full">
                         <BudgetTracker data={budgetProgressData} />
                     </Card>
