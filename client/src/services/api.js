@@ -43,15 +43,27 @@ const resolveProductionUrl = () => {
     if (window.location?.origin) {
       return `${normalizeBaseUrl(window.location.origin)}/api`;
     }
-     return '/api';
+    return '/api';
   }
 
-   return '/api';;
+  return '/api';;
 };
 
 const baseURL = process.env.NODE_ENV === 'development'
   ? 'http://localhost:5000/api'
   : resolveProductionUrl();
+
+const ensureRelativeUrl = (url) => {
+  if (!url || typeof url !== 'string') {
+    return url;
+  }
+
+  if (isAbsoluteUrl(url)) {
+    return url;
+  }
+
+  return url.replace(/^\/+/, '');
+};
 
 const api = axios.create({
   baseURL: normalizeBaseUrl(baseURL),
@@ -81,6 +93,10 @@ if (typeof window !== 'undefined') {
 
 api.interceptors.request.use(
   (config) => {
+    if (config.url) {
+      config.url = ensureRelativeUrl(config.url);
+    }
+
     // On récupère le token depuis le localStorage
     const token = localStorage.getItem('authToken');
 

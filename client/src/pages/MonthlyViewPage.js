@@ -148,6 +148,7 @@ const MonthlyViewPage = () => {
     showToast('success', 'Succès', 'Opération réussie');
     if (isEditModalVisible) setIsEditModalVisible(false);
     if (isNewModalVisible) setIsNewModalVisible(false); // On ferme aussi la nouvelle modale
+    notifyTransactionRefresh();
     fetchData();
   };
 
