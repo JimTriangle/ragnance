@@ -1,5 +1,6 @@
 import axios from "axios";
 const normalizeBaseUrl = (url) => url.replace(/\/+$/, '');
+const isAbsoluteUrl = (url) => /^https?:\/\//i.test(url);
 
 const getEnvApiUrl = () => {
   const candidates = [
@@ -20,7 +21,18 @@ const getEnvApiUrl = () => {
 const resolveProductionUrl = () => {
   const envUrl = getEnvApiUrl();
   if (envUrl) {
-    return envUrl;
+    if (isAbsoluteUrl(envUrl) || envUrl.startsWith('/')) {
+      return envUrl;
+    }
+
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      try {
+        const resolved = new URL(envUrl, window.location.origin);
+        return resolved.toString();
+      } catch (error) {
+        console.warn('URL API invalide dans la configuration, utilisation de la valeur par défaut /api :', error);
+      }
+    }
   }
 
   if (typeof window !== 'undefined') {
@@ -31,9 +43,10 @@ const resolveProductionUrl = () => {
     if (window.location?.origin) {
       return `${normalizeBaseUrl(window.location.origin)}/api`;
     }
+     return '/api';
   }
 
-  return 'https://www.ragnance.fr/api';
+   return '/api';;
 };
 
 const baseURL = process.env.NODE_ENV === 'development'

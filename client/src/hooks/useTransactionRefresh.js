@@ -7,8 +7,8 @@ import {
 
 const useTransactionRefresh = (onRefresh) => {
   const { lastRefresh } = useContext(TransactionRefreshContext);
-  const initialRenderRef = useRef(true);
   const lastHandledEventRef = useRef(null);
+  const lastSeenRefreshRef = useRef(lastRefresh);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof onRefresh !== 'function') {
@@ -18,12 +18,19 @@ const useTransactionRefresh = (onRefresh) => {
     const eventHandler = (event) => {
       if (event?.detail != null) {
         lastHandledEventRef.current = event.detail;
+        lastSeenRefreshRef.current = event.detail;
       }
       onRefresh();
     };
 
     const storageHandler = (event) => {
       if (event.key === TRANSACTION_REFRESH_STORAGE_KEY) {
+        if (event.newValue) {
+          const parsed = Number.parseInt(event.newValue, 10);
+          if (!Number.isNaN(parsed)) {
+            lastSeenRefreshRef.current = parsed;
+          }
+        }
         onRefresh();
       }
     };
@@ -42,8 +49,8 @@ const useTransactionRefresh = (onRefresh) => {
       return;
     }
 
-    if (initialRenderRef.current) {
-      initialRenderRef.current = false;
+    if (!lastRefresh) {
+      lastSeenRefreshRef.current = lastRefresh;
       return;
     }
 
@@ -52,6 +59,11 @@ const useTransactionRefresh = (onRefresh) => {
       return;
     }
 
+    if (lastSeenRefreshRef.current === lastRefresh) {
+      return;
+    }
+
+    lastSeenRefreshRef.current = lastRefresh;
     onRefresh();
   }, [lastRefresh, onRefresh]);
 };
