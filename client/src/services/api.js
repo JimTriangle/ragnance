@@ -1,4 +1,5 @@
 import axios from "axios";
+
 const normalizeBaseUrl = (url) => url.replace(/\/+$/, '');
 const isAbsoluteUrl = (url) => /^https?:\/\//i.test(url);
 
@@ -71,7 +72,23 @@ const api = axios.create({
   withCredentials: true,
 });
 
+let currentAuthToken = null;
+
+const readTokenFromStorage = () => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    return window.localStorage?.getItem('authToken') || null;
+  } catch (error) {
+    console.warn('Impossible de lire le token dans le stockage local :', error);
+    return null;
+  }
+};
+
 export const setAuthToken = (token) => {
+  currentAuthToken = token || null;
   if (token) {
     api.defaults.headers.common.Authorization = `Bearer ${token}`;
   } else {
@@ -80,14 +97,9 @@ export const setAuthToken = (token) => {
 };
 
 if (typeof window !== 'undefined') {
-  try {
-    const existingToken = window.localStorage?.getItem('authToken');
-    if (existingToken) {
-      setAuthToken(existingToken);
-    }
-  } catch (error) {
-    // localStorage peut ne pas être disponible (mode navigation privée strict, etc.)
-    console.warn('Impossible de lire le token dans le stockage local :', error);
+  const existingToken = readTokenFromStorage();
+  if (existingToken) {
+    setAuthToken(existingToken);
   }
 }
 
@@ -97,27 +109,40 @@ api.interceptors.request.use(
       config.url = ensureRelativeUrl(config.url);
     }
 
-    // On récupère le token depuis le localStorage
-    const token = localStorage.getItem('authToken');
+    if (!config.headers) {
+      config.headers = {};
+    }
 
-    // Si le token existe, on l'ajoute dans les en-têtes (headers)
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (!config.headers.Authorization) {
+      const token = currentAuthToken || readTokenFromStorage();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error?.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      try {
+        if (typeof window !== 'undefined') {
+          window.localStorage?.removeItem('authToken');
+        }
+      } catch (storageError) {
+        console.warn('Impossible de nettoyer le token du stockage local :', storageError);
+      }
+
+      setAuthToken(null);
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('auth:logout'));
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);
