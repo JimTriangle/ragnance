@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
 
   const logoutUser = useCallback(() => {
     localStorage.removeItem('authToken');
+    delete api.defaults.headers.common.Authorization;
     setIsLoggedIn(false);
     setUser(null);
     setToken(null);
@@ -20,9 +21,15 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const authenticateUser = useCallback((tokenToAuth) => {
+     if (!tokenToAuth) {
+      logoutUser();
+      return;
+    }
     setToken(tokenToAuth);
     setIsLoggedIn(true);
     setAuthToken(tokenToAuth);
+    api.defaults.headers.common.Authorization = `Bearer ${tokenToAuth}`;
+
     try {
       const decodedUser = jwtDecode(tokenToAuth);
       setUser(decodedUser);
@@ -58,6 +65,21 @@ export const AuthProvider = ({ children }) => {
     verifyStoredToken();
   }, [authenticateUser, logoutUser]);
 
+    useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleForcedLogout = () => {
+      logoutUser();
+    };
+
+    window.addEventListener('auth:logout', handleForcedLogout);
+    return () => {
+      window.removeEventListener('auth:logout', handleForcedLogout);
+    };
+  }, [logoutUser]);
+  
   return (
     <AuthContext.Provider value={{ isLoggedIn, user, token, isLoading, storeToken, logoutUser }}>
       {children}

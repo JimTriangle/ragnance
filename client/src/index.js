@@ -6,6 +6,7 @@ import { PrimeReactProvider } from 'primereact/api';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { TransactionRefreshProvider } from './context/TransactionRefreshContext';
 
 // --- ORDRE D'IMPORTATION DES STYLES (TRÈS IMPORTANT) ---
 
@@ -25,7 +26,9 @@ root.render(
       <AuthProvider>
         <ToastProvider>
           <ThemeProvider>
-            <App />
+            <TransactionRefreshProvider>
+              <App />
+            </TransactionRefreshProvider>
           </ThemeProvider>
         </ToastProvider>
       </AuthProvider>

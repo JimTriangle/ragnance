@@ -6,6 +6,7 @@ import { ConfirmDialog } from 'primereact/confirmdialog';
 import { Dialog } from 'primereact/dialog';
 import ThemeToggle from '../components/ThemeToggle';
 import TransactionForm from '../components/TransactionForm';
+import { TransactionRefreshContext } from '../context/TransactionRefreshContext';
 
 // Le Header spécifique à la section Budget, avec TOUS ses liens
 const BudgetHeader = ({ onAddTransaction }) => {
@@ -51,13 +52,14 @@ const UserInfo = () => {
 // Le Layout qui assemble le Header et le contenu de la page
 const BudgetLayout = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const { notifyTransactionRefresh } = useContext(TransactionRefreshContext);
 
     const openModal = () => setIsModalVisible(true);
     const closeModal = () => setIsModalVisible(false);
 
     const handleComplete = () => {
         closeModal();
-        window.dispatchEvent(new Event('transactionAdded'));
+        notifyTransactionRefresh();
     };
 
     useEffect(() => {

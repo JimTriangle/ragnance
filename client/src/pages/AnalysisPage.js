@@ -50,6 +50,7 @@ const AnalysisPage = () => {
     }, [fetchData]);
 
     useTransactionRefresh(fetchData);
+
     
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 

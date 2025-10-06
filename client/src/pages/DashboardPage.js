@@ -33,25 +33,62 @@ const DashboardPage = () => {
 
     // Logique de récupération des données
     const fetchData = useCallback(async () => {
-        try {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = today.getMonth() + 1;
-            const [summaryResponse, categoryStatsResponse, budgetProgressResponse, projectBudgetsResponse] = await Promise.all([
-                api.get('/transactions/summary'),
-                api.get('/transactions/stats/expenses-by-category'),
-                api.get(`/budgets/progress/${year}/${month}`),
-                api.get('/project-budgets')
-            ]);
-            setSummary(summaryResponse.data);
-            setCategoryChartData({
-                labels: categoryStatsResponse.data.map(c => c.categoryName),
-                datasets: [{ data: categoryStatsResponse.data.map(c => c.total), backgroundColor: categoryStatsResponse.data.map(c => c.categoryColor) }]
-            });
-            setBudgetProgressData(budgetProgressResponse.data);
-            setProjectBudgets(projectBudgetsResponse.data);
-        } catch (error) {
-            showToast('error', 'Erreur Critique', 'Le rechargement des données a échoué.');
+               const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth() + 1;
+
+        const [summaryResult, categoryStatsResult, budgetProgressResult, projectBudgetsResult] = await Promise.allSettled([
+            api.get('/transactions/summary'),
+            api.get('/transactions/stats/expenses-by-category'),
+            api.get(`/budgets/progress/${year}/${month}`),
+            api.get('/project-budgets')
+        ]);
+
+        const encounteredErrors = [];
+
+        if (summaryResult.status === 'fulfilled') {
+            setSummary(summaryResult.value.data);
+        } else {
+            console.error('Impossible de charger le résumé du dashboard budget :', summaryResult.reason);
+            setSummary({ currentBalance: 0, projectedBalance: 0, totalProjectedIncome: 0, totalProjectedExpense: 0 });
+            encounteredErrors.push('le résumé global');
+        }
+
+        if (categoryStatsResult.status === 'fulfilled') {
+            const categories = Array.isArray(categoryStatsResult.value.data) ? categoryStatsResult.value.data : [];
+            if (categories.length > 0) {
+                setCategoryChartData({
+                    labels: categories.map(c => c.categoryName),
+                    datasets: [{ data: categories.map(c => c.total), backgroundColor: categories.map(c => c.categoryColor) }]
+                });
+            } else {
+                setCategoryChartData(null);
+            }
+        } else {
+            console.error('Impossible de charger les statistiques par catégorie :', categoryStatsResult.reason);
+            setCategoryChartData(null);
+            encounteredErrors.push('les statistiques par catégorie');
+        }
+
+        if (budgetProgressResult.status === 'fulfilled') {
+            setBudgetProgressData(budgetProgressResult.value.data);
+        } else {
+            console.error('Impossible de charger le suivi des budgets :', budgetProgressResult.reason);
+            setBudgetProgressData([]);
+            encounteredErrors.push('le suivi des budgets');
+        }
+
+        if (projectBudgetsResult.status === 'fulfilled') {
+            setProjectBudgets(projectBudgetsResult.value.data);
+        } else {
+            console.error('Impossible de charger les budgets projets :', projectBudgetsResult.reason);
+            setProjectBudgets([]);
+            encounteredErrors.push('les budgets projet');
+        }
+
+        if (encounteredErrors.length > 0) {
+            const details = encounteredErrors.join(', ');
+            showToast('warn', 'Données partielles', `Certaines données n'ont pas pu être chargées : ${details}.`);
         }
     }, [showToast]);
 
@@ -81,7 +118,7 @@ const DashboardPage = () => {
     }, [fetchData, fetchLineChartData, chartPeriod]);
 
     useTransactionRefresh(refreshAfterTransaction);
-    
+
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
     return (

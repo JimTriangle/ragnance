@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import api from '../services/api';
 import { ToastContext } from '../context/ToastContext';
+import { TransactionRefreshContext } from '../context/TransactionRefreshContext';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -27,6 +28,7 @@ const MonthlyViewPage = () => {
   const [cumulativeChartData, setCumulativeChartData] = useState({});
   const [globalFilter, setGlobalFilter] = useState('');
   const { showToast } = useContext(ToastContext);
+  const { notifyTransactionRefresh } = useContext(TransactionRefreshContext);
 
   const [isNewModalVisible, setIsNewModalVisible] = useState(false);
   const [allCategories, setAllCategories] = useState([]);
@@ -154,6 +156,7 @@ const MonthlyViewPage = () => {
       try {
         await api.delete(`/transactions/${transactionId}`);
         showToast('success', 'Succès', 'Transaction supprimée');
+        notifyTransactionRefresh();
         fetchData();
       } catch (error) {
         showToast('error', 'Erreur', 'La suppression a échoué');
