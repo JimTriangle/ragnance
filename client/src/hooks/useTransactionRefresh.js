@@ -2,7 +2,8 @@ import { useCallback, useContext, useEffect, useRef } from 'react';
 
 import {
   TransactionRefreshContext,
-  TRANSACTION_REFRESH_STORAGE_KEY
+  TRANSACTION_REFRESH_STORAGE_KEY,
+  TRANSACTION_REFRESH_EVENT
 } from '../context/TransactionRefreshContext';
 
 const useTransactionRefresh = (onRefresh) => {
@@ -47,18 +48,25 @@ const useTransactionRefresh = (onRefresh) => {
       triggerRefresh(Number.isNaN(parsed) ? undefined : parsed);
     };
 
+    const handleSyncEvent = (event) => {
+      const detail = typeof event?.detail === 'number' ? event.detail : undefined;
+      triggerRefresh(detail);
+    };
+
     window.addEventListener('storage', handleStorageEvent);
+    window.addEventListener(TRANSACTION_REFRESH_EVENT, handleSyncEvent);
 
     return () => {
       window.removeEventListener('storage', handleStorageEvent);
+      window.removeEventListener(TRANSACTION_REFRESH_EVENT, handleSyncEvent);
     };
   }, [isRefreshFunction, triggerRefresh]);
 
   useEffect(() => {
-   if (!isRefreshFunction || !lastRefresh) {
-     return;
+    if (!isRefreshFunction || !lastRefresh) {
+      return;
     }
-   triggerRefresh(lastRefresh);
+    triggerRefresh(lastRefresh);
   }, [isRefreshFunction, lastRefresh, triggerRefresh]);
 };
 

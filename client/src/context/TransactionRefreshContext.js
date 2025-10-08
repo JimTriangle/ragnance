@@ -1,10 +1,11 @@
 import React, { createContext, useCallback, useMemo, useState } from 'react';
 
 export const TRANSACTION_REFRESH_STORAGE_KEY = 'ragnance:last-transaction-refresh';
+export const TRANSACTION_REFRESH_EVENT = 'ragnance:transactions:refresh';
 
 export const TransactionRefreshContext = createContext({
   lastRefresh: 0,
-  notifyTransactionRefresh: () => {}
+  notifyTransactionRefresh: () => { }
 });
 
 export const TransactionRefreshProvider = ({ children }) => {
@@ -31,6 +32,12 @@ export const TransactionRefreshProvider = ({ children }) => {
         window.localStorage?.setItem(TRANSACTION_REFRESH_STORAGE_KEY, String(timestamp));
       } catch (error) {
         console.warn('Impossible d\'écrire la valeur de rafraîchissement des transactions :', error);
+      }
+
+      try {
+        window.dispatchEvent(new CustomEvent(TRANSACTION_REFRESH_EVENT, { detail: timestamp }));
+      } catch (error) {
+        console.warn('Impossible d\'émettre l\'événement de rafraîchissement des transactions :', error);
       }
     }
   }, []);
