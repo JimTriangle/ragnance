@@ -1,4 +1,5 @@
-import { useContext, useEffect, useRef } from 'react';
+import { useCallback, useContext, useEffect, useRef } from 'react';
+
 import {
   TransactionRefreshContext,
   TRANSACTION_REFRESH_EVENT,
@@ -7,65 +8,65 @@ import {
 
 const useTransactionRefresh = (onRefresh) => {
   const { lastRefresh } = useContext(TransactionRefreshContext);
-  const lastHandledEventRef = useRef(null);
-  const lastSeenRefreshRef = useRef(lastRefresh);
+  const lastProcessedRef = useRef(lastRefresh || 0);
+  const isRefreshFunction = typeof onRefresh === 'function';
+
+  const triggerRefresh = useCallback((timestamp) => {
+    if (!isRefreshFunction) {
+      return;
+    }
+
+    const normalizedTimestamp =
+      typeof timestamp === 'number' && !Number.isNaN(timestamp)
+        ? timestamp
+        : Date.now();
+
+    if (lastProcessedRef.current === normalizedTimestamp) {
+      return;
+    }
+
+    lastProcessedRef.current = normalizedTimestamp;
+    onRefresh();
+  }, [isRefreshFunction, onRefresh]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || typeof onRefresh !== 'function') {
+    if (typeof window === 'undefined' || !isRefreshFunction) {
       return undefined;
     }
 
-    const eventHandler = (event) => {
-      if (event?.detail != null) {
-        lastHandledEventRef.current = event.detail;
-        lastSeenRefreshRef.current = event.detail;
-      }
-      onRefresh();
+    const handleTransactionEvent = (event) => {
+      triggerRefresh(event?.detail);
     };
 
-    const storageHandler = (event) => {
-      if (event.key === TRANSACTION_REFRESH_STORAGE_KEY) {
-        if (event.newValue) {
-          const parsed = Number.parseInt(event.newValue, 10);
-          if (!Number.isNaN(parsed)) {
-            lastSeenRefreshRef.current = parsed;
-          }
-        }
-        onRefresh();
+    const handleStorageEvent = (event) => {
+      if (event.key !== TRANSACTION_REFRESH_STORAGE_KEY) {
+        return;
       }
+
+      if (!event.newValue) {
+        triggerRefresh();
+        return;
+      }
+
+      const parsed = Number.parseInt(event.newValue, 10);
+      triggerRefresh(Number.isNaN(parsed) ? undefined : parsed);
     };
 
-    window.addEventListener(TRANSACTION_REFRESH_EVENT, eventHandler);
-    window.addEventListener('storage', storageHandler);
+    window.addEventListener(TRANSACTION_REFRESH_EVENT, handleTransactionEvent);
+    window.addEventListener('storage', handleStorageEvent);
 
     return () => {
-      window.removeEventListener(TRANSACTION_REFRESH_EVENT, eventHandler);
-      window.removeEventListener('storage', storageHandler);
+      window.removeEventListener(TRANSACTION_REFRESH_EVENT, handleTransactionEvent);
+      window.removeEventListener('storage', handleStorageEvent);
     };
-  }, [onRefresh]);
+  }, [isRefreshFunction, triggerRefresh]);
 
   useEffect(() => {
-    if (typeof onRefresh !== 'function') {
-      return;
+   if (!isRefreshFunction || !lastRefresh) {
+     return;
     }
-
-    if (!lastRefresh) {
-      lastSeenRefreshRef.current = lastRefresh;
-      return;
-    }
-
-    if (lastHandledEventRef.current && lastHandledEventRef.current === lastRefresh) {
-      lastHandledEventRef.current = null;
-      return;
-    }
-
-    if (lastSeenRefreshRef.current === lastRefresh) {
-      return;
-    }
-
-    lastSeenRefreshRef.current = lastRefresh;
-    onRefresh();
-  }, [lastRefresh, onRefresh]);
+   triggerRefresh(lastRefresh);
+  }, [isRefreshFunction, lastRefresh, triggerRefresh]);
 };
 
 export default useTransactionRefresh;

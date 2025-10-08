@@ -149,7 +149,6 @@ const MonthlyViewPage = () => {
     if (isEditModalVisible) setIsEditModalVisible(false);
     if (isNewModalVisible) setIsNewModalVisible(false); // On ferme aussi la nouvelle modale
     notifyTransactionRefresh();
-    fetchData();
   };
 
   const confirmDelete = (transactionId) => {
@@ -158,7 +157,6 @@ const MonthlyViewPage = () => {
         await api.delete(`/transactions/${transactionId}`);
         showToast('success', 'Succès', 'Transaction supprimée');
         notifyTransactionRefresh();
-        fetchData();
       } catch (error) {
         showToast('error', 'Erreur', 'La suppression a échoué');
       }
