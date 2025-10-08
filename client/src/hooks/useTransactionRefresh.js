@@ -2,7 +2,6 @@ import { useCallback, useContext, useEffect, useRef } from 'react';
 
 import {
   TransactionRefreshContext,
-  TRANSACTION_REFRESH_EVENT,
   TRANSACTION_REFRESH_STORAGE_KEY
 } from '../context/TransactionRefreshContext';
 
@@ -34,10 +33,6 @@ const useTransactionRefresh = (onRefresh) => {
       return undefined;
     }
 
-    const handleTransactionEvent = (event) => {
-      triggerRefresh(event?.detail);
-    };
-
     const handleStorageEvent = (event) => {
       if (event.key !== TRANSACTION_REFRESH_STORAGE_KEY) {
         return;
@@ -52,11 +47,9 @@ const useTransactionRefresh = (onRefresh) => {
       triggerRefresh(Number.isNaN(parsed) ? undefined : parsed);
     };
 
-    window.addEventListener(TRANSACTION_REFRESH_EVENT, handleTransactionEvent);
     window.addEventListener('storage', handleStorageEvent);
 
     return () => {
-      window.removeEventListener(TRANSACTION_REFRESH_EVENT, handleTransactionEvent);
       window.removeEventListener('storage', handleStorageEvent);
     };
   }, [isRefreshFunction, triggerRefresh]);
