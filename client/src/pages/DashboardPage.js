@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useCallback } from 'react';
+import React, { useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { ToastContext } from '../context/ToastContext';
 import api from '../services/api';
 import useTransactionRefresh from '../hooks/useTransactionRefresh';
@@ -22,6 +22,8 @@ const DashboardPage = () => {
     const [projectBudgets, setProjectBudgets] = useState([]);
     const [chartPeriod, setChartPeriod] = useState('30d');
     const { showToast } = useContext(ToastContext);
+    const retryTimeoutRef = useRef(null);
+    const retryAttemptsRef = useRef(0);
 
     // Options des graphiques
     const periodOptions = [{ label: '7j', value: '7d' }, { label: '1m', value: '30d' }, { label: '3m', value: '90d' }];
@@ -33,62 +35,71 @@ const DashboardPage = () => {
 
     // Logique de récupération des données
     const fetchData = useCallback(async () => {
-               const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
+        try {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth() + 1;
 
-        const [summaryResult, categoryStatsResult, budgetProgressResult, projectBudgetsResult] = await Promise.allSettled([
-            api.get('/transactions/summary'),
-            api.get('/transactions/stats/expenses-by-category'),
-            api.get(`/budgets/progress/${year}/${month}`),
-            api.get('/project-budgets')
-        ]);
+            const [summaryResult, categoryStatsResult, budgetProgressResult, projectBudgetsResult] = await Promise.allSettled([
+                api.get('/transactions/summary'),
+                api.get('/transactions/stats/expenses-by-category'),
+                api.get(`/budgets/progress/${year}/${month}`),
+                api.get('/project-budgets')
+            ]);
 
-        const encounteredErrors = [];
+            const encounteredErrors = [];
 
-        if (summaryResult.status === 'fulfilled') {
-            setSummary(summaryResult.value.data);
-        } else {
-            console.error('Impossible de charger le résumé du dashboard budget :', summaryResult.reason);
-            setSummary({ currentBalance: 0, projectedBalance: 0, totalProjectedIncome: 0, totalProjectedExpense: 0 });
-            encounteredErrors.push('le résumé global');
-        }
-
-        if (categoryStatsResult.status === 'fulfilled') {
-            const categories = Array.isArray(categoryStatsResult.value.data) ? categoryStatsResult.value.data : [];
-            if (categories.length > 0) {
-                setCategoryChartData({
-                    labels: categories.map(c => c.categoryName),
-                    datasets: [{ data: categories.map(c => c.total), backgroundColor: categories.map(c => c.categoryColor) }]
-                });
+            if (summaryResult.status === 'fulfilled') {
+                setSummary(summaryResult.value.data);
             } else {
-                setCategoryChartData(null);
+                console.error('Impossible de charger le résumé du dashboard budget :', summaryResult.reason);
+                encounteredErrors.push('le résumé global');
             }
-        } else {
-            console.error('Impossible de charger les statistiques par catégorie :', categoryStatsResult.reason);
-            setCategoryChartData(null);
-            encounteredErrors.push('les statistiques par catégorie');
-        }
 
-        if (budgetProgressResult.status === 'fulfilled') {
-            setBudgetProgressData(budgetProgressResult.value.data);
-        } else {
-            console.error('Impossible de charger le suivi des budgets :', budgetProgressResult.reason);
-            setBudgetProgressData([]);
-            encounteredErrors.push('le suivi des budgets');
-        }
 
-        if (projectBudgetsResult.status === 'fulfilled') {
-            setProjectBudgets(projectBudgetsResult.value.data);
-        } else {
-            console.error('Impossible de charger les budgets projets :', projectBudgetsResult.reason);
-            setProjectBudgets([]);
-            encounteredErrors.push('les budgets projet');
-        }
+            if (categoryStatsResult.status === 'fulfilled') {
+                const categories = Array.isArray(categoryStatsResult.value.data) ? categoryStatsResult.value.data : [];
+                if (categories.length > 0) {
+                    setCategoryChartData({
+                        labels: categories.map(c => c.categoryName),
+                        datasets: [{ data: categories.map(c => c.total), backgroundColor: categories.map(c => c.categoryColor) }]
+                    });
+                } else {
+                    setCategoryChartData(null);
+                }
+            } else {
+                console.error('Impossible de charger les statistiques par catégorie :', categoryStatsResult.reason);
+                encounteredErrors.push('les statistiques par catégorie');
+            }
 
-        if (encounteredErrors.length > 0) {
-            const details = encounteredErrors.join(', ');
-            showToast('warn', 'Données partielles', `Certaines données n'ont pas pu être chargées : ${details}.`);
+            if (budgetProgressResult.status === 'fulfilled') {
+                setBudgetProgressData(budgetProgressResult.value.data);
+            } else {
+                console.error('Impossible de charger le suivi des budgets :', budgetProgressResult.reason);
+                encounteredErrors.push('le suivi des budgets');
+            }
+
+            if (projectBudgetsResult.status === 'fulfilled') {
+                setProjectBudgets(projectBudgetsResult.value.data);
+            } else {
+                console.error('Impossible de charger les budgets projets :', projectBudgetsResult.reason);
+                encounteredErrors.push('les budgets projet');
+            }
+
+            if (encounteredErrors.length > 0) {
+                const details = encounteredErrors.join(', ');
+                showToast('warn', 'Données partielles', `Certaines données n'ont pas pu être chargées : ${details}.`);
+            }
+
+            return encounteredErrors.length === 0;
+        } catch (error) {
+            console.error('Erreur inattendue lors du chargement du dashboard :', error);
+            showToast('error', 'Erreur', "Impossible de charger les données du dashboard.");
+            return false; return encounteredErrors.length === 0;
+        } catch (error) {
+            console.error('Erreur inattendue lors du chargement du dashboard :', error);
+            showToast('error', 'Erreur', "Impossible de charger les données du dashboard.");
+            return false;
         }
     }, [showToast]);
 
@@ -112,12 +123,39 @@ const DashboardPage = () => {
     useEffect(() => { fetchData(); }, [fetchData]);
     useEffect(() => { fetchLineChartData(chartPeriod); }, [chartPeriod, fetchLineChartData]);
 
-    const refreshAfterTransaction = useCallback(() => {
-        fetchData();
-        fetchLineChartData(chartPeriod);
+    const refreshAfterTransaction = useCallback(async () => {
+        if (retryTimeoutRef.current) {
+            clearTimeout(retryTimeoutRef.current);
+            retryTimeoutRef.current = null;
+        }
+
+        const success = await fetchData();
+        await fetchLineChartData(chartPeriod);
+
+        if (success) {
+            retryAttemptsRef.current = 0;
+            return;
+        }
+
+        if (retryAttemptsRef.current >= 3) {
+            return;
+        }
+
+        retryAttemptsRef.current += 1;
+        retryTimeoutRef.current = setTimeout(() => {
+            retryTimeoutRef.current = null;
+            refreshAfterTransaction();
+        }, 2000);
     }, [fetchData, fetchLineChartData, chartPeriod]);
 
     useTransactionRefresh(refreshAfterTransaction);
+
+    useEffect(() => () => {
+        if (retryTimeoutRef.current) {
+            clearTimeout(retryTimeoutRef.current);
+        }
+        retryAttemptsRef.current = 0;
+    }, []);
 
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
