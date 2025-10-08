@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { ToastContext } from '../context/ToastContext';
+import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import useTransactionRefresh from '../hooks/useTransactionRefresh';
 
@@ -22,6 +23,7 @@ const DashboardPage = () => {
     const [projectBudgets, setProjectBudgets] = useState([]);
     const [chartPeriod, setChartPeriod] = useState('30d');
     const { showToast } = useContext(ToastContext);
+    const { isLoggedIn, isLoading } = useContext(AuthContext);
     const retryTimeoutRef = useRef(null);
     const retryAttemptsRef = useRef(0);
 
@@ -116,10 +118,22 @@ const DashboardPage = () => {
         } catch (error) { console.error("Erreur fetch line chart data", error); }
     }, []);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
-    useEffect(() => { fetchLineChartData(chartPeriod); }, [chartPeriod, fetchLineChartData]);
+    useEffect(() => {
+        if (!isLoading && isLoggedIn) {
+            fetchData();
+        }
+    }, [fetchData, isLoading, isLoggedIn]);
+
+    useEffect(() => {
+        if (!isLoading && isLoggedIn) {
+            fetchLineChartData(chartPeriod);
+        }
+    }, [chartPeriod, fetchLineChartData, isLoading, isLoggedIn]);
 
     const refreshAfterTransaction = useCallback(async () => {
+        if (isLoading || !isLoggedIn) {
+            return;
+        }
         if (retryTimeoutRef.current) {
             clearTimeout(retryTimeoutRef.current);
             retryTimeoutRef.current = null;
@@ -142,7 +156,7 @@ const DashboardPage = () => {
             retryTimeoutRef.current = null;
             refreshAfterTransaction();
         }, 2000);
-    }, [fetchData, fetchLineChartData, chartPeriod]);
+    }, [fetchData, fetchLineChartData, chartPeriod, isLoading, isLoggedIn]);
 
     useTransactionRefresh(refreshAfterTransaction);
 
