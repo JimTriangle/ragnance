@@ -95,10 +95,6 @@ const DashboardPage = () => {
         } catch (error) {
             console.error('Erreur inattendue lors du chargement du dashboard :', error);
             showToast('error', 'Erreur', "Impossible de charger les données du dashboard.");
-            return false; return encounteredErrors.length === 0;
-        } catch (error) {
-            console.error('Erreur inattendue lors du chargement du dashboard :', error);
-            showToast('error', 'Erreur', "Impossible de charger les données du dashboard.");
             return false;
         }
     }, [showToast]);
