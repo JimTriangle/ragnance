@@ -22,10 +22,13 @@ const DashboardPage = () => {
     const [budgetProgressData, setBudgetProgressData] = useState([]);
     const [projectBudgets, setProjectBudgets] = useState([]);
     const [chartPeriod, setChartPeriod] = useState('30d');
+    const [dataLoaded, setDataLoaded] = useState(false);
+    
     const { showToast } = useContext(ToastContext);
-    const { isLoggedIn, isLoading } = useContext(AuthContext);
+    const { isLoggedIn, isLoading, authTimestamp } = useContext(AuthContext);
     const retryTimeoutRef = useRef(null);
     const retryAttemptsRef = useRef(0);
+    const isMountedRef = useRef(true);
 
     // Options des graphiques
     const periodOptions = [{ label: '7j', value: '7d' }, { label: '1m', value: '30d' }, { label: '3m', value: '90d' }];
@@ -37,6 +40,12 @@ const DashboardPage = () => {
 
     // Logique de récupération des données
     const fetchData = useCallback(async () => {
+        if (!isLoggedIn || isLoading) {
+            return false;
+        }
+
+        console.log('🔄 Chargement des données du dashboard...');
+
         try {
             const today = new Date();
             const year = today.getFullYear();
@@ -49,6 +58,8 @@ const DashboardPage = () => {
                 api.get('/project-budgets')
             ]);
 
+            if (!isMountedRef.current) return false;
+
             const encounteredErrors = [];
 
             if (summaryResult.status === 'fulfilled') {
@@ -57,7 +68,6 @@ const DashboardPage = () => {
                 console.error('Impossible de charger le résumé du dashboard budget :', summaryResult.reason);
                 encounteredErrors.push('le résumé global');
             }
-
 
             if (categoryStatsResult.status === 'fulfilled') {
                 const categories = Array.isArray(categoryStatsResult.value.data) ? categoryStatsResult.value.data : [];
@@ -88,20 +98,27 @@ const DashboardPage = () => {
                 encounteredErrors.push('les budgets projet');
             }
 
-            if (encounteredErrors.length > 0) {
+            if (encounteredErrors.length > 0 && isMountedRef.current) {
                 const details = encounteredErrors.join(', ');
                 showToast('warn', 'Données partielles', `Certaines données n'ont pas pu être chargées : ${details}.`);
             }
 
+            setDataLoaded(true);
+            console.log('✅ Données du dashboard chargées avec succès');
             return encounteredErrors.length === 0;
         } catch (error) {
+            if (!isMountedRef.current) return false;
             console.error('Erreur inattendue lors du chargement du dashboard :', error);
             showToast('error', 'Erreur', "Impossible de charger les données du dashboard.");
             return false;
         }
-    }, [showToast]);
+    }, [showToast, isLoggedIn, isLoading]);
 
     const fetchLineChartData = useCallback(async (period) => {
+        if (!isLoggedIn || isLoading) {
+            return;
+        }
+
         let startDate, endDate = new Date();
         const today = new Date();
         switch (period) {
@@ -111,24 +128,61 @@ const DashboardPage = () => {
         }
         try {
             const response = await api.get(`/transactions/stats/expenses-by-day?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
-            setLineChartData({
-                labels: response.data.map(item => new Date(item.day).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })),
-                datasets: [{ label: 'Dépenses Journalières', data: response.data.map(item => item.total), fill: true, backgroundColor: 'rgba(46, 204, 113, 0.2)', borderColor: '#2ECC71', tension: 0.4 }]
-            });
-        } catch (error) { console.error("Erreur fetch line chart data", error); }
-    }, []);
-
-    useEffect(() => {
-        if (!isLoading && isLoggedIn) {
-            fetchData();
+            if (isMountedRef.current) {
+                setLineChartData({
+                    labels: response.data.map(item => new Date(item.day).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })),
+                    datasets: [{ label: 'Dépenses Journalières', data: response.data.map(item => item.total), fill: true, backgroundColor: 'rgba(46, 204, 113, 0.2)', borderColor: '#2ECC71', tension: 0.4 }]
+                });
+            }
+        } catch (error) { 
+            console.error("Erreur fetch line chart data", error); 
         }
-    }, [fetchData, isLoading, isLoggedIn]);
+    }, [isLoggedIn, isLoading]);
 
+    // Chargement initial AVEC écoute du changement d'authTimestamp
     useEffect(() => {
-        if (!isLoading && isLoggedIn) {
+        console.log('📍 useEffect déclenché - isLoading:', isLoading, 'isLoggedIn:', isLoggedIn, 'authTimestamp:', authTimestamp);
+        
+        isMountedRef.current = true;
+
+        const loadInitialData = () => {
+            if (!isLoading && isLoggedIn) {
+                console.log('🚀 Chargement initial du dashboard (authTimestamp:', authTimestamp, ')');
+                
+                // Délai pour s'assurer que le token est configuré
+                const timer = setTimeout(() => {
+                    if (isMountedRef.current) {
+                        console.log('⏰ Timer déclenché, appel fetchData...');
+                        fetchData();
+                        fetchLineChartData(chartPeriod);
+                    } else {
+                        console.warn('⚠️ Composant démonté, annulation du chargement');
+                    }
+                }, 200);
+                
+                return () => {
+                    console.log('🧹 Cleanup du timer');
+                    clearTimeout(timer);
+                };
+            } else {
+                console.log('⏸️ Conditions non remplies pour charger - isLoading:', isLoading, 'isLoggedIn:', isLoggedIn);
+            }
+        };
+
+        const cleanup = loadInitialData();
+
+        return () => {
+            isMountedRef.current = false;
+            if (cleanup) cleanup();
+        };
+    }, [isLoggedIn, isLoading, authTimestamp, fetchData, fetchLineChartData, chartPeriod]); // AJOUT : authTimestamp dans les dépendances
+
+    // Chargement du graphique quand la période change
+    useEffect(() => {
+        if (!isLoading && isLoggedIn && dataLoaded) {
             fetchLineChartData(chartPeriod);
         }
-    }, [chartPeriod, fetchLineChartData, isLoading, isLoggedIn]);
+    }, [chartPeriod, fetchLineChartData, isLoading, isLoggedIn, dataLoaded]);
 
     const refreshAfterTransaction = useCallback(async () => {
         if (isLoading || !isLoggedIn) {
@@ -169,6 +223,16 @@ const DashboardPage = () => {
 
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
+    // Afficher un loader pendant le chargement initial
+    if (isLoading || !dataLoaded) {
+        return (
+            <div className="flex flex-column justify-content-center align-items-center" style={{ height: '80vh' }}>
+                <i className="pi pi-spin pi-spinner" style={{ fontSize: '3rem' }}></i>
+                <p className="mt-3 text-500">Chargement du dashboard...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="p-3">
             <div className="flex justify-content-between align-items-center">
@@ -188,7 +252,13 @@ const DashboardPage = () => {
                             <SelectButton value={chartPeriod} options={periodOptions} onChange={(e) => setChartPeriod(e.value)} unselectable={false} />
                         </div>
                         <div style={{ position: 'relative', height: '300px' }}>
-                            <Chart type="line" data={lineChartData} options={lineChartOptions} />
+                            {lineChartData ? (
+                                <Chart type="line" data={lineChartData} options={lineChartOptions} />
+                            ) : (
+                                <div className="flex justify-content-center align-items-center h-full">
+                                    <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
+                                </div>
+                            )}
                         </div>
                     </Card>
                 </div>
