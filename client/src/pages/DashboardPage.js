@@ -73,8 +73,8 @@ const DashboardPage = () => {
                 console.log('📊 Résumé reçu:', summaryResult.value.data);
                 setSummary(summaryResult.value.data);
             } else {
-                console.error('❌ Échec résumé - Status:', summaryResult.reason?.response?.status, 'Message:', summaryResult.reason?.message);
-                console.error('❌ Détails complets:', summaryResult.reason);
+                console.log('❌ Échec résumé - Status:', summaryResult.reason?.response?.status, 'Message:', summaryResult.reason?.message);
+                console.log('❌ Détails complets résumé:', summaryResult.reason);
                 encounteredErrors.push('le résumé global');
             }
 
@@ -90,8 +90,8 @@ const DashboardPage = () => {
                     setCategoryChartData(null);
                 }
             } else {
-                console.error('❌ Échec catégories - Status:', categoryStatsResult.reason?.response?.status, 'Message:', categoryStatsResult.reason?.message);
-                console.error('❌ Détails complets:', categoryStatsResult.reason);
+                console.log('❌ Échec catégories - Status:', categoryStatsResult.reason?.response?.status, 'Message:', categoryStatsResult.reason?.message);
+                console.log('❌ Détails complets catégories:', categoryStatsResult.reason);
                 encounteredErrors.push('les statistiques par catégorie');
             }
 
@@ -99,8 +99,8 @@ const DashboardPage = () => {
                 console.log('💰 Budgets progress reçus:', budgetProgressResult.value.data);
                 setBudgetProgressData(budgetProgressResult.value.data);
             } else {
-                console.error('❌ Échec budgets progress - Status:', budgetProgressResult.reason?.response?.status, 'Message:', budgetProgressResult.reason?.message);
-                console.error('❌ Détails complets:', budgetProgressResult.reason);
+                console.log('❌ Échec budgets progress - Status:', budgetProgressResult.reason?.response?.status, 'Message:', budgetProgressResult.reason?.message);
+                console.log('❌ Détails complets budgets progress:', budgetProgressResult.reason);
                 encounteredErrors.push('le suivi des budgets');
             }
 
@@ -108,8 +108,8 @@ const DashboardPage = () => {
                 console.log('🎯 Budgets projets reçus:', projectBudgetsResult.value.data);
                 setProjectBudgets(projectBudgetsResult.value.data);
             } else {
-                console.error('❌ Échec budgets projets - Status:', projectBudgetsResult.reason?.response?.status, 'Message:', projectBudgetsResult.reason?.message);
-                console.error('❌ Détails complets:', projectBudgetsResult.reason);
+                console.log('❌ Échec budgets projets - Status:', projectBudgetsResult.reason?.response?.status, 'Message:', projectBudgetsResult.reason?.message);
+                console.log('❌ Détails complets budgets projets:', projectBudgetsResult.reason);
                 encounteredErrors.push('les budgets projet');
             }
 
@@ -161,8 +161,8 @@ const DashboardPage = () => {
                 });
             }
         } catch (error) {
-            console.error("❌ Erreur fetch line chart data - Status:", error?.response?.status, 'Message:', error?.message);
-            console.error("❌ Détails complets:", error);
+            console.log("❌ Erreur fetch line chart data - Status:", error?.response?.status, 'Message:', error?.message);
+            console.log("❌ Détails complets line chart:", error);
         }
     }, [isLoggedIn, isLoading]);
 
