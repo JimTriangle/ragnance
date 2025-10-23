@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authTimestamp, setAuthTimestamp] = useState(0); // NOUVEAU : Timestamp pour forcer re-render
   const tokenVerificationDone = useRef(false);
   const authReadyCallbacks = useRef([]);
 
@@ -73,6 +74,7 @@ export const AuthProvider = ({ children }) => {
       setToken(tokenToAuth);
       setUser(decodedUser);
       setIsLoggedIn(true);
+      setAuthTimestamp(Date.now()); // NOUVEAU : Mise à jour du timestamp
 
       // Notifier les callbacks en attente que l'auth est prête
       if (authReadyCallbacks.current.length > 0) {
@@ -145,24 +147,31 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (storedToken) {
+        console.log('🔍 Token trouvé dans localStorage, vérification...');
         try {
           // Configurer le token AVANT la vérification API
           setAuthToken(storedToken);
+          api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
           
+          console.log('🌐 Appel API /auth/verify...');
           const response = await api.get('/auth/verify', {
             headers: { Authorization: `Bearer ${storedToken}` }
           });
 
+          console.log('✅ Vérification réussie, status:', response.status);
           // Si la vérification réussit, authentifier
           if (response.status === 200) {
             authenticateUser(storedToken);
           } else {
+            console.warn('⚠️ Status inattendu:', response.status);
             logoutUser({ emitEvent: false });
           }
         } catch (error) {
-          console.error('Erreur de vérification du token:', error);
+          console.error('❌ Erreur de vérification du token:', error.response?.status, error.message);
           logoutUser({ emitEvent: false });
         }
+      } else {
+        console.log('ℹ️ Aucun token dans localStorage');
       }
       
       setIsLoading(false);
@@ -214,6 +223,7 @@ export const AuthProvider = ({ children }) => {
       user, 
       token, 
       isLoading, 
+      authTimestamp, // NOUVEAU : Exposer le timestamp
       storeToken, 
       logoutUser,
       onAuthReady 
