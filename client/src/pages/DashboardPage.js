@@ -58,6 +58,13 @@ const DashboardPage = () => {
                 api.get('/project-budgets')
             ]);
 
+            console.log('🔍 Résultats des requêtes API:', {
+                summary: summaryResult.status,
+                categoryStats: categoryStatsResult.status,
+                budgetProgress: budgetProgressResult.status,
+                projectBudgets: projectBudgetsResult.status
+            });
+
             if (!isMountedRef.current) return false;
 
             const encounteredErrors = [];
@@ -66,7 +73,8 @@ const DashboardPage = () => {
                 console.log('📊 Résumé reçu:', summaryResult.value.data);
                 setSummary(summaryResult.value.data);
             } else {
-                console.error('Impossible de charger le résumé du dashboard budget :', summaryResult.reason);
+                console.error('❌ Échec résumé - Status:', summaryResult.reason?.response?.status, 'Message:', summaryResult.reason?.message);
+                console.error('❌ Détails complets:', summaryResult.reason);
                 encounteredErrors.push('le résumé global');
             }
 
@@ -82,7 +90,8 @@ const DashboardPage = () => {
                     setCategoryChartData(null);
                 }
             } else {
-                console.error('Impossible de charger les statistiques par catégorie :', categoryStatsResult.reason);
+                console.error('❌ Échec catégories - Status:', categoryStatsResult.reason?.response?.status, 'Message:', categoryStatsResult.reason?.message);
+                console.error('❌ Détails complets:', categoryStatsResult.reason);
                 encounteredErrors.push('les statistiques par catégorie');
             }
 
@@ -90,7 +99,8 @@ const DashboardPage = () => {
                 console.log('💰 Budgets progress reçus:', budgetProgressResult.value.data);
                 setBudgetProgressData(budgetProgressResult.value.data);
             } else {
-                console.error('Impossible de charger le suivi des budgets :', budgetProgressResult.reason);
+                console.error('❌ Échec budgets progress - Status:', budgetProgressResult.reason?.response?.status, 'Message:', budgetProgressResult.reason?.message);
+                console.error('❌ Détails complets:', budgetProgressResult.reason);
                 encounteredErrors.push('le suivi des budgets');
             }
 
@@ -98,7 +108,8 @@ const DashboardPage = () => {
                 console.log('🎯 Budgets projets reçus:', projectBudgetsResult.value.data);
                 setProjectBudgets(projectBudgetsResult.value.data);
             } else {
-                console.error('Impossible de charger les budgets projets :', projectBudgetsResult.reason);
+                console.error('❌ Échec budgets projets - Status:', projectBudgetsResult.reason?.response?.status, 'Message:', projectBudgetsResult.reason?.message);
+                console.error('❌ Détails complets:', projectBudgetsResult.reason);
                 encounteredErrors.push('les budgets projet');
             }
 
@@ -140,6 +151,7 @@ const DashboardPage = () => {
             case '30d': default: startDate = new Date(new Date().setDate(today.getDate() - 30)); break;
         }
         try {
+            console.log('🔄 Chargement graphique ligne - période:', period, 'startDate:', startDate.toISOString(), 'endDate:', endDate.toISOString());
             const response = await api.get(`/transactions/stats/expenses-by-day?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
             console.log('📉 Données graphique ligne reçues:', response.data);
             if (isMountedRef.current) {
@@ -149,7 +161,8 @@ const DashboardPage = () => {
                 });
             }
         } catch (error) {
-            console.error("Erreur fetch line chart data", error);
+            console.error("❌ Erreur fetch line chart data - Status:", error?.response?.status, 'Message:', error?.message);
+            console.error("❌ Détails complets:", error);
         }
     }, [isLoggedIn, isLoading]);
 
