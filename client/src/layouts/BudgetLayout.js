@@ -6,10 +6,12 @@ import { ConfirmDialog } from 'primereact/confirmdialog';
 import { Dialog } from 'primereact/dialog';
 import ThemeToggle from '../components/ThemeToggle';
 import TransactionForm from '../components/TransactionForm';
+import AnnouncementBadge from '../components/AnnouncementBadge';
+import AnnouncementDialog from '../components/AnnouncementDialog';
 import { TransactionRefreshContext } from '../context/TransactionRefreshContext';
 
 // Le Header spécifique à la section Budget, avec TOUS ses liens
-const BudgetHeader = ({ onAddTransaction }) => {
+const BudgetHeader = ({ onAddTransaction, onShowAnnouncements }) => {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
     return (
@@ -25,6 +27,7 @@ const BudgetHeader = ({ onAddTransaction }) => {
                 {user?.role === 'admin' && <NavLink to="/budget/admin" className="p-button p-button-text p-button-danger ml-2 main-nav-link">Admin</NavLink>}
             </div>
             <div className="flex align-items-center gap-2">
+                <AnnouncementBadge onClick={onShowAnnouncements} />
                 <Button label=" Ajouter une transaction" icon="pi pi-plus" className="add-transaction-button p-button-sm p-button-primary" onClick={onAddTransaction} />
                 {user?.tradingAccess && (
                     <Button label="Trading" className="p-button-sm p-button-secondary" onClick={() => navigate('/trading')} />
@@ -52,15 +55,27 @@ const UserInfo = () => {
 // Le Layout qui assemble le Header et le contenu de la page
 const BudgetLayout = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isAnnouncementVisible, setIsAnnouncementVisible] = useState(false);
     const { notifyTransactionRefresh } = useContext(TransactionRefreshContext);
 
     const openModal = () => setIsModalVisible(true);
     const closeModal = () => setIsModalVisible(false);
 
+    const openAnnouncements = () => setIsAnnouncementVisible(true);
+    const closeAnnouncements = () => setIsAnnouncementVisible(false);
+
     const handleComplete = () => {
         closeModal();
         notifyTransactionRefresh();
     };
+
+    // Afficher automatiquement les annonces non lues au chargement
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsAnnouncementVisible(true);
+        }, 2000); // 2 secondes après le chargement
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         const handleKeydown = (e) => {
@@ -75,7 +90,7 @@ const BudgetLayout = () => {
 
     return (
         <div>
-            <BudgetHeader onAddTransaction={openModal} />
+            <BudgetHeader onAddTransaction={openModal} onShowAnnouncements={openAnnouncements} />
             <main>
                 <ConfirmDialog />
                 <Outlet /> {/* C'est ici que vos pages (Dashboard, MonthlyView...) s'afficheront */}
@@ -84,6 +99,7 @@ const BudgetLayout = () => {
             <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '90vw', maxWidth: '500px' }} onHide={closeModal}>
                 <TransactionForm onComplete={handleComplete} />
             </Dialog>
+            <AnnouncementDialog visible={isAnnouncementVisible} onHide={closeAnnouncements} />
         </div>
     );
 };
