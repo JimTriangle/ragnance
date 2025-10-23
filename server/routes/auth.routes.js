@@ -59,10 +59,48 @@ router.post('/login', async (req, res) => {
     );
     user.lastLogin = new Date();
     await user.save();
+    res.set('Cache-Control', 'no-store');
     res.status(200).json({ authToken: authToken });
   } catch (error) {
     console.error("Erreur lors de la connexion:", error);
     res.status(500).json({ message: "Erreur lors de la connexion." });
+  }
+});
+
+router.post('/refresh', async (req, res) => {
+  const authHeader = req.get('Authorization') || '';
+  const parts = authHeader.split(' ');
+  const token = parts.length === 2 && /^Bearer$/i.test(parts[0]) ? parts[1] : null;
+
+  if (!token) {
+    return res.status(401).json({ message: 'Token manquant.' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true });
+    const user = await User.findByPk(decoded.id);
+
+    if (!user) {
+      return res.status(401).json({ message: 'Utilisateur introuvable.' });
+    }
+
+    const payload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      budgetAccess: user.budgetAccess,
+      tradingAccess: user.tradingAccess
+    };
+
+    const authToken = jwt.sign(payload, process.env.JWT_SECRET, { algorithm: 'HS256', expiresIn: '6h' });
+    res.set('Cache-Control', 'no-store');
+    return res.status(200).json({ authToken });
+  } catch (error) {
+    console.error('Erreur lors du rafraîchissement du token:', error);
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token invalide.' });
+    }
+    return res.status(500).json({ message: 'Erreur lors du rafraîchissement du token.' });
   }
 });
 

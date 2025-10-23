@@ -154,6 +154,30 @@ if (process.env.NODE_ENV !== 'production') {
 
 app.use(express.json());
 
+const publicApiRoutes = new Set(['/auth/login', '/auth/refresh', '/auth/register']);
+const normalizeApiPath = path => {
+  if (!path) {
+    return '/';
+  }
+  if (path.length > 1 && path.endsWith('/')) {
+    return path.replace(/\/+$/, '');
+  }
+  return path;
+};
+
+app.use('/api', (req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+
+  const normalizedPath = normalizeApiPath(req.path);
+  if (publicApiRoutes.has(normalizedPath)) {
+    return next();
+  }
+
+  return isAuth(req, res, next);
+});
+
 // ... (toutes les déclarations de routes)
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/transactions', isAuth, hasBudgetAccess, require('./routes/transaction.routes.js'));
