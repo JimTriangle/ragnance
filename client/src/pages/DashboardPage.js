@@ -63,6 +63,7 @@ const DashboardPage = () => {
             const encounteredErrors = [];
 
             if (summaryResult.status === 'fulfilled') {
+                console.log('📊 Résumé reçu:', summaryResult.value.data);
                 setSummary(summaryResult.value.data);
             } else {
                 console.error('Impossible de charger le résumé du dashboard budget :', summaryResult.reason);
@@ -71,6 +72,7 @@ const DashboardPage = () => {
 
             if (categoryStatsResult.status === 'fulfilled') {
                 const categories = Array.isArray(categoryStatsResult.value.data) ? categoryStatsResult.value.data : [];
+                console.log('📈 Catégories reçues:', categories);
                 if (categories.length > 0) {
                     setCategoryChartData({
                         labels: categories.map(c => c.categoryName),
@@ -85,6 +87,7 @@ const DashboardPage = () => {
             }
 
             if (budgetProgressResult.status === 'fulfilled') {
+                console.log('💰 Budgets progress reçus:', budgetProgressResult.value.data);
                 setBudgetProgressData(budgetProgressResult.value.data);
             } else {
                 console.error('Impossible de charger le suivi des budgets :', budgetProgressResult.reason);
@@ -92,6 +95,7 @@ const DashboardPage = () => {
             }
 
             if (projectBudgetsResult.status === 'fulfilled') {
+                console.log('🎯 Budgets projets reçus:', projectBudgetsResult.value.data);
                 setProjectBudgets(projectBudgetsResult.value.data);
             } else {
                 console.error('Impossible de charger les budgets projets :', projectBudgetsResult.reason);
@@ -137,14 +141,15 @@ const DashboardPage = () => {
         }
         try {
             const response = await api.get(`/transactions/stats/expenses-by-day?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
+            console.log('📉 Données graphique ligne reçues:', response.data);
             if (isMountedRef.current) {
                 setLineChartData({
                     labels: response.data.map(item => new Date(item.day).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })),
                     datasets: [{ label: 'Dépenses Journalières', data: response.data.map(item => item.total), fill: true, backgroundColor: 'rgba(46, 204, 113, 0.2)', borderColor: '#2ECC71', tension: 0.4 }]
                 });
             }
-        } catch (error) { 
-            console.error("Erreur fetch line chart data", error); 
+        } catch (error) {
+            console.error("Erreur fetch line chart data", error);
         }
     }, [isLoggedIn, isLoading]);
 
@@ -244,6 +249,13 @@ const DashboardPage = () => {
     }
 
     console.log('✨ Affichage du dashboard complet');
+    console.log('🔍 État des données:', {
+        summary,
+        lineChartData: lineChartData ? 'présent' : 'null',
+        categoryChartData: categoryChartData ? 'présent' : 'null',
+        budgetProgressData: budgetProgressData?.length || 0,
+        projectBudgets: projectBudgets?.length || 0
+    });
 
     return (
         <div className="p-3">
