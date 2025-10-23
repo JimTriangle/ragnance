@@ -104,6 +104,11 @@ router.post('/refresh', async (req, res) => {
   }
 });
 
+// Health check endpoint (public, sans auth)
+router.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 router.get('/verify', isAuth, (req, res) => {
   res.status(200).json({ user: req.user });
 });

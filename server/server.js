@@ -154,7 +154,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 app.use(express.json());
 
-const publicApiRoutes = new Set(['/auth/login', '/auth/refresh', '/auth/register']);
+const publicApiRoutes = new Set(['/auth/login', '/auth/refresh', '/auth/register', '/auth/health']);
 const normalizeApiPath = path => {
   if (!path) {
     return '/';
