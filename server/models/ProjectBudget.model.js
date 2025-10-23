@@ -15,6 +15,11 @@ const ProjectBudget = sequelize.define('ProjectBudget', {
   endDate: {
     type: DataTypes.DATEONLY,
     allowNull: false
+  },
+  archived: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: false
   }
 });
 
