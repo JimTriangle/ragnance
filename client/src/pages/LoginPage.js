@@ -14,6 +14,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const { storeToken } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -21,29 +22,49 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
+      console.log('🔐 Tentative de connexion...');
       const response = await api.post('/auth/login', { email, password });
-      storeToken(response.data.authToken);
+      
+      console.log('✅ Connexion réussie, stockage du token...');
+      
+      // Stocker le token
+      const success = storeToken(response.data.authToken);
+      
+      if (!success) {
+        setError('Erreur lors de la configuration de la session');
+        setIsLoading(false);
+        return;
+      }
 
       const decoded = jwtDecode(response.data.authToken);
-      // --- LOGIQUE DE REDIRECTION INTELLIGENTE ---
-      // 1. On regarde si une destination a été sauvegardée
+      
+      // Attendre un peu pour que l'événement auth:login soit bien dispatché
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Récupérer la destination sauvegardée
       const redirectTo = sessionStorage.getItem('postLoginRedirect');
-
-      // 2. On nettoie la session pour les prochaines fois
       sessionStorage.removeItem('postLoginRedirect');
+      
+      console.log('🚀 Navigation vers:', redirectTo || 'destination par défaut');
+      
+      // NOUVELLE APPROCHE : Forcer un refresh de la page après navigation
+      // Cela garantit que tous les composants se rechargent avec le nouveau token
       if (redirectTo) {
-        navigate(redirectTo);
+        window.location.href = redirectTo;
       } else if (decoded.budgetAccess) {
-        navigate('/budget/dashboard');
+        window.location.href = '/budget/dashboard';
       } else if (decoded.tradingAccess) {
-        navigate('/trading');
+        window.location.href = '/trading';
       } else {
-        navigate('/');
+        window.location.href = '/';
       }
     } catch (err) {
+      console.error('❌ Erreur de connexion:', err);
       setError(err.response?.data?.message || 'Une erreur est survenue.');
+      setIsLoading(false);
     }
   };
 
@@ -56,18 +77,38 @@ const LoginPage = () => {
         <form onSubmit={handleLogin} className="p-fluid">
           <div className="field">
             <span className="p-float-label">
-               <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" />
+               <InputText 
+                 id="email" 
+                 value={email} 
+                 onChange={(e) => setEmail(e.target.value)} 
+                 autoComplete="username"
+                 disabled={isLoading}
+               />
               <label htmlFor="email">Email</label>
             </span>
           </div>
           <div className="field">
             <span className="p-float-label">
-              <Password id="password" value={password} onChange={(e) => setPassword(e.target.value)} feedback={false} toggleMask autoComplete="current-password" />
+              <Password 
+                id="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                feedback={false} 
+                toggleMask 
+                autoComplete="current-password"
+                disabled={isLoading}
+              />
               <label htmlFor="password">Mot de passe</label>
             </span>
           </div>
           {error && <Message severity="error" text={error} />}
-          <Button type="submit" label="Se connecter" className="mt-2" />
+          <Button 
+            type="submit" 
+            label={isLoading ? "Connexion en cours..." : "Se connecter"} 
+            className="mt-2"
+            disabled={isLoading}
+            icon={isLoading ? "pi pi-spin pi-spinner" : undefined}
+          />
         </form>
         <div className="mt-3 text-center">
           <Link to="/">Retour à l'accueil</Link>
