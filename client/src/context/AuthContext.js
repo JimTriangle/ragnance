@@ -47,6 +47,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
+      console.log('🔐 authenticateUser - Début de l\'authentification');
       const decodedUser = jwtDecode(tokenToAuth);
       
       // Vérifier si le token est expiré
@@ -57,8 +58,16 @@ export const AuthProvider = ({ children }) => {
       }
 
       // CRITIQUE : Configuration du token AVANT tout le reste
+      console.log('🔧 Configuration du token dans axios...');
       setAuthToken(tokenToAuth);
-      api.defaults.headers.common.Authorization = `Bearer ${tokenToAuth}`;
+      
+      // DOUBLE VÉRIFICATION : Forcer l'assignation directe
+      api.defaults.headers.common['Authorization'] = `Bearer ${tokenToAuth}`;
+      
+      console.log('✅ Token configuré:', {
+        inDefaults: !!api.defaults.headers.common['Authorization'],
+        value: api.defaults.headers.common['Authorization']?.substring(0, 20) + '...'
+      });
       
       // Mise à jour des états
       setToken(tokenToAuth);
