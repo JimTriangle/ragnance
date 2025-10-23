@@ -20,7 +20,7 @@ const AdminRoute = () => {
   }
 
   // Si connecté mais pas admin, redirection vers l'accueil approprié
-  if (!user?.isAdmin) {
+  if (user?.role !== 'admin') {
     // Rediriger vers le dashboard approprié selon les accès
     if (user?.budgetAccess) {
       return <Navigate to="/budget/dashboard" replace />;
