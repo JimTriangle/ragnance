@@ -47,7 +47,7 @@ const resolveProductionUrl = () => {
     return '/api';
   }
 
-  return '/api';;
+  return '/api';
 };
 
 const baseURL = process.env.NODE_ENV === 'development'
@@ -72,6 +72,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// IMPORTANT : Variable pour stocker le token actuel
 let currentAuthToken = null;
 
 const readTokenFromStorage = () => {
@@ -87,22 +88,40 @@ const readTokenFromStorage = () => {
   }
 };
 
+// FONCTION CRITIQUE : Configuration du token
 export const setAuthToken = (token) => {
+  console.log('🔧 setAuthToken appelé avec:', token ? 'TOKEN_PRÉSENT' : 'null');
+  
   currentAuthToken = token || null;
+  
   if (token) {
-    api.defaults.headers.common.Authorization = `Bearer ${token}`;
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    console.log('✅ Token configuré dans axios:', api.defaults.headers.common['Authorization'] ? 'OK' : 'ÉCHEC');
   } else {
-    delete api.defaults.headers.common.Authorization;
+    delete api.defaults.headers.common['Authorization'];
+    console.log('🗑️ Token supprimé de axios');
+  }
+
+  // DEBUG : Exposer dans window pour vérifier
+  if (typeof window !== 'undefined') {
+    window.__DEBUG_API__ = {
+      token: currentAuthToken,
+      headers: api.defaults.headers.common,
+      hasAuth: !!api.defaults.headers.common['Authorization']
+    };
   }
 };
 
+// Initialisation au chargement si un token existe
 if (typeof window !== 'undefined') {
   const existingToken = readTokenFromStorage();
   if (existingToken) {
+    console.log('🔄 Token trouvé dans localStorage au chargement, configuration...');
     setAuthToken(existingToken);
   }
 }
 
+// Intercepteur de requête
 api.interceptors.request.use(
   (config) => {
     if (config.url) {
@@ -113,21 +132,34 @@ api.interceptors.request.use(
       config.headers = {};
     }
 
-    if (!config.headers.Authorization) {
+    // CRITIQUE : Toujours s'assurer que le token est présent
+    if (!config.headers['Authorization']) {
       const token = currentAuthToken || readTokenFromStorage();
       if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        config.headers['Authorization'] = `Bearer ${token}`;
+        console.log('🔐 Token ajouté à la requête:', config.url);
+      } else {
+        console.warn('⚠️ Pas de token disponible pour la requête:', config.url);
       }
     }
+
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('❌ Erreur dans l\'intercepteur de requête:', error);
+    return Promise.reject(error);
+  }
 );
 
+// Intercepteur de réponse
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   (error) => {
     if (error?.response?.status === 401) {
+      console.warn('🚫 Erreur 401 détectée, déconnexion...');
+      
       try {
         if (typeof window !== 'undefined') {
           window.localStorage?.removeItem('authToken');
