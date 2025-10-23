@@ -103,13 +103,22 @@ const DashboardPage = () => {
                 showToast('warn', 'Données partielles', `Certaines données n'ont pas pu être chargées : ${details}.`);
             }
 
-            setDataLoaded(true);
-            console.log('✅ Données du dashboard chargées avec succès');
+            if (isMountedRef.current) {
+                setDataLoaded(true);
+                console.log('✅ Données du dashboard chargées avec succès - dataLoaded mis à true');
+            }
+            
             return encounteredErrors.length === 0;
         } catch (error) {
             if (!isMountedRef.current) return false;
-            console.error('Erreur inattendue lors du chargement du dashboard :', error);
+            console.error('❌ Erreur inattendue lors du chargement du dashboard :', error);
             showToast('error', 'Erreur', "Impossible de charger les données du dashboard.");
+            
+            // Même en cas d'erreur, on affiche le dashboard (avec données vides)
+            if (isMountedRef.current) {
+                setDataLoaded(true);
+            }
+            
             return false;
         }
     }, [showToast, isLoggedIn, isLoading]);
@@ -225,6 +234,7 @@ const DashboardPage = () => {
 
     // Afficher un loader pendant le chargement initial
     if (isLoading || !dataLoaded) {
+        console.log('🔄 Affichage du loader - isLoading:', isLoading, 'dataLoaded:', dataLoaded);
         return (
             <div className="flex flex-column justify-content-center align-items-center" style={{ height: '80vh' }}>
                 <i className="pi pi-spin pi-spinner" style={{ fontSize: '3rem' }}></i>
@@ -232,6 +242,8 @@ const DashboardPage = () => {
             </div>
         );
     }
+
+    console.log('✨ Affichage du dashboard complet');
 
     return (
         <div className="p-3">
