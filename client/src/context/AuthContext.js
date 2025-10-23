@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const tokenVerificationDone = useRef(false);
+  const authReadyCallbacks = useRef([]);
 
   const logoutUser = useCallback((eventOrOptions, maybeOptions) => {
     let options = {};
@@ -42,7 +43,7 @@ export const AuthProvider = ({ children }) => {
   const authenticateUser = useCallback((tokenToAuth) => {
     if (!tokenToAuth) {
       logoutUser({ emitEvent: false });
-      return;
+      return false;
     }
 
     try {
@@ -52,19 +53,37 @@ export const AuthProvider = ({ children }) => {
       if (decodedUser.exp && decodedUser.exp * 1000 < Date.now()) {
         console.warn("Token expiré, déconnexion.");
         logoutUser({ emitEvent: true });
-        return;
+        return false;
       }
 
-      // IMPORTANT : On configure le token AVANT de mettre à jour les états
+      // CRITIQUE : Configuration du token AVANT tout le reste
       setAuthToken(tokenToAuth);
       api.defaults.headers.common.Authorization = `Bearer ${tokenToAuth}`;
       
+      // Mise à jour des états
       setToken(tokenToAuth);
       setUser(decodedUser);
       setIsLoggedIn(true);
+
+      // Notifier les callbacks en attente que l'auth est prête
+      if (authReadyCallbacks.current.length > 0) {
+        setTimeout(() => {
+          authReadyCallbacks.current.forEach(callback => {
+            try {
+              callback();
+            } catch (err) {
+              console.error('Erreur dans le callback auth:', err);
+            }
+          });
+          authReadyCallbacks.current = [];
+        }, 0);
+      }
+
+      return true;
     } catch (error) {
       console.error("Token invalide, déconnexion.", error);
       logoutUser({ emitEvent: true });
+      return false;
     }
   }, [logoutUser]);
 
@@ -74,8 +93,32 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.warn('Impossible de sauvegarder le token :', error);
     }
-    authenticateUser(receivedToken);
+    
+    const success = authenticateUser(receivedToken);
+    
+    // Forcer un re-render pour que tous les composants voient le changement
+    if (success) {
+      // Dispatcher un événement personnalisé pour notifier tous les composants
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:login', { 
+          detail: { token: receivedToken } 
+        }));
+      }
+    }
+    
+    return success;
   }, [authenticateUser]);
+
+  // Fonction pour enregistrer un callback à exécuter quand l'auth est prête
+  const onAuthReady = useCallback((callback) => {
+    if (isLoggedIn && !isLoading) {
+      // Auth déjà prête, exécuter immédiatement
+      callback();
+    } else {
+      // Enregistrer pour exécution future
+      authReadyCallbacks.current.push(callback);
+    }
+  }, [isLoggedIn, isLoading]);
 
   useEffect(() => {
     const verifyStoredToken = async () => {
@@ -157,7 +200,15 @@ export const AuthProvider = ({ children }) => {
   }, [token, isLoggedIn, logoutUser]);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, token, isLoading, storeToken, logoutUser }}>
+    <AuthContext.Provider value={{ 
+      isLoggedIn, 
+      user, 
+      token, 
+      isLoading, 
+      storeToken, 
+      logoutUser,
+      onAuthReady 
+    }}>
       {children}
     </AuthContext.Provider>
   );
