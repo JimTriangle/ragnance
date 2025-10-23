@@ -1,25 +1,38 @@
 import React, { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
 import { Navigate, Outlet } from 'react-router-dom';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { AuthContext } from '../context/AuthContext';
 
 const AdminRoute = () => {
-  // On récupère les trois états nécessaires depuis le contexte
   const { isLoggedIn, user, isLoading } = useContext(AuthContext);
 
-  // 1. Tant que le contexte vérifie l'authentification, on affiche un chargement
+  // Pendant le chargement, on affiche un loader
   if (isLoading) {
     return (
-      <div className="flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-        <ProgressSpinner />
+      <div className="flex justify-content-center align-items-center" style={{ height: '80vh' }}>
+        <i className="pi pi-spin pi-spinner" style={{ fontSize: '3rem' }}></i>
       </div>
     );
   }
-  
-  // 2. Une fois le chargement terminé, on vérifie si l'utilisateur est bien
-  //    connecté ET si son rôle est 'admin'.
-  //    L'opérateur '?.' (optional chaining) est une sécurité pour éviter une erreur si l'objet 'user' est null.
-  return isLoggedIn && user?.role === 'admin' ? <Outlet /> : <Navigate to="/" />;
+
+  // Si pas connecté, redirection vers login
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Si connecté mais pas admin, redirection vers l'accueil approprié
+  if (!user?.isAdmin) {
+    // Rediriger vers le dashboard approprié selon les accès
+    if (user?.budgetAccess) {
+      return <Navigate to="/budget/dashboard" replace />;
+    }
+    if (user?.tradingAccess) {
+      return <Navigate to="/trading" replace />;
+    }
+    return <Navigate to="/" replace />;
+  }
+
+  // L'utilisateur est admin, on affiche la route
+  return <Outlet />;
 };
 
 export default AdminRoute;

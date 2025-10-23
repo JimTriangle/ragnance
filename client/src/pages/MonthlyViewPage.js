@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import api from '../services/api';
 import { ToastContext } from '../context/ToastContext';
 import { TransactionRefreshContext } from '../context/TransactionRefreshContext';
+import { AuthContext } from '../context/AuthContext';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -14,7 +15,6 @@ import { InputText } from 'primereact/inputtext';
 import TransactionForm from '../components/TransactionForm';
 import { Dropdown } from 'primereact/dropdown';
 import useTransactionRefresh from '../hooks/useTransactionRefresh';
-
 
 const MonthlyViewPage = () => {
   const [transactions, setTransactions] = useState([]);
@@ -29,10 +29,13 @@ const MonthlyViewPage = () => {
   const [globalFilter, setGlobalFilter] = useState('');
   const { showToast } = useContext(ToastContext);
   const { notifyTransactionRefresh } = useContext(TransactionRefreshContext);
+  const { isLoggedIn, isLoading: authLoading } = useContext(AuthContext);
 
   const [isNewModalVisible, setIsNewModalVisible] = useState(false);
   const [allCategories, setAllCategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  
+  const isMountedRef = useRef(true);
 
   const chartOptions = {
     maintainAspectRatio: false,
@@ -46,21 +49,28 @@ const MonthlyViewPage = () => {
   };
 
   const fetchData = useCallback(async () => {
+    if (!isLoggedIn || authLoading) {
+      return;
+    }
+
     setLoading(true);
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
+    
     try {
       const [transacResponse, summaryResponse, dailyFlowResponse] = await Promise.all([
         api.get(`/transactions?year=${year}&month=${month}`),
         api.get(`/transactions/summary/${year}/${month}`),
         api.get(`/analysis/daily-flow/${year}/${month}`)
       ]);
+
+      if (!isMountedRef.current) return;
+
       setTransactions(transacResponse.data);
       setSummary(summaryResponse.data);
 
       const dailyFlowData = dailyFlowResponse.data;
 
-      // Logique pour le graphique des flux journaliers (inchangée)
       setLineChartData({
         labels: dailyFlowData.labels,
         datasets: [
@@ -69,7 +79,6 @@ const MonthlyViewPage = () => {
         ]
       });
 
-      // Logique pour le graphique camembert (inchangée)
       setPieChartData({
         labels: ['Revenus', 'Dépenses'],
         datasets: [{
@@ -78,7 +87,6 @@ const MonthlyViewPage = () => {
         }]
       });
 
-      // --- AJOUT : Calcul des données pour le nouveau graphique cumulatif ---
       const cumulativeIncome = [];
       const cumulativeExpense = [];
       let runningIncome = 0;
@@ -97,14 +105,6 @@ const MonthlyViewPage = () => {
         labels: dailyFlowData.labels,
         datasets: [
           {
-            label: 'Revenus Cumulés',
-            data: cumulativeIncome,
-            fill: true,
-            borderColor: '#10B981',
-            backgroundColor: 'rgba(16, 185, 129, 0.2)',
-            tension: 0.4
-          },
-          {
             label: 'Dépenses Cumulées',
             data: cumulativeExpense,
             fill: true,
@@ -116,19 +116,38 @@ const MonthlyViewPage = () => {
       });
 
     } catch (error) {
+      if (!isMountedRef.current) return;
       showToast('error', 'Erreur', 'Impossible de charger les données');
+    } finally { 
+      if (isMountedRef.current) {
+        setLoading(false); 
+      }
     }
-    finally { setLoading(false); }
-  }, [currentDate, showToast]);
+  }, [currentDate, showToast, isLoggedIn, authLoading]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (!authLoading && isLoggedIn) {
+      fetchData();
+    }
+  }, [fetchData, authLoading, isLoggedIn]);
 
   useTransactionRefresh(fetchData);
 
   useEffect(() => {
-    api.get('/categories').then(response => setAllCategories(response.data));
+    if (!authLoading && isLoggedIn) {
+      api.get('/categories').then(response => {
+        if (isMountedRef.current) {
+          setAllCategories(response.data);
+        }
+      }).catch(err => console.error('Erreur chargement catégories:', err));
+    }
+  }, [authLoading, isLoggedIn]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   const changeMonth = (amount) => {
@@ -147,7 +166,7 @@ const MonthlyViewPage = () => {
   const handleComplete = () => {
     showToast('success', 'Succès', 'Opération réussie');
     if (isEditModalVisible) setIsEditModalVisible(false);
-    if (isNewModalVisible) setIsNewModalVisible(false); // On ferme aussi la nouvelle modale
+    if (isNewModalVisible) setIsNewModalVisible(false);
     notifyTransactionRefresh();
   };
 
@@ -224,13 +243,10 @@ const MonthlyViewPage = () => {
     return new Date(rowData.createdAt).toLocaleDateString('fr-FR');
   };
 
-
   const categoryBodyTemplate = (rowData) => {
-    // Si la transaction n'a pas de catégories, on n'affiche rien.
     if (!rowData.Categories || rowData.Categories.length === 0) {
       return null;
     }
-    // On affiche une pastille (Tag) pour chaque catégorie
     return (
       <div className="flex flex-wrap gap-1">
         {rowData.Categories.map(category => (
@@ -239,6 +255,15 @@ const MonthlyViewPage = () => {
       </div>
     );
   };
+
+  if (authLoading) {
+    return (
+      <div className="flex justify-content-center align-items-center" style={{ height: '80vh' }}>
+        <i className="pi pi-spin pi-spinner" style={{ fontSize: '3rem' }}></i>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="p-4">
@@ -248,7 +273,6 @@ const MonthlyViewPage = () => {
           <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} />
         </div>
 
-        {/* MODIFICATION : Les cartes de résumé sont réintégrées ici */}
         <div className="grid text-center mb-4">
           <div className="col-12 md:col-3"><Card title="Solde Début de Mois"><h3 className="m-0">{formatCurrency(summary.startingBalance)}</h3></Card></div>
           <div className="col-12 md:col-3"><Card title="Total Revenus du Mois"><h3 className="m-0 text-green-400">{formatCurrency(summary.totalIncome)}</h3></Card></div>
@@ -258,7 +282,6 @@ const MonthlyViewPage = () => {
 
         <div className="grid">
           <div className="col-12 lg:col-4">
-            {/* MODIFICATION : Le titre du graphique est mis à jour */}
             <Card title="Flux Journalier">
               <div style={{ position: 'relative', height: '300px' }}>
                 <Chart type="line" data={lineChartData} options={chartOptions} />
@@ -304,4 +327,4 @@ const MonthlyViewPage = () => {
   );
 };
 
-export default MonthlyViewPage;
+export default MonthlyViewPage; 
