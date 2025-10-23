@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import { Card } from 'primereact/card';
@@ -17,7 +17,6 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { storeToken } = useContext(AuthContext);
-  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
