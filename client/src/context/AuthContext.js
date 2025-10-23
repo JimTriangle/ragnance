@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authTimestamp, setAuthTimestamp] = useState(0); // NOUVEAU : Timestamp pour forcer re-render
   const tokenVerificationDone = useRef(false);
   const authReadyCallbacks = useRef([]);
 
