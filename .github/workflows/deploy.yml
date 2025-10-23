@@ -4,9 +4,17 @@ on:
   push:
     branches: [ main ]
 
+env:
+  NODE_VERSION: '20'
+  DEPLOY_PATH: '/var/www/ragnance'
+  APP_NAME: 'ragnance-api'
+  HEALTH_CHECK_URL: 'https://ragnance.fr/api/auth/health'
+  HEALTH_CHECK_TIMEOUT: 30
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -18,7 +26,7 @@ jobs:
       - name: Setup Node.js (frontend)
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: client/package-lock.json
 
@@ -28,7 +36,7 @@ jobs:
           npm ci || npm install
           npm run build
         env:
-          CI: true   # front utilise /api en relatif
+          CI: true
 
       # ---------- PREP & BACKUP (DB intouchable) ----------
       - name: Prepare & Backup DB (SSH)
@@ -41,20 +49,20 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             set -e
-            sudo mkdir -p /var/www/ragnance /var/www/ragnance/server/var/data /var/backups/ragnance
+            sudo mkdir -p ${{ env.DEPLOY_PATH }} ${{ env.DEPLOY_PATH }}/server/var/data /var/backups/ragnance
             # Backup sqlite si présente (rotation 7)
-            if [ -f /var/www/ragnance/server/ragnance.sqlite ]; then
+            if [ -f ${{ env.DEPLOY_PATH }}/server/ragnance.sqlite ]; then
               TS=$(date +%Y%m%d-%H%M%S)
-              sudo cp /var/www/ragnance/server/ragnance.sqlite /var/backups/ragnance/ragnance.sqlite.$TS.bak
+              sudo cp ${{ env.DEPLOY_PATH }}/server/ragnance.sqlite /var/backups/ragnance/ragnance.sqlite.$TS.bak
               ls -1t /var/backups/ragnance/ragnance.sqlite.*.bak 2>/dev/null | tail -n +8 | xargs -r sudo rm -f
             fi
             # Backup /var si non vide (rotation 7)
-            if [ -d /var/www/ragnance/server/var ] && [ "$(ls -A /var/www/ragnance/server/var)" ]; then
+            if [ -d ${{ env.DEPLOY_PATH }}/server/var ] && [ "$(ls -A ${{ env.DEPLOY_PATH }}/server/var)" ]; then
               TS=$(date +%Y%m%d-%H%M%S)
-              sudo tar -czf /var/backups/ragnance/server-var-$TS.tgz -C /var/www/ragnance/server var
+              sudo tar -czf /var/backups/ragnance/server-var-$TS.tgz -C ${{ env.DEPLOY_PATH }}/server var
               ls -1t /var/backups/ragnance/server-var-*.tgz 2>/dev/null | tail -n +8 | xargs -r sudo rm -f
             fi
-            sudo chown -R $USER:$USER /var/www/ragnance
+            sudo chown -R $USER:$USER ${{ env.DEPLOY_PATH }}
 
       # ---------- FRONT: clean + upload ----------
       - name: Clean frontend dir (SSH)
@@ -68,8 +76,8 @@ jobs:
           script: |
             set -e
             # Supprime TOUT sauf le dossier server
-            sudo find /var/www/ragnance -mindepth 1 -maxdepth 1 ! -name 'server' -exec rm -rf {} +
-            sudo chown -R $USER:$USER /var/www/ragnance
+            sudo find ${{ env.DEPLOY_PATH }} -mindepth 1 -maxdepth 1 ! -name 'server' -exec rm -rf {} +
+            sudo chown -R $USER:$USER ${{ env.DEPLOY_PATH }}
 
       - name: Upload frontend build
         uses: appleboy/scp-action@master
@@ -80,7 +88,7 @@ jobs:
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           port: ${{ secrets.VPS_SSH_PORT }}
           source: "client/build/**"
-          target: "/var/www/ragnance"
+          target: ${{ env.DEPLOY_PATH }}
           strip_components: 2
 
       # ---------- SERVER: pack local + upload unique ----------
@@ -103,7 +111,7 @@ jobs:
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           port: ${{ secrets.VPS_SSH_PORT }}
           source: "server-upload.tgz"
-          target: "/var/www/ragnance"
+          target: ${{ env.DEPLOY_PATH }}
 
       # ---------- SERVER: clean code (préserve .env & DB), puis extract ----------
       - name: Unpack server on VPS (SSH)
@@ -116,7 +124,7 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             set -e
-            cd /var/www/ragnance
+            cd ${{ env.DEPLOY_PATH }}
             sudo mkdir -p server/var/data
             # Supprime tout SAUF 'var', '.env', 'ecosystem.config.js' et '*.sqlite'
             sudo find server -mindepth 1 -maxdepth 1 \
@@ -128,10 +136,122 @@ jobs:
             # Décompresse le bundle dans server/
             tar -xzf server-upload.tgz -C server
             rm -f server-upload.tgz
-            sudo chown -R $USER:$USER /var/www/ragnance/server
+            sudo chown -R $USER:$USER ${{ env.DEPLOY_PATH }}/server
 
       # ---------- POST-DEPLOY ----------
-      - name: Post-deploy (install deps + pm2 + nginx reload)
+      - name: Install dependencies and restart backend
+        id: deploy_backend
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          command_timeout: 10m
+          script: |
+            set -e
+
+            echo "🔧 Configuration de l'environnement Node.js..."
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+            # Vérifier Node.js
+            if ! command -v node >/dev/null 2>&1; then
+              echo "❌ Node.js non trouvé, installation..."
+              curl -fsSL https://deb.nodesource.com/setup_${{ env.NODE_VERSION }}.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+
+            # Vérifier PM2
+            if ! command -v pm2 >/dev/null 2>&1; then
+              echo "❌ PM2 non trouvé, installation..."
+              sudo npm i -g pm2
+            fi
+
+            echo "📦 Installation des dépendances npm..."
+            cd ${{ env.DEPLOY_PATH }}/server
+
+            # Nettoyer node_modules pour éviter les conflits
+            rm -rf node_modules package-lock.json
+
+            # Installer les dépendances (OBLIGATOIRE)
+            if ! npm install --production; then
+              echo "❌ ERREUR : npm install a échoué !"
+              exit 1
+            fi
+
+            # Vérifier que express est bien installé
+            if [ ! -d "node_modules/express" ]; then
+              echo "❌ ERREUR : express n'est pas installé !"
+              exit 1
+            fi
+
+            echo "✅ Dépendances installées avec succès"
+
+            echo "🔄 Gestion de PM2..."
+            if pm2 describe ${{ env.APP_NAME }} >/dev/null 2>&1; then
+              echo "🔄 Redémarrage de l'application existante..."
+              pm2 stop ${{ env.APP_NAME }}
+
+              # Utiliser ecosystem.config.js si disponible
+              if [ -f "ecosystem.config.js" ]; then
+                pm2 start ecosystem.config.js --env production --update-env
+              else
+                NODE_ENV=production PORT=5000 pm2 start server.js --name ${{ env.APP_NAME }} --update-env
+              fi
+            else
+              echo "🚀 Démarrage de la nouvelle application..."
+              if [ -f "ecosystem.config.js" ]; then
+                pm2 start ecosystem.config.js --env production
+              else
+                NODE_ENV=production PORT=5000 pm2 start server.js --name ${{ env.APP_NAME }}
+              fi
+            fi
+
+            pm2 save
+
+            echo "⏳ Attente du démarrage de l'application (5s)..."
+            sleep 5
+
+            # Vérifier que le processus tourne
+            if ! pm2 describe ${{ env.APP_NAME }} | grep -q "online"; then
+              echo "❌ ERREUR : L'application n'est pas en ligne !"
+              pm2 logs ${{ env.APP_NAME }} --lines 50 --nostream
+              exit 1
+            fi
+
+            echo "✅ Application démarrée avec succès"
+
+            echo "🔄 Rechargement de Nginx..."
+            sudo nginx -t && sudo systemctl reload nginx
+
+            echo "✅ Déploiement terminé avec succès !"
+
+      # ---------- HEALTH CHECK ----------
+      - name: Health check
+        if: success()
+        run: |
+          echo "🏥 Vérification de la santé de l'API..."
+
+          # Attendre que l'API soit prête
+          for i in {1..${{ env.HEALTH_CHECK_TIMEOUT }}}; do
+            if curl -f -s "${{ env.HEALTH_CHECK_URL }}" > /dev/null; then
+              echo "✅ API opérationnelle !"
+              curl -s "${{ env.HEALTH_CHECK_URL }}" | jq '.'
+              exit 0
+            fi
+            echo "⏳ Tentative $i/${{ env.HEALTH_CHECK_TIMEOUT }}..."
+            sleep 1
+          done
+
+          echo "❌ L'API ne répond pas après ${{ env.HEALTH_CHECK_TIMEOUT }} secondes"
+          echo "🔍 Récupération des logs PM2..."
+          exit 1
+
+      # ---------- ROLLBACK EN CAS D'ÉCHEC ----------
+      - name: Rollback on failure
+        if: failure()
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -140,25 +260,35 @@ jobs:
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
-            set -e
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-            if ! command -v node >/dev/null 2>&1; then
-              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-              sudo apt-get install -y nodejs
-            fi
-            if ! command -v pm2 >/dev/null 2>&1; then
-              sudo npm i -g pm2
+            echo "🔄 Tentative de rollback..."
+
+            cd ${{ env.DEPLOY_PATH }}/server
+
+            # Afficher les logs pour debug
+            if command -v pm2 >/dev/null 2>&1; then
+              echo "📋 Logs PM2:"
+              pm2 logs ${{ env.APP_NAME }} --lines 50 --nostream || true
             fi
 
-            cd /var/www/ragnance/server
-            npm ci --omit=dev || npm install --omit=dev
-
-            if pm2 describe ragnance-api >/dev/null 2>&1; then
-              pm2 restart ragnance-api --update-env
-            else
-              PORT=5000 pm2 start server.js --name ragnance-api
+            # Restaurer la dernière base de données (optionnel)
+            LATEST_DB=$(ls -t /var/backups/ragnance/ragnance.sqlite.*.bak 2>/dev/null | head -1)
+            if [ -n "$LATEST_DB" ]; then
+              echo "📦 Restauration de la base de données: $LATEST_DB"
+              sudo cp "$LATEST_DB" ${{ env.DEPLOY_PATH }}/server/ragnance.sqlite
             fi
-            pm2 save
 
-            sudo nginx -t && sudo systemctl reload nginx
+            # Redémarrer l'application avec l'ancien code
+            if command -v pm2 >/dev/null 2>&1 && pm2 describe ${{ env.APP_NAME }} >/dev/null 2>&1; then
+              pm2 restart ${{ env.APP_NAME }} || pm2 delete ${{ env.APP_NAME }}
+            fi
+
+            echo "⚠️ Rollback effectué, vérifiez les logs ci-dessus"
+
+      # ---------- NOTIFICATION DE SUCCÈS ----------
+      - name: Deployment success notification
+        if: success()
+        run: |
+          echo "✅ Déploiement réussi !"
+          echo "🌐 Frontend: https://ragnance.fr"
+          echo "🔌 Backend: https://ragnance.fr/api"
+          echo "🏥 Health: ${{ env.HEALTH_CHECK_URL }}"
