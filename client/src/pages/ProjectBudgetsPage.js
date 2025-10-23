@@ -9,23 +9,28 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { ProgressBar } from 'primereact/progressbar';
 import { confirmDialog } from 'primereact/confirmdialog';
+import { InputSwitch } from 'primereact/inputswitch';
+import { Badge } from 'primereact/badge';
 import { ToastContext } from '../context/ToastContext';
 
 const ProjectBudgetsPage = () => {
     const [budgets, setBudgets] = useState([]);
     const [isDialogVisible, setIsDialogVisible] = useState(false);
     const [budgetData, setBudgetData] = useState({ id: null, name: '', totalAmount: null, dateRange: [] });
+    const [showArchived, setShowArchived] = useState(false);
     const { showToast } = useContext(ToastContext);
 
     const fetchBudgets = useCallback(async () => {
         try {
-            const response = await api.get('/project-budgets');
+            const url = showArchived ? '/project-budgets?includeArchived=true' : '/project-budgets';
+            const response = await api.get(url);
             setBudgets(response.data);
         } catch (error) {
             console.error("Erreur fetch project budgets", error);
             showToast('error', 'Erreur', 'Impossible de charger les budgets de projet');
         }
-    }, [showToast]);
+    }, [showArchived, showToast]);
+
     useEffect(() => {
         fetchBudgets();
     }, [fetchBudgets]);
@@ -72,6 +77,16 @@ const ProjectBudgetsPage = () => {
         }
     };
 
+    const toggleArchive = async (budgetId, isArchived) => {
+        try {
+            await api.patch(`/project-budgets/${budgetId}/archive`);
+            showToast('success', 'Succès', isArchived ? 'Budget désarchivé' : 'Budget archivé');
+            fetchBudgets();
+        } catch (error) {
+            showToast('error', 'Erreur', "Échec de l'archivage");
+        }
+    };
+
     const confirmDelete = (budgetId) => {
         const deleteBudget = async () => {
             try {
@@ -98,17 +113,58 @@ const ProjectBudgetsPage = () => {
         <div className="p-4">
             <div className="flex justify-content-between align-items-center mb-4">
                 <h1 className="text-2xl m-0">Budgets de Projet</h1>
-                <Button label="Nouveau Budget" icon="pi pi-plus" onClick={openNew} />
+                <div className="flex gap-3 align-items-center">
+                    <div className="flex align-items-center gap-2">
+                        <label htmlFor="show-archived" className="text-sm">Afficher les archivés</label>
+                        <InputSwitch
+                            inputId="show-archived"
+                            checked={showArchived}
+                            onChange={(e) => setShowArchived(e.value)}
+                        />
+                    </div>
+                    <Button label="Nouveau Budget" icon="pi pi-plus" onClick={openNew} />
+                </div>
             </div>
             <div className="grid">
                 {budgets.map(budget => {
                     const percentage = budget.totalAmount > 0 ? (budget.spentAmount / budget.totalAmount) * 100 : 0;
+                    const isArchived = budget.archived;
+
                     return (
                         <div key={budget.id} className="col-12 md:col-6 lg:col-4">
-                            <Card title={budget.name}>
+                            <Card
+                                title={
+                                    <div className="flex align-items-center gap-2">
+                                        <span>{budget.name}</span>
+                                        {isArchived && <Badge value="Archivé" severity="secondary" />}
+                                    </div>
+                                }
+                                style={{ opacity: isArchived ? 0.7 : 1 }}
+                            >
                                 <div className="flex gap-2 mb-3">
-                                    <Button icon="pi pi-pencil" className="p-button-sm p-button-rounded p-button-success" onClick={() => editBudget(budget)} />
-                                    <Button icon="pi pi-trash" className="p-button-sm p-button-rounded p-button-danger" onClick={() => confirmDelete(budget.id)} />
+                                    {!isArchived && (
+                                        <Button
+                                            icon="pi pi-pencil"
+                                            className="p-button-sm p-button-rounded p-button-success"
+                                            onClick={() => editBudget(budget)}
+                                            tooltip="Modifier"
+                                            tooltipOptions={{ position: 'top' }}
+                                        />
+                                    )}
+                                    <Button
+                                        icon={isArchived ? "pi pi-replay" : "pi pi-check"}
+                                        className={`p-button-sm p-button-rounded ${isArchived ? 'p-button-info' : 'p-button-warning'}`}
+                                        onClick={() => toggleArchive(budget.id, isArchived)}
+                                        tooltip={isArchived ? "Désarchiver" : "Archiver"}
+                                        tooltipOptions={{ position: 'top' }}
+                                    />
+                                    <Button
+                                        icon="pi pi-trash"
+                                        className="p-button-sm p-button-rounded p-button-danger"
+                                        onClick={() => confirmDelete(budget.id)}
+                                        tooltip="Supprimer"
+                                        tooltipOptions={{ position: 'top' }}
+                                    />
                                 </div>
                                 <p className="font-bold text-xl">{formatCurrency(budget.spentAmount)} / {formatCurrency(budget.totalAmount)}</p>
                                 <ProgressBar value={percentage} color={percentage > 100 ? '#EF4444' : '#10B981'} style={{ height: '1.5rem' }} />
