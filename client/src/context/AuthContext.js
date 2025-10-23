@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [authTimestamp, setAuthTimestamp] = useState(0); // NOUVEAU : Timestamp pour forcer re-render
+  const [authTimestamp, setAuthTimestamp] = useState(0);
   const tokenVerificationDone = useRef(false);
   const authReadyCallbacks = useRef([]);
 
@@ -24,6 +24,9 @@ export const AuthProvider = ({ children }) => {
     }
 
     const { emitEvent = true } = options;
+
+    console.log('🚪 logoutUser appelé, emitEvent:', emitEvent);
+    console.trace('Stack trace du logout'); // AJOUT : Pour voir qui appelle logout
 
     try {
       localStorage.removeItem('authToken');
@@ -74,7 +77,7 @@ export const AuthProvider = ({ children }) => {
       setToken(tokenToAuth);
       setUser(decodedUser);
       setIsLoggedIn(true);
-      setAuthTimestamp(Date.now()); // NOUVEAU : Mise à jour du timestamp
+      setAuthTimestamp(Date.now());
 
       // Notifier les callbacks en attente que l'auth est prête
       if (authReadyCallbacks.current.length > 0) {
@@ -132,7 +135,7 @@ export const AuthProvider = ({ children }) => {
   }, [isLoggedIn, isLoading]);
 
   useEffect(() => {
-    const verifyStoredToken = async () => {
+    const verifyStoredToken = () => {
       // Éviter les doubles vérifications
       if (tokenVerificationDone.current) {
         return;
@@ -147,28 +150,16 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (storedToken) {
-        console.log('🔍 Token trouvé dans localStorage, vérification...');
-        try {
-          // Configurer le token AVANT la vérification API
-          setAuthToken(storedToken);
-          api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-          
-          console.log('🌐 Appel API /auth/verify...');
-          const response = await api.get('/auth/verify', {
-            headers: { Authorization: `Bearer ${storedToken}` }
-          });
-
-          console.log('✅ Vérification réussie, status:', response.status);
-          // Si la vérification réussit, authentifier
-          if (response.status === 200) {
-            authenticateUser(storedToken);
-          } else {
-            console.warn('⚠️ Status inattendu:', response.status);
-            logoutUser({ emitEvent: false });
-          }
-        } catch (error) {
-          console.error('❌ Erreur de vérification du token:', error.response?.status, error.message);
-          logoutUser({ emitEvent: false });
+        console.log('🔍 Token trouvé dans localStorage, authentification directe...');
+        
+        // SIMPLIFIÉ : Authentifier directement sans appel API
+        // La vérification se fera naturellement lors de la première vraie requête
+        const success = authenticateUser(storedToken);
+        
+        if (success) {
+          console.log('✅ Authentification locale réussie');
+        } else {
+          console.warn('⚠️ Token local invalide ou expiré');
         }
       } else {
         console.log('ℹ️ Aucun token dans localStorage');
@@ -178,7 +169,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     verifyStoredToken();
-  }, [authenticateUser, logoutUser]);
+  }, [authenticateUser]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -223,7 +214,7 @@ export const AuthProvider = ({ children }) => {
       user, 
       token, 
       isLoading, 
-      authTimestamp, // NOUVEAU : Exposer le timestamp
+      authTimestamp,
       storeToken, 
       logoutUser,
       onAuthReady 
