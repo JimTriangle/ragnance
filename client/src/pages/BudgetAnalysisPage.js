@@ -99,7 +99,7 @@ const BudgetAnalysisPage = () => {
                         label="Gérer les budgets"
                         icon="pi pi-pencil"
                         className={`p-button-sm w-full ${color}`}
-                        onClick={() => navigate('/budgets')}
+                        onClick={() => navigate('/budget/budgets')}
                     />
                 </Card>
             </div>
