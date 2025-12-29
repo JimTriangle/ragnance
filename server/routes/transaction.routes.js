@@ -263,7 +263,12 @@ router.get('/summary', isAuth, async (req, res) => {
             attributes: ['amount']
         });
         const totalBudgets = budgets.reduce((sum, budget) => sum + budget.amount, 0);
-        const projectedBalanceWithBudgets = startingBalanceOfMonth + totalProjectedIncome - totalBudgets;
+
+        // Calculer les dépenses restantes pour atteindre les budgets
+        // Si budgets > dépenses prévues, on utilise les budgets
+        // Sinon, on garde les dépenses prévues (on a déjà dépassé les budgets)
+        const projectedExpenseWithBudgets = Math.max(totalProjectedExpense, totalBudgets);
+        const projectedBalanceWithBudgets = startingBalanceOfMonth + totalProjectedIncome - projectedExpenseWithBudgets;
 
         res.status(200).json({
             currentBalance,
