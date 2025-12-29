@@ -262,8 +262,58 @@ router.get('/summary', isAuth, async (req, res) => {
             },
             include: [{ model: Category, attributes: ['id'] }]
         });
-        const totalBudgets = budgets.reduce((sum, budget) => sum + budget.amount, 0);
+
+        let totalBudgetsWithOverspending = 0;
         const budgetedCategoryIds = budgets.map(b => b.CategoryId);
+
+        // Pour chaque catégorie budgétée, calculer le max entre le budget et les dépenses réelles
+        if (budgets.length > 0) {
+            for (const budget of budgets) {
+                // Dépenses one-time pour cette catégorie
+                const oneTimeSpent = await Transaction.sum('amount', {
+                    where: {
+                        UserId: userId,
+                        type: 'expense',
+                        transactionType: 'one-time',
+                        date: { [Op.gte]: startOfMonth, [Op.lt]: startOfNextMonth }
+                    },
+                    include: [{
+                        model: Category,
+                        where: { id: budget.CategoryId },
+                        attributes: [],
+                        required: true
+                    }]
+                });
+
+                // Dépenses récurrentes pour cette catégorie
+                const recurringExpenses = await Transaction.findAll({
+                    where: {
+                        UserId: userId,
+                        type: 'expense',
+                        transactionType: 'recurring',
+                        startDate: { [Op.lt]: startOfNextMonth },
+                        [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startOfMonth } }]
+                    },
+                    include: [{
+                        model: Category,
+                        where: { id: budget.CategoryId },
+                        attributes: [],
+                        required: true
+                    }]
+                });
+
+                const recurringTotal = calculateRecurringTotals(
+                    recurringExpenses,
+                    startOfMonth,
+                    new Date(startOfNextMonth.getTime() - 1)
+                );
+
+                const actualSpent = (oneTimeSpent || 0) + recurringTotal.expense;
+
+                // Prendre le maximum entre le budget défini et les dépenses réelles
+                totalBudgetsWithOverspending += Math.max(budget.amount, actualSpent);
+            }
+        }
 
         // Calculer les dépenses des catégories NON budgétées
         let nonBudgetedExpenses = 0;
@@ -314,9 +364,12 @@ router.get('/summary', isAuth, async (req, res) => {
             nonBudgetedExpenses = totalProjectedExpense;
         }
 
-        // Total = budgets des catégories budgétées + dépenses réelles des catégories non budgétées
-        const projectedExpenseWithBudgets = totalBudgets + nonBudgetedExpenses;
+        // Total = max(budget, dépenses) des catégories budgétées + dépenses réelles des catégories non budgétées
+        const projectedExpenseWithBudgets = totalBudgetsWithOverspending + nonBudgetedExpenses;
         const projectedBalanceWithBudgets = startingBalanceOfMonth + totalProjectedIncome - projectedExpenseWithBudgets;
+
+        // Calculer aussi le total des budgets pour l'affichage
+        const totalBudgets = budgets.reduce((sum, budget) => sum + budget.amount, 0);
 
         res.status(200).json({
             currentBalance,
