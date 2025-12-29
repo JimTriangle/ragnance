@@ -260,10 +260,63 @@ router.get('/summary', isAuth, async (req, res) => {
                 year: today.getUTCFullYear(),
                 month: today.getUTCMonth() + 1
             },
-            attributes: ['amount']
+            include: [{ model: Category, attributes: ['id'] }]
         });
         const totalBudgets = budgets.reduce((sum, budget) => sum + budget.amount, 0);
-        const projectedBalanceWithBudgets = startingBalanceOfMonth + totalProjectedIncome - totalBudgets;
+        const budgetedCategoryIds = budgets.map(b => b.CategoryId);
+
+        // Calculer les dépenses des catégories NON budgétées
+        let nonBudgetedExpenses = 0;
+
+        if (budgetedCategoryIds.length > 0) {
+            // Dépenses one-time des catégories non budgétées
+            const nonBudgetedOneTimeExpenses = await Transaction.sum('amount', {
+                where: {
+                    UserId: userId,
+                    type: 'expense',
+                    transactionType: 'one-time',
+                    date: { [Op.gte]: startOfMonth, [Op.lt]: startOfNextMonth }
+                },
+                include: [{
+                    model: Category,
+                    where: { id: { [Op.notIn]: budgetedCategoryIds } },
+                    attributes: [],
+                    required: true
+                }]
+            });
+
+            // Dépenses récurrentes des catégories non budgétées
+            const nonBudgetedRecurringTxs = await Transaction.findAll({
+                where: {
+                    UserId: userId,
+                    type: 'expense',
+                    transactionType: 'recurring',
+                    startDate: { [Op.lt]: startOfNextMonth },
+                    [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startOfMonth } }]
+                },
+                include: [{
+                    model: Category,
+                    where: { id: { [Op.notIn]: budgetedCategoryIds } },
+                    attributes: [],
+                    required: true
+                }]
+            });
+
+            const nonBudgetedRecurringTotal = calculateRecurringTotals(
+                nonBudgetedRecurringTxs,
+                startOfMonth,
+                new Date(startOfNextMonth.getTime() - 1)
+            );
+
+            nonBudgetedExpenses = (nonBudgetedOneTimeExpenses || 0) + nonBudgetedRecurringTotal.expense;
+        } else {
+            // Si aucun budget n'est défini, toutes les dépenses sont non budgétées
+            nonBudgetedExpenses = totalProjectedExpense;
+        }
+
+        // Total = budgets des catégories budgétées + dépenses réelles des catégories non budgétées
+        const projectedExpenseWithBudgets = totalBudgets + nonBudgetedExpenses;
+        const projectedBalanceWithBudgets = startingBalanceOfMonth + totalProjectedIncome - projectedExpenseWithBudgets;
 
         res.status(200).json({
             currentBalance,
