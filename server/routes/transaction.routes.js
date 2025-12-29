@@ -315,11 +315,11 @@ router.get('/summary', isAuth, async (req, res) => {
             }
         }
 
-        // Calculer les dépenses des catégories NON budgétées
+        // Calculer les dépenses des catégories NON budgétées + transactions sans catégorie
         let nonBudgetedExpenses = 0;
 
         if (budgetedCategoryIds.length > 0) {
-            // Dépenses one-time des catégories non budgétées
+            // Dépenses one-time des catégories non budgétées (avec catégorie)
             const nonBudgetedOneTimeExpenses = await Transaction.sum('amount', {
                 where: {
                     UserId: userId,
@@ -335,7 +335,7 @@ router.get('/summary', isAuth, async (req, res) => {
                 }]
             });
 
-            // Dépenses récurrentes des catégories non budgétées
+            // Dépenses récurrentes des catégories non budgétées (avec catégorie)
             const nonBudgetedRecurringTxs = await Transaction.findAll({
                 where: {
                     UserId: userId,
@@ -358,7 +358,49 @@ router.get('/summary', isAuth, async (req, res) => {
                 new Date(startOfNextMonth.getTime() - 1)
             );
 
-            nonBudgetedExpenses = (nonBudgetedOneTimeExpenses || 0) + nonBudgetedRecurringTotal.expense;
+            // Dépenses one-time SANS catégorie
+            const uncategorizedOneTimeExpenses = await Transaction.sum('amount', {
+                where: {
+                    UserId: userId,
+                    type: 'expense',
+                    transactionType: 'one-time',
+                    date: { [Op.gte]: startOfMonth, [Op.lt]: startOfNextMonth },
+                    '$Categories.id$': null
+                },
+                include: [{
+                    model: Category,
+                    attributes: [],
+                    required: false
+                }]
+            });
+
+            // Dépenses récurrentes SANS catégorie
+            const uncategorizedRecurringTxs = await Transaction.findAll({
+                where: {
+                    UserId: userId,
+                    type: 'expense',
+                    transactionType: 'recurring',
+                    startDate: { [Op.lt]: startOfNextMonth },
+                    [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startOfMonth } }],
+                    '$Categories.id$': null
+                },
+                include: [{
+                    model: Category,
+                    attributes: [],
+                    required: false
+                }]
+            });
+
+            const uncategorizedRecurringTotal = calculateRecurringTotals(
+                uncategorizedRecurringTxs,
+                startOfMonth,
+                new Date(startOfNextMonth.getTime() - 1)
+            );
+
+            nonBudgetedExpenses = (nonBudgetedOneTimeExpenses || 0) +
+                                   nonBudgetedRecurringTotal.expense +
+                                   (uncategorizedOneTimeExpenses || 0) +
+                                   uncategorizedRecurringTotal.expense;
         } else {
             // Si aucun budget n'est défini, toutes les dépenses sont non budgétées
             nonBudgetedExpenses = totalProjectedExpense;
