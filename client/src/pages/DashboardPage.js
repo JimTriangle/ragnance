@@ -16,7 +16,7 @@ import ProjectBudgetTracker from '../components/ProjectBudgetTracker';
 
 const DashboardPage = () => {
     // États du Dashboard
-    const [summary, setSummary] = useState({ currentBalance: 0, projectedBalance: 0, totalProjectedIncome: 0, totalProjectedExpense: 0 });
+    const [summary, setSummary] = useState({ currentBalance: 0, projectedBalance: 0, totalProjectedIncome: 0, totalProjectedExpense: 0, projectedBalanceWithBudgets: 0, totalBudgets: 0 });
     const [lineChartData, setLineChartData] = useState(null);
     const [categoryChartData, setCategoryChartData] = useState(null);
     const [budgetProgressData, setBudgetProgressData] = useState([]);
@@ -277,7 +277,22 @@ const DashboardPage = () => {
             </div>
             <div className="grid mt-2">
                 <div className="col-12 md:col-6 lg:col-3"><Card title="Solde Actuel"><h2 className="m-0" style={{ color: summary.currentBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.currentBalance)}</h2></Card></div>
-                <div className="col-12 md:col-6 lg:col-3"><Card title="Solde Fin de Mois (Prév.)"><h2 className="m-0">{formatCurrency(summary.projectedBalance)}</h2></Card></div>
+                <div className="col-12 md:col-6 lg:col-3">
+                    <Card title="Solde Fin de Mois (Prév.)">
+                        <div className="flex flex-column gap-2">
+                            <div>
+                                <p className="m-0 text-sm text-500">Basé sur transactions</p>
+                                <h2 className="m-0">{formatCurrency(summary.projectedBalance)}</h2>
+                            </div>
+                            {summary.totalBudgets > 0 && (
+                                <div>
+                                    <p className="m-0 text-sm text-500">Si budgets remplis</p>
+                                    <h2 className="m-0" style={{ color: summary.projectedBalanceWithBudgets >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.projectedBalanceWithBudgets)}</h2>
+                                </div>
+                            )}
+                        </div>
+                    </Card>
+                </div>
                 <div className="col-12 md:col-6 lg:col-3"><Card title="Revenus du Mois (Prév.)"><h2 className="m-0 text-green-400">{formatCurrency(summary.totalProjectedIncome)}</h2></Card></div>
                 <div className="col-12 md:col-6 lg:col-3"><Card title="Dépenses du Mois (Prév.)"><h2 className="m-0 text-red-400">{formatCurrency(summary.totalProjectedExpense)}</h2></Card></div>
             </div>

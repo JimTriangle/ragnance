@@ -3,6 +3,7 @@ const router = express.Router();
 const isAuth = require('../middleware/isAuth');
 const Transaction = require('../models/Transaction.model');
 const Category = require('../models/Category.model');
+const Budget = require('../models/Budget.model');
 const { Op, fn, col } = require('sequelize');
 const sequelize = require('../config/database'); 
 
@@ -251,7 +252,27 @@ router.get('/summary', isAuth, async (req, res) => {
         const recurringTotalsBeforeMonth = calculateRecurringTotals(recurringTxs, new Date('1970-01-01'), new Date(startOfMonth.getTime() - 1));
         const startingBalanceOfMonth = (oneTimeIncomeBeforeMonth + recurringTotalsBeforeMonth.income) - (oneTimeExpenseBeforeMonth + recurringTotalsBeforeMonth.expense);
         const projectedBalance = startingBalanceOfMonth + totalProjectedIncome - totalProjectedExpense;
-        res.status(200).json({ currentBalance, projectedBalance, totalProjectedIncome, totalProjectedExpense });
+
+        // Calcul du solde prévisionnel avec budgets mensuels définis
+        const budgets = await Budget.findAll({
+            where: {
+                UserId: userId,
+                year: today.getUTCFullYear(),
+                month: today.getUTCMonth() + 1
+            },
+            attributes: ['amount']
+        });
+        const totalBudgets = budgets.reduce((sum, budget) => sum + budget.amount, 0);
+        const projectedBalanceWithBudgets = startingBalanceOfMonth + totalProjectedIncome - totalBudgets;
+
+        res.status(200).json({
+            currentBalance,
+            projectedBalance,
+            totalProjectedIncome,
+            totalProjectedExpense,
+            projectedBalanceWithBudgets,
+            totalBudgets
+        });
     } catch (error) {
         console.error("Erreur GET /summary:", error);
         res.status(500).json({ message: "Erreur lors du calcul du résumé." });
