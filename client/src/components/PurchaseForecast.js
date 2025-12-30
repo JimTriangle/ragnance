@@ -3,8 +3,8 @@ import api from '../services/api';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { InputNumber } from 'primereact/inputnumber';
 import { DataView } from 'primereact/dataview';
+import AmountInput from './AmountInput';
 
 const PurchaseForecast = ({ onUpdate }) => {
     const [items, setItems] = useState([]);
@@ -87,7 +87,7 @@ const PurchaseForecast = ({ onUpdate }) => {
                     <InputText value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="Article" className="p-inputtext-sm w-full" />
                 </div>
                 <div className="col-3 pr-2">
-                    <InputNumber value={price} onValueChange={(e) => setPrice(e.value)} placeholder="Prix" mode="currency" currency="EUR" locale="fr-FR" inputClassName="p-inputtext-sm w-full" />
+                    <AmountInput value={price} onChange={(value) => setPrice(value)} placeholder="Prix" className="p-inputtext-sm w-full" />
                 </div>
                 <div className="col-3 pr-2">
                     <InputText value={url} onChange={(e) => setUrl(e.target.value)} placeholder="URL" className="p-inputtext-sm w-full" />

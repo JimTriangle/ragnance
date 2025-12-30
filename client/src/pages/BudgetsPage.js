@@ -5,7 +5,7 @@ import { ToastContext } from '../context/ToastContext';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { InputNumber } from 'primereact/inputnumber';
+import AmountInput from '../components/AmountInput';
 
 const BudgetsPage = () => {
     const [trackedCategories, setTrackedCategories] = useState([]);
@@ -80,12 +80,11 @@ const BudgetsPage = () => {
     };
 
     const budgetEditor = (rowData) => {
-        return <InputNumber
+        return <AmountInput
             value={budgets[rowData.id] || null}
             placeholder="Définir un budget"
-            onValueChange={(e) => handleBudgetChange(rowData.id, e.value)}
-            mode="currency" currency="EUR" locale="fr-FR"
-            inputClassName="p-inputtext-sm"
+            onChange={(value) => handleBudgetChange(rowData.id, value)}
+            className="p-inputtext-sm"
         />;
     };
 
