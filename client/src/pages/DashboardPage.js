@@ -276,7 +276,13 @@ const DashboardPage = () => {
                 <h1 className="text-2xl font-bold">Dashboard Budget</h1>
             </div>
             <div className="grid mt-2">
-                <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Actuel"><h2 className="m-0" style={{ color: summary.currentBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.currentBalance)}</h2></Card></div>
+                <div className="col-12 md:col-6 lg:col-4">
+                    <Card title="Solde Actuel">
+                        <div className="flex flex-column gap-2 justify-content-center align-items-center" style={{ minHeight: '96px' }}>
+                            <h2 className="m-0" style={{ color: summary.currentBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.currentBalance)}</h2>
+                        </div>
+                    </Card>
+                </div>
                 <div className="col-12 md:col-6 lg:col-4">
                     <Card title="Solde Fin de Mois (Prév.)">
                         <div className="flex flex-column gap-2">
