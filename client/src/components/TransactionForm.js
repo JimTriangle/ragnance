@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { SelectButton } from 'primereact/selectbutton';
 import { Calendar } from 'primereact/calendar';
-import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Message } from 'primereact/message';
 import { AutoComplete } from 'primereact/autocomplete';
 import { MultiSelect } from 'primereact/multiselect';
+import AmountInput from './AmountInput';
 
 const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
   const [label, setLabel] = useState('');
@@ -145,7 +145,7 @@ const formatDateForAPI = (d) => {
 
       <div className="grid formgrid">
         <div className="field col-12 md:col-6"><span className="p-float-label"><AutoComplete value={label} suggestions={filteredLabels} completeMethod={searchLabel} onChange={(e) => setLabel(e.value)} id="label" dropdown /><label htmlFor="label">Libellé*</label></span></div>
-        <div className="field col-12 md:col-3"><span className="p-float-label"><InputNumber id="amount" value={amount} onValueChange={(e) => setAmount(e.value)} mode="currency" currency="EUR" locale="fr-FR" /><label htmlFor="amount">Montant*</label></span></div>
+        <div className="field col-12 md:col-3"><span className="p-float-label"><AmountInput id="amount" value={amount} onChange={(value) => setAmount(value)} /><label htmlFor="amount">Montant*</label></span></div>
         <div className="field col-12 md:col-3"><span className="p-float-label"><Dropdown id="type" value={type} options={transactionTypes} onChange={(e) => setType(e.value)} optionLabel="label" optionValue="value" placeholder="Type*" /><label htmlFor="type">Type*</label></span></div>
 
         <div className="field col-12">

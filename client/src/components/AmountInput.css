@@ -1,0 +1,52 @@
+.amount-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.amount-input {
+  width: 100%;
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-align: right;
+  letter-spacing: 0.5px;
+}
+
+/* Styles spécifiques pour mobile */
+@media (max-width: 768px) {
+  .amount-input {
+    font-size: 1.25rem;
+    padding: 0.875rem;
+    min-height: 3rem;
+  }
+}
+
+.amount-input-hint {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* Masquer le hint sur desktop */
+@media (min-width: 769px) {
+  .amount-input-hint {
+    display: none;
+  }
+}
+
+/* Animation au focus */
+.amount-input:focus {
+  border-color: var(--primary-color, #007bff);
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Style pour le placeholder */
+.amount-input::placeholder {
+  text-align: right;
+  opacity: 0.6;
+}
