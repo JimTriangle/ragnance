@@ -164,7 +164,7 @@ const AmountInput = ({ value, onChange, id, placeholder, className = '' }) => {
         onFocus={handleFocus}
         onBlur={handleBlur}
         placeholder={placeholder || '0,00 €'}
-        className={`amount-input ${className}`}
+        className={`amount-input ${displayValue ? 'p-filled' : ''} ${className}`}
         inputMode="numeric"
         autoComplete="off"
         readOnly={false}
