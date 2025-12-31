@@ -22,6 +22,7 @@ const BudgetHeader = ({ onAddTransaction, onShowAnnouncements }) => {
                 <NavLink to="/budget/categories" className="p-button p-button-text main-nav-link">Catégories</NavLink>
                 <NavLink to="/budget/budgets" className="p-button p-button-text main-nav-link">Budgets Mensuels</NavLink>
                 <NavLink to="/budget/project-budgets" className="p-button p-button-text main-nav-link">Budgets Projet</NavLink>
+                <NavLink to="/budget/savings" className="p-button p-button-text main-nav-link">Épargne</NavLink>
                 <NavLink to="/budget/analysis" className="p-button p-button-text main-nav-link">Dépenses</NavLink>
                 <NavLink to="/budget/budget-analysis" className="p-button p-button-text main-nav-link">Analyse Budgets</NavLink>
                 {user?.role === 'admin' && <NavLink to="/budget/admin" className="p-button p-button-text p-button-danger ml-2 main-nav-link">Admin</NavLink>}
