@@ -12,18 +12,21 @@ code {
     monospace;
 }
 
-/* CSS DÉFINITIF - APPROCHE AGRESSIVE */
+/* CSS POUR SIDEBAR ET TOPBAR */
 
-.main-header {
+/* TopBar */
+.top-bar {
   position: sticky;
   top: 0;
   z-index: 1000;
 }
 
+/* Bouton d'ajout de transaction - masqué en mobile, visible en desktop */
 .add-transaction-button {
   display: none;
 }
 
+/* FAB (Floating Action Button) - visible en mobile, masqué en desktop */
 .fab-button {
   position: fixed;
   bottom: 1rem;
@@ -40,55 +43,66 @@ code {
   }
 }
 
-/* On cible très spécifiquement nos liens de menu */
-.main-header .main-nav-link.p-button {
-    /* On force les propriétés nécessaires à notre animation */
-    position: relative !important;
-    overflow: visible !important; /* TRÈS IMPORTANT: Empêche le bouton de cacher notre barre */
-    
-    /* On annule TOUS les styles visuels non désirés de PrimeReact */
-    text-decoration: none !important;
-    background: none !important;
-    border: none !important;
-    box-shadow: none !important;
+/* Styles du Sidebar */
+.app-sidebar {
+  background: var(--surface-ground);
 }
 
-/* On s'assure qu'aucun état (survol, focus...) ne rajoute un style non désiré */
-.main-header .main-nav-link.p-button:hover,
-.main-header .main-nav-link.p-button:focus {
-    text-decoration: none !important;
-    background: none !important;
-    box-shadow: none !important;
+.app-sidebar .sidebar-header {
+  padding: 1rem 0;
 }
 
-/* Création de la barre de soulignement */
-.main-header .main-nav-link.p-button::after {
-    content: '';
-    position: absolute;
-    bottom: 0.4rem; /* On ajuste la position pour qu'elle soit sous le texte */
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: var(--primary-color);
-    
-    /* État initial : la barre est invisible et réduite à 0 */
-    transform: scaleX(0);
-    transform-origin: center;
-    transition: transform 0.3s ease-in-out;
+.app-sidebar .sidebar-nav-item {
+  justify-content: flex-start !important;
+  text-align: left !important;
+  width: 100%;
+  margin-bottom: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--text-color) !important;
 }
 
-/* Animation de la barre au survol */
-.main-header .main-nav-link.p-button:hover::after {
-    transform: scaleX(1); /* La barre prend toute sa largeur */
+.app-sidebar .sidebar-nav-item:hover {
+  background: var(--surface-hover) !important;
+  color: var(--primary-color) !important;
+  box-shadow: none !important;
 }
 
-/* Style du lien ACTIF */
-.main-header .main-nav-link.p-button.active {
-    /* On s'assure que le texte est bien coloré */
-    color: var(--primary-color) !important;
+.app-sidebar .sidebar-nav-item.active {
+  background: var(--primary-color) !important;
+  color: var(--primary-color-text) !important;
+  font-weight: 600;
 }
 
-.main-header .main-nav-link.p-button.active::after {
-    /* La barre du lien actif est visible en permanence */
-    transform: scaleX(1);
+.app-sidebar .sidebar-nav-item.active:hover {
+  background: var(--primary-color) !important;
+  color: var(--primary-color-text) !important;
+}
+
+.app-sidebar .sidebar-footer {
+  padding: 1rem 0;
+  border-top: 1px solid var(--surface-border);
+}
+
+.app-sidebar .sidebar-actions {
+  padding: 0.5rem 0;
+}
+
+/* Animation d'ouverture du sidebar */
+.p-sidebar-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }

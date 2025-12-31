@@ -1,62 +1,47 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Button } from 'primereact/button';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { Dialog } from 'primereact/dialog';
-import ThemeToggle from '../components/ThemeToggle';
 import TransactionForm from '../components/TransactionForm';
 import AnnouncementBadge from '../components/AnnouncementBadge';
 import AnnouncementDialog from '../components/AnnouncementDialog';
+import AppSidebar from '../components/AppSidebar';
 import { TransactionRefreshContext } from '../context/TransactionRefreshContext';
 
-// Le Header spécifique à la section Budget, avec TOUS ses liens
-const BudgetHeader = ({ onAddTransaction, onShowAnnouncements }) => {
-    const { user } = useContext(AuthContext);
-    const navigate = useNavigate();
+// Le Header minimaliste avec bouton hamburger
+const TopBar = ({ onOpenSidebar, onAddTransaction, onShowAnnouncements }) => {
     return (
-        <div className="main-header flex justify-content-between align-items-center p-3" style={{ background: '#242931', borderBottom: '1px solid #495057' }}>
-            <div className="flex align-items-center flex-wrap">
-                <NavLink to="/budget/dashboard" className="p-button p-button-text main-nav-link">Dashboard</NavLink>
-                <NavLink to="/budget/monthly" className="p-button p-button-text main-nav-link">Vue Mensuelle</NavLink>
-                <NavLink to="/budget/categories" className="p-button p-button-text main-nav-link">Catégories</NavLink>
-                <NavLink to="/budget/budgets" className="p-button p-button-text main-nav-link">Budgets Mensuels</NavLink>
-                <NavLink to="/budget/project-budgets" className="p-button p-button-text main-nav-link">Budgets Projet</NavLink>
-                <NavLink to="/budget/savings" className="p-button p-button-text main-nav-link">Épargne</NavLink>
-                <NavLink to="/budget/analysis" className="p-button p-button-text main-nav-link">Dépenses</NavLink>
-                <NavLink to="/budget/budget-analysis" className="p-button p-button-text main-nav-link">Analyse Budgets</NavLink>
-                {user?.role === 'admin' && <NavLink to="/budget/admin" className="p-button p-button-text p-button-danger ml-2 main-nav-link">Admin</NavLink>}
+        <div className="top-bar flex justify-content-between align-items-center p-3" style={{ background: '#242931', borderBottom: '1px solid #495057' }}>
+            <div className="flex align-items-center gap-2">
+                <Button
+                    icon="pi pi-bars"
+                    className="p-button-text p-button-lg"
+                    onClick={onOpenSidebar}
+                    aria-label="Ouvrir le menu"
+                />
+                <h2 className="m-0 text-primary">Budget</h2>
             </div>
             <div className="flex align-items-center gap-2">
                 <AnnouncementBadge onClick={onShowAnnouncements} />
-                <Button label=" Ajouter une transaction" icon="pi pi-plus" className="add-transaction-button p-button-sm p-button-primary" onClick={onAddTransaction} />
-                {user?.tradingAccess && (
-                    <Button label="Trading" className="p-button-sm p-button-secondary" onClick={() => navigate('/trading')} />
-                )}
-                <ThemeToggle />
-                <UserInfo />
+                <Button
+                    label="Ajouter une transaction"
+                    icon="pi pi-plus"
+                    className="add-transaction-button p-button-sm p-button-primary"
+                    onClick={onAddTransaction}
+                />
             </div>
         </div>
     );
 };
 
-// Le composant UserInfo qui est aussi spécifique à cette section
-const UserInfo = () => {
-    const { user, logoutUser } = useContext(AuthContext);
-    return (
-        <>
-            <NavLink to="/budget/profile" className="p-button p-button-text main-nav-link">
-                <span className="mr-3">Bonjour, <strong>{user.email}</strong> !</span>
-            </NavLink>
-            <Button label="Déconnexion" icon="pi pi-sign-out" className="p-button-sm p-button-text" onClick={logoutUser} />
-        </>
-    );
-};
-
-// Le Layout qui assemble le Header et le contenu de la page
+// Le Layout qui assemble le Sidebar et le contenu de la page
 const BudgetLayout = () => {
+    const { user } = useContext(AuthContext);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isAnnouncementVisible, setIsAnnouncementVisible] = useState(false);
+    const [isSidebarVisible, setIsSidebarVisible] = useState(false);
     const { notifyTransactionRefresh } = useContext(TransactionRefreshContext);
 
     const openModal = () => setIsModalVisible(true);
@@ -65,10 +50,50 @@ const BudgetLayout = () => {
     const openAnnouncements = () => setIsAnnouncementVisible(true);
     const closeAnnouncements = () => setIsAnnouncementVisible(false);
 
+    const openSidebar = () => setIsSidebarVisible(true);
+    const closeSidebar = () => setIsSidebarVisible(false);
+
     const handleComplete = () => {
         closeModal();
         notifyTransactionRefresh();
     };
+
+    // Définition des liens de navigation pour la section Budget
+    const budgetNavItems = [
+        { to: '/budget/dashboard', label: 'Dashboard', icon: 'pi pi-home' },
+        { to: '/budget/monthly', label: 'Vue Mensuelle', icon: 'pi pi-calendar' },
+        { to: '/budget/categories', label: 'Catégories', icon: 'pi pi-tags' },
+        { to: '/budget/budgets', label: 'Budgets Mensuels', icon: 'pi pi-wallet' },
+        { to: '/budget/project-budgets', label: 'Budgets Projet', icon: 'pi pi-briefcase' },
+        { to: '/budget/savings', label: 'Épargne', icon: 'pi pi-money-bill' },
+        { to: '/budget/analysis', label: 'Dépenses', icon: 'pi pi-chart-bar' },
+        { to: '/budget/budget-analysis', label: 'Analyse Budgets', icon: 'pi pi-chart-line' },
+    ];
+
+    // Ajouter le lien Admin si l'utilisateur est admin
+    if (user?.role === 'admin') {
+        budgetNavItems.push({
+            to: '/budget/admin',
+            label: 'Admin',
+            icon: 'pi pi-cog',
+            danger: true
+        });
+    }
+
+    // Actions additionnelles pour le sidebar
+    const sidebarActions = (
+        <>
+            <Button
+                label="Ajouter une transaction"
+                icon="pi pi-plus"
+                className="w-full p-button-primary"
+                onClick={() => {
+                    openModal();
+                    closeSidebar();
+                }}
+            />
+        </>
+    );
 
     // Afficher automatiquement les annonces non lues au chargement
     useEffect(() => {
@@ -91,7 +116,18 @@ const BudgetLayout = () => {
 
     return (
         <div>
-            <BudgetHeader onAddTransaction={openModal} onShowAnnouncements={openAnnouncements} />
+            <TopBar
+                onOpenSidebar={openSidebar}
+                onAddTransaction={openModal}
+                onShowAnnouncements={openAnnouncements}
+            />
+            <AppSidebar
+                visible={isSidebarVisible}
+                onHide={closeSidebar}
+                navItems={budgetNavItems}
+                section="budget"
+                additionalActions={sidebarActions}
+            />
             <main>
                 <ConfirmDialog />
                 <Outlet /> {/* C'est ici que vos pages (Dashboard, MonthlyView...) s'afficheront */}
