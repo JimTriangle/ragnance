@@ -7,8 +7,6 @@ import { InputText } from 'primereact/inputtext';
 import { confirmDialog } from 'primereact/confirmdialog';
 import { InputSwitch } from 'primereact/inputswitch';
 import { Badge } from 'primereact/badge';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { ToastContext } from '../context/ToastContext';
 import AmountInput from '../components/AmountInput';
 
