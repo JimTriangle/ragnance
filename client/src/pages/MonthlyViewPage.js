@@ -201,6 +201,33 @@ const MonthlyViewPage = () => {
     return '-';
   };
 
+  const handleExportExcel = async () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+    try {
+      const response = await api.get(`/transactions/export-excel/${year}/${month}`, {
+        responseType: 'blob'
+      });
+
+      const monthName = currentDate.toLocaleString('fr-FR', { month: 'long' });
+      const filename = `transactions_${monthName}_${year}.xlsx`;
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      showToast('success', 'Succès', 'Export Excel téléchargé');
+    } catch (error) {
+      console.error('Erreur export Excel:', error);
+      showToast('error', 'Erreur', 'Impossible d\'exporter les transactions');
+    }
+  };
+
   const typeTemplate = (rowData) => {
     const severity = rowData.type === 'income' ? 'success' : 'danger';
     const text = rowData.type === 'income' ? 'Revenu' : 'Dépense';
@@ -269,7 +296,10 @@ const MonthlyViewPage = () => {
       <div className="p-4">
         <div className="flex justify-content-between align-items-center mb-4">
           <Button icon="pi pi-arrow-left" onClick={() => changeMonth(-1)} />
-          <h1 className="text-2xl capitalize m-0">{`Analyse de ${monthName} ${year}`}</h1>
+          <div className="flex flex-column align-items-center gap-2">
+            <h1 className="text-2xl capitalize m-0">{`Analyse de ${monthName} ${year}`}</h1>
+            <Button label="Exporter en Excel" icon="pi pi-file-excel" className="p-button-success p-button-sm" onClick={handleExportExcel} />
+          </div>
           <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} />
         </div>
 
