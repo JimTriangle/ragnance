@@ -5,7 +5,8 @@ const Transaction = require('../models/Transaction.model');
 const Category = require('../models/Category.model');
 const Budget = require('../models/Budget.model');
 const { Op, fn, col } = require('sequelize');
-const sequelize = require('../config/database'); 
+const sequelize = require('../config/database');
+const xlsx = require('xlsx'); 
 
 /**
  * [Conservé] Helper pour calculer le total des transactions récurrentes sur une période.
@@ -471,6 +472,168 @@ router.get('/summary/:year/:month', isAuth, async (req, res) => {
     } catch (error) {
         console.error("Erreur résumé mensuel:", error);
         res.status(500).json({ message: "Erreur lors du calcul du résumé mensuel." });
+    }
+});
+
+router.get('/export-excel/:year/:month', isAuth, async (req, res) => {
+    const { year, month } = req.params;
+    const userId = req.user.id;
+    const currentMonth = parseInt(month, 10);
+    const currentYear = parseInt(year, 10);
+    const startDateOfMonth = new Date(Date.UTC(currentYear, currentMonth - 1, 1));
+    const startOfNextMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
+
+    try {
+        // Récupérer les transactions one-time
+        const oneTimeTransactions = await Transaction.findAll({
+            where: {
+                UserId: userId,
+                transactionType: 'one-time',
+                date: { [Op.gte]: startDateOfMonth, [Op.lt]: startOfNextMonth }
+            },
+            include: [Category],
+            order: [['date', 'ASC']]
+        });
+
+        const oneTimePlain = oneTimeTransactions.map(t => t.get({ plain: true }));
+
+        // Récupérer les transactions récurrentes
+        const potentiallyRecurring = await Transaction.findAll({
+            where: {
+                UserId: userId,
+                transactionType: 'recurring',
+                startDate: { [Op.lt]: startOfNextMonth },
+                [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDateOfMonth } }]
+            },
+            include: [Category]
+        });
+
+        // Générer les occurrences des transactions récurrentes
+        const recurringOccurrences = [];
+        potentiallyRecurring.forEach(r => {
+            const start = new Date(r.startDate);
+            const end = r.endDate ? new Date(r.endDate) : null;
+
+            if (r.frequency === 'weekly') {
+                const targetDay = r.dayOfWeek ?? new Date(r.startDate).getUTCDay();
+                const firstDay = new Date(startDateOfMonth);
+                while (firstDay.getUTCDay() !== targetDay) firstDay.setUTCDate(firstDay.getUTCDate() + 1);
+                for (let d = new Date(firstDay); d < startOfNextMonth; d.setUTCDate(d.getUTCDate() + 7)) {
+                    if (d >= start && (!end || d <= end)) {
+                        const plain = r.get({ plain: true });
+                        recurringOccurrences.push({ ...plain, date: new Date(d) });
+                    }
+                }
+            } else if (r.frequency === 'monthly') {
+                const occurrence = new Date(Date.UTC(currentYear, currentMonth - 1, r.dayOfMonth));
+                if (occurrence >= start && (!end || occurrence <= end)) {
+                    const plain = r.get({ plain: true });
+                    recurringOccurrences.push({ ...plain, date: occurrence });
+                }
+            } else if (r.frequency === 'yearly') {
+                const startMonth = start.getUTCMonth() + 1;
+                if (startMonth === currentMonth) {
+                    const day = r.dayOfMonth || start.getUTCDate();
+                    const occurrence = new Date(Date.UTC(currentYear, currentMonth - 1, day));
+                    if (occurrence >= start && (!end || occurrence <= end)) {
+                        const plain = r.get({ plain: true });
+                        recurringOccurrences.push({ ...plain, date: occurrence });
+                    }
+                }
+            }
+        });
+
+        // Combiner et trier toutes les transactions
+        const allTransactions = [...oneTimePlain, ...recurringOccurrences]
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        // Préparer les données pour Excel
+        const excelData = allTransactions.map(t => ({
+            'Date': new Date(t.date).toLocaleDateString('fr-FR'),
+            'Libellé': t.label,
+            'Montant': t.amount,
+            'Type': t.type === 'income' ? 'Revenu' : 'Dépense',
+            'Catégories': t.Categories && t.Categories.length > 0
+                ? t.Categories.map(c => c.name).join(', ')
+                : '',
+            'Type de transaction': t.transactionType === 'one-time' ? 'Ponctuelle' : 'Récurrente',
+            'Fréquence': t.frequency || '',
+            'Créé le': new Date(t.createdAt).toLocaleDateString('fr-FR')
+        }));
+
+        // Calculer les totaux
+        const totalIncome = allTransactions
+            .filter(t => t.type === 'income')
+            .reduce((sum, t) => sum + t.amount, 0);
+        const totalExpense = allTransactions
+            .filter(t => t.type === 'expense')
+            .reduce((sum, t) => sum + t.amount, 0);
+        const balance = totalIncome - totalExpense;
+
+        // Ajouter une ligne vide et les totaux
+        excelData.push({});
+        excelData.push({
+            'Date': '',
+            'Libellé': 'TOTAL REVENUS',
+            'Montant': totalIncome,
+            'Type': '',
+            'Catégories': '',
+            'Type de transaction': '',
+            'Fréquence': '',
+            'Créé le': ''
+        });
+        excelData.push({
+            'Date': '',
+            'Libellé': 'TOTAL DÉPENSES',
+            'Montant': totalExpense,
+            'Type': '',
+            'Catégories': '',
+            'Type de transaction': '',
+            'Fréquence': '',
+            'Créé le': ''
+        });
+        excelData.push({
+            'Date': '',
+            'Libellé': 'SOLDE',
+            'Montant': balance,
+            'Type': '',
+            'Catégories': '',
+            'Type de transaction': '',
+            'Fréquence': '',
+            'Créé le': ''
+        });
+
+        // Créer le workbook et la worksheet
+        const wb = xlsx.utils.book_new();
+        const ws = xlsx.utils.json_to_sheet(excelData);
+
+        // Définir la largeur des colonnes
+        ws['!cols'] = [
+            { wch: 12 }, // Date
+            { wch: 30 }, // Libellé
+            { wch: 12 }, // Montant
+            { wch: 10 }, // Type
+            { wch: 25 }, // Catégories
+            { wch: 20 }, // Type de transaction
+            { wch: 12 }, // Fréquence
+            { wch: 12 }  // Créé le
+        ];
+
+        // Ajouter la feuille au workbook
+        const monthName = new Date(currentYear, currentMonth - 1).toLocaleString('fr-FR', { month: 'long' });
+        xlsx.utils.book_append_sheet(wb, ws, `${monthName} ${currentYear}`);
+
+        // Générer le buffer
+        const buffer = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+        // Définir les headers pour le téléchargement
+        const filename = `transactions_${monthName}_${currentYear}.xlsx`;
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.send(buffer);
+    } catch (error) {
+        console.error("Erreur export Excel:", error);
+        res.status(500).json({ message: "Erreur lors de l'export Excel." });
     }
 });
 
