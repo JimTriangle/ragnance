@@ -66,6 +66,7 @@ const BudgetLayout = () => {
         { to: '/budget/budgets', label: 'Budgets Mensuels', icon: 'pi pi-wallet' },
         { to: '/budget/project-budgets', label: 'Budgets Projet', icon: 'pi pi-briefcase' },
         { to: '/budget/savings', label: 'Épargne', icon: 'pi pi-money-bill' },
+        { to: '/budget/savings-goals', label: 'Objectifs d\'Épargne', icon: 'pi pi-flag' },
         { to: '/budget/analysis', label: 'Dépenses', icon: 'pi pi-chart-bar' },
         { to: '/budget/budget-analysis', label: 'Analyse Budgets', icon: 'pi pi-chart-line' },
     ];

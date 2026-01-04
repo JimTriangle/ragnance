@@ -21,6 +21,7 @@ import CategoriesPage from './pages/CategoriesPage';
 import BudgetsPage from './pages/BudgetsPage';
 import ProjectBudgetsPage from './pages/ProjectBudgetsPage';
 import SavingsPage from './pages/SavingsPage';
+import SavingsGoalsPage from './pages/SavingsGoalsPage';
 import AnalysisPage from './pages/AnalysisPage';
 import BudgetAnalysisPage from './pages/BudgetAnalysisPage';
 import ProfilePage from './pages/ProfilePage';
@@ -56,6 +57,7 @@ function App() {
                         <Route path="budgets" element={<BudgetsPage />} />
                         <Route path="project-budgets" element={<ProjectBudgetsPage />} />
                         <Route path="savings" element={<SavingsPage />} />
+                        <Route path="savings-goals" element={<SavingsGoalsPage />} />
                         <Route path="analysis" element={<AnalysisPage />} />
                         <Route path="budget-analysis" element={<BudgetAnalysisPage />} />
                         <Route path="profile" element={<ProfilePage />} />
