@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const isAuth = require('../middleware/isAuth');
 const Savings = require('../models/Savings.model');
 const SavingsPart = require('../models/SavingsPart.model');
 
 // GET /api/savings - Lister toutes les épargnes
-router.get('/', isAuth, async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const includeArchived = req.query.includeArchived === 'true';
         const whereClause = { UserId: req.user.id };
@@ -31,7 +30,7 @@ router.get('/', isAuth, async (req, res) => {
 });
 
 // POST /api/savings - Créer une épargne
-router.post('/', isAuth, async (req, res) => {
+router.post('/', async (req, res) => {
     const { name, totalAmount, parts = [] } = req.body;
     try {
         const newSavings = await Savings.create({
@@ -64,7 +63,7 @@ router.post('/', isAuth, async (req, res) => {
 });
 
 // PUT /api/savings/:id - Modifier une épargne
-router.put('/:id', isAuth, async (req, res) => {
+router.put('/:id', async (req, res) => {
     try {
         const savings = await Savings.findOne({
             where: { id: req.params.id, UserId: req.user.id }
@@ -106,7 +105,7 @@ router.put('/:id', isAuth, async (req, res) => {
 });
 
 // PATCH /api/savings/:id/archive - Archiver ou désarchiver une épargne
-router.patch('/:id/archive', isAuth, async (req, res) => {
+router.patch('/:id/archive', async (req, res) => {
     try {
         const savings = await Savings.findOne({
             where: { id: req.params.id, UserId: req.user.id }
@@ -128,7 +127,7 @@ router.patch('/:id/archive', isAuth, async (req, res) => {
 });
 
 // DELETE /api/savings/:id - Supprimer une épargne
-router.delete('/:id', isAuth, async (req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
         const savings = await Savings.findOne({
             where: { id: req.params.id, UserId: req.user.id }
