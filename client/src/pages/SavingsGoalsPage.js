@@ -10,7 +10,6 @@ import { ProgressBar } from 'primereact/progressbar';
 import { confirmDialog } from 'primereact/confirmdialog';
 import { InputSwitch } from 'primereact/inputswitch';
 import { Badge } from 'primereact/badge';
-import { Timeline } from 'primereact/timeline';
 import { ToastContext } from '../context/ToastContext';
 import AmountInput from '../components/AmountInput';
 
