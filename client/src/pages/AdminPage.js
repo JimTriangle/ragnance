@@ -12,6 +12,7 @@ import { Checkbox } from 'primereact/checkbox';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Badge } from 'primereact/badge';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 const AdminPage = () => {
     const [users, setUsers] = useState([]);
@@ -204,13 +205,22 @@ const AdminPage = () => {
         );
     };
     const deleteUser = async (userId) => {
-        try {
-            await api.delete(`/admin/users/${userId}`);
-            toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Utilisateur supprimé' });
-            fetchUsers();
-        } catch (error) {
-            toast.current.show({ severity: 'error', summary: 'Erreur', detail: error.response?.data?.message || 'Échec' });
-        }
+        confirmDialog({
+            message: 'Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.',
+            header: 'Confirmation de suppression',
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Oui, supprimer',
+            rejectLabel: 'Annuler',
+            accept: async () => {
+                try {
+                    await api.delete(`/admin/users/${userId}`);
+                    toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Utilisateur supprimé' });
+                    fetchUsers();
+                } catch (error) {
+                    toast.current.show({ severity: 'error', summary: 'Erreur', detail: error.response?.data?.message || 'Échec' });
+                }
+            }
+        });
     };
 
     const actionBodyTemplate = (rowData) => (
@@ -225,6 +235,7 @@ const AdminPage = () => {
     return (
         <div className="p-4">
             <Toast ref={toast} />
+            <ConfirmDialog />
             <h1>Panel d'Administration</h1>
             <TabView>
                 <TabPanel header="Utilisateurs">
