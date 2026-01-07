@@ -204,7 +204,7 @@ const AdminPage = () => {
             </DataTable>
         );
     };
-    const deleteUser = async (userId) => {
+    const deleteUser = (userId) => {
         confirmDialog({
             message: 'Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.',
             header: 'Confirmation de suppression',
