@@ -335,7 +335,7 @@ const MonthlyViewPage = () => {
         </div>
 
         <div className="card mt-4">
-          <DataTable value={selectedCategoryId ? transactions.filter(t => t.Categories && t.Categories.some(c => c.id === selectedCategoryId)) : transactions} loading={loading} size="small" header={tableHeader} globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50]} pt={{ bodyCell: { style: { padding: '0.25rem 0.5rem' } } }}>
+          <DataTable value={selectedCategoryId ? transactions.filter(t => t.Categories && t.Categories.some(c => c.id === selectedCategoryId)) : transactions} loading={loading} size="small" header={tableHeader} globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50, 100]} pt={{ bodyCell: { style: { padding: '0.25rem 0.5rem' } } }}>
             <Column field="label" header="Libellé" body={labelBodyTemplate} sortable />
             <Column field="amount" header="Montant" body={(rowData) => formatCurrency(rowData.amount)} sortable />
             <Column field="type" header="Type" body={typeTemplate} sortable />

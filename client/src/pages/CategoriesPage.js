@@ -23,6 +23,7 @@ const CategoriesPage = () => {
     const [name, setName] = useState('');
     const [color, setColor] = useState('CCCCCC');
     const [isTracked, setIsTracked] = useState(false);
+    const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef(null);
 
     const fetchCategories = useCallback(async () => {
@@ -123,13 +124,22 @@ const CategoriesPage = () => {
     // MODIFIÉ : Le titre du dialogue est maintenant dynamique
     const dialogTitle = isEditMode ? "Modifier la Catégorie" : "Nouvelle Catégorie";
 
+    const tableHeader = (
+        <div className="flex flex-wrap justify-content-between align-items-center gap-2">
+            <Button label="Nouvelle Catégorie" icon="pi pi-plus" className="p-button-success p-button-sm" onClick={openNew} />
+            <span className="p-input-icon-left">
+                <i className="pi pi-search" />
+                <InputText value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder="Rechercher..." className="p-inputtext-sm" />
+            </span>
+        </div>
+    );
+
     return (
         <div className="p-4">
             <Toast ref={toast} />
             <h1>Gestion des Catégories</h1>
             <div className="card mt-4">
-                <Button label="Nouvelle Catégorie" icon="pi pi-plus" className="p-button-success mb-4" onClick={openNew} />
-                <DataTable value={categories} dataKey="id" size="small" responsiveLayout="scroll">
+                <DataTable value={categories} dataKey="id" size="small" responsiveLayout="scroll" header={tableHeader} globalFilter={globalFilter}>
                     <Column field="name" header="Nom" body={nameBodyTemplate} sortable />
                     <Column header="Suivi Mensuel" body={trackedBodyTemplate} style={{ width: '10rem', textAlign: 'center' }} />
                     <Column body={actionBodyTemplate} header="Actions" style={{ width: '8rem', textAlign: 'center' }} />
