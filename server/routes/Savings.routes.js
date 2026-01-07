@@ -39,15 +39,22 @@ router.post('/', async (req, res) => {
             UserId: req.user.id
         });
 
-        // Créer les parts si fournies
+        // Créer les parts si fournies (filtrer les parts invalides)
         if (parts && parts.length > 0) {
-            await Promise.all(parts.map(part =>
-                SavingsPart.create({
-                    description: part.description,
-                    amount: part.amount,
-                    SavingsId: newSavings.id
-                })
-            ));
+            const validParts = parts.filter(part =>
+                part.description && part.description.trim() !== '' &&
+                part.amount !== null && part.amount !== undefined && part.amount > 0
+            );
+
+            if (validParts.length > 0) {
+                await Promise.all(validParts.map(part =>
+                    SavingsPart.create({
+                        description: part.description,
+                        amount: part.amount,
+                        SavingsId: newSavings.id
+                    })
+                ));
+            }
         }
 
         // Recharger avec les parts
@@ -80,15 +87,22 @@ router.put('/:id', async (req, res) => {
             // Supprimer toutes les parts existantes
             await SavingsPart.destroy({ where: { SavingsId: savings.id } });
 
-            // Créer les nouvelles parts
+            // Créer les nouvelles parts (filtrer les parts invalides)
             if (parts.length > 0) {
-                await Promise.all(parts.map(part =>
-                    SavingsPart.create({
-                        description: part.description,
-                        amount: part.amount,
-                        SavingsId: savings.id
-                    })
-                ));
+                const validParts = parts.filter(part =>
+                    part.description && part.description.trim() !== '' &&
+                    part.amount !== null && part.amount !== undefined && part.amount > 0
+                );
+
+                if (validParts.length > 0) {
+                    await Promise.all(validParts.map(part =>
+                        SavingsPart.create({
+                            description: part.description,
+                            amount: part.amount,
+                            SavingsId: savings.id
+                        })
+                    ));
+                }
             }
         }
 
