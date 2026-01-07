@@ -56,10 +56,16 @@ const SavingsPage = () => {
         }
 
         try {
+            // Filtrer les parts valides (avec description et montant)
+            const validParts = savingsData.parts.filter(part =>
+                part.description && part.description.trim() !== '' &&
+                part.amount !== null && part.amount !== undefined && part.amount > 0
+            );
+
             const payload = {
                 name: savingsData.name,
                 totalAmount: savingsData.totalAmount,
-                parts: savingsData.parts
+                parts: validParts
             };
 
             if (savingsData.id) {
