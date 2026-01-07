@@ -134,7 +134,7 @@ const BudgetLayout = () => {
                 <Outlet /> {/* C'est ici que vos pages (Dashboard, MonthlyView...) s'afficheront */}
             </main>
             <Button icon="pi pi-plus" className="fab-button p-button-rounded p-button-primary" onClick={openModal} />
-            <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '90vw', maxWidth: '500px' }} onHide={closeModal}>
+            <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '50vw' }} onHide={closeModal}>
                 <TransactionForm onComplete={handleComplete} />
             </Dialog>
             <AnnouncementDialog visible={isAnnouncementVisible} onHide={closeAnnouncements} />
