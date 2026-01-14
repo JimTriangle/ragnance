@@ -51,13 +51,15 @@ const LoginPage = () => {
       
       // NOUVELLE APPROCHE : Forcer un refresh de la page après navigation
       // Cela garantit que tous les composants se rechargent avec le nouveau token
-      if (redirectTo) {
+      if (redirectTo && redirectTo !== '/trading') {
+        // Bloquer la redirection vers /trading (accès désactivé)
         window.location.href = redirectTo;
       } else if (decoded.budgetAccess) {
         window.location.href = '/budget/dashboard';
-      } else if (decoded.tradingAccess) {
+      } /* MASQUÉ: Accès au trading désactivé
+      else if (decoded.tradingAccess) {
         window.location.href = '/trading';
-      } else {
+      } */ else {
         window.location.href = '/';
       }
     } catch (err) {
