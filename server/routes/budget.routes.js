@@ -140,8 +140,8 @@ router.post('/', isAuth, async (req, res) => {
         const [budget, created] = await Budget.findOrCreate({
             where: {
                 UserId: req.user.id,
-                year: year,
-                month: month,
+                year: parseInt(year),
+                month: parseInt(month),
                 CategoryId: CategoryId
             },
             defaults: { amount: amount }
