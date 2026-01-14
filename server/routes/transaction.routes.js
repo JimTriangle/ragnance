@@ -311,8 +311,10 @@ router.get('/summary', isAuth, async (req, res) => {
 
                 const actualSpent = (oneTimeSpent || 0) + recurringTotal.expense;
 
-                // Prendre le maximum entre le budget défini et les dépenses réelles
-                totalBudgetsWithOverspending += Math.max(budget.amount, actualSpent);
+                // IMPORTANT : Prendre le maximum entre le budget défini et les dépenses réelles
+                // Si aucune dépense n'a été effectuée (actualSpent = 0), on prend quand même le montant du budget prévu
+                const budgetOrActual = Math.max(budget.amount, actualSpent);
+                totalBudgetsWithOverspending += budgetOrActual;
             }
         }
 
@@ -526,9 +528,13 @@ router.get('/summary/:year/:month', isAuth, async (req, res) => {
 
                 const actualSpent = (oneTimeSpent || 0) + recurringTotal.expense;
 
-                // Prendre le maximum entre le budget défini et les dépenses réelles
-                totalBudgetsWithOverspending += Math.max(budget.amount, actualSpent);
+                // IMPORTANT : Prendre le maximum entre le budget défini et les dépenses réelles
+                // Si aucune dépense n'a été effectuée (actualSpent = 0), on prend quand même le montant du budget prévu
+                const budgetOrActual = Math.max(budget.amount, actualSpent);
+                console.log(`[Budget Debug] CategoryId: ${budget.CategoryId}, Budget: ${budget.amount}, Dépenses: ${actualSpent}, Max: ${budgetOrActual}`);
+                totalBudgetsWithOverspending += budgetOrActual;
             }
+            console.log(`[Budget Debug] Total budgets avec overspending: ${totalBudgetsWithOverspending}`);
         }
 
         // Calculer les dépenses des catégories NON budgétées + transactions sans catégorie
@@ -628,6 +634,12 @@ router.get('/summary/:year/:month', isAuth, async (req, res) => {
 
         // Calculer aussi le total des budgets pour l'affichage
         const totalBudgets = budgets.reduce((sum, budget) => sum + budget.amount, 0);
+
+        console.log(`[Budget Debug] nonBudgetedExpenses: ${nonBudgetedExpenses}`);
+        console.log(`[Budget Debug] projectedExpenseWithBudgets: ${projectedExpenseWithBudgets}`);
+        console.log(`[Budget Debug] totalBudgets (pour affichage): ${totalBudgets}`);
+        console.log(`[Budget Debug] startingBalance: ${startingBalance}, totalIncome: ${totalIncome}, totalExpense: ${totalExpense}`);
+        console.log(`[Budget Debug] projectedBalanceWithBudgets: ${projectedBalanceWithBudgets}`);
 
         res.status(200).json({
             startingBalance,
