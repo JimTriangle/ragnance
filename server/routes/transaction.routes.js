@@ -468,7 +468,174 @@ router.get('/summary/:year/:month', isAuth, async (req, res) => {
         );
         const totalIncome = (oneTimeIncomeMonth || 0) + recurringTotalsMonth.income;
         const totalExpense = (oneTimeExpenseMonth || 0) + recurringTotalsMonth.expense;
-        res.status(200).json({ startingBalance, totalIncome, totalExpense });
+
+        // Calcul du solde prévisionnel avec budgets mensuels définis
+        const budgets = await Budget.findAll({
+            where: {
+                UserId: userId,
+                year: currentYear,
+                month: currentMonth
+            },
+            include: [{ model: Category, attributes: ['id'] }]
+        });
+
+        let totalBudgetsWithOverspending = 0;
+        const budgetedCategoryIds = budgets.map(b => b.CategoryId);
+
+        // Pour chaque catégorie budgétée, calculer le max entre le budget et les dépenses réelles
+        if (budgets.length > 0) {
+            for (const budget of budgets) {
+                // Dépenses one-time pour cette catégorie
+                const oneTimeSpent = await Transaction.sum('amount', {
+                    where: {
+                        UserId: userId,
+                        type: 'expense',
+                        transactionType: 'one-time',
+                        date: { [Op.gte]: startDateOfMonth, [Op.lt]: startDateOfNextMonth }
+                    },
+                    include: [{
+                        model: Category,
+                        where: { id: budget.CategoryId },
+                        attributes: [],
+                        required: true
+                    }]
+                });
+
+                // Dépenses récurrentes pour cette catégorie
+                const recurringExpenses = await Transaction.findAll({
+                    where: {
+                        UserId: userId,
+                        type: 'expense',
+                        transactionType: 'recurring',
+                        startDate: { [Op.lt]: startDateOfNextMonth },
+                        [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDateOfMonth } }]
+                    },
+                    include: [{
+                        model: Category,
+                        where: { id: budget.CategoryId },
+                        attributes: [],
+                        required: true
+                    }]
+                });
+
+                const recurringTotal = calculateRecurringTotals(
+                    recurringExpenses,
+                    startDateOfMonth,
+                    new Date(startDateOfNextMonth.getTime() - 1)
+                );
+
+                const actualSpent = (oneTimeSpent || 0) + recurringTotal.expense;
+
+                // Prendre le maximum entre le budget défini et les dépenses réelles
+                totalBudgetsWithOverspending += Math.max(budget.amount, actualSpent);
+            }
+        }
+
+        // Calculer les dépenses des catégories NON budgétées + transactions sans catégorie
+        let nonBudgetedExpenses = 0;
+
+        if (budgetedCategoryIds.length > 0) {
+            // Dépenses one-time des catégories non budgétées (avec catégorie)
+            const nonBudgetedOneTimeExpenses = await Transaction.sum('amount', {
+                where: {
+                    UserId: userId,
+                    type: 'expense',
+                    transactionType: 'one-time',
+                    date: { [Op.gte]: startDateOfMonth, [Op.lt]: startDateOfNextMonth }
+                },
+                include: [{
+                    model: Category,
+                    where: { id: { [Op.notIn]: budgetedCategoryIds } },
+                    attributes: [],
+                    required: true
+                }]
+            });
+
+            // Dépenses récurrentes des catégories non budgétées (avec catégorie)
+            const nonBudgetedRecurringTxs = await Transaction.findAll({
+                where: {
+                    UserId: userId,
+                    type: 'expense',
+                    transactionType: 'recurring',
+                    startDate: { [Op.lt]: startDateOfNextMonth },
+                    [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDateOfMonth } }]
+                },
+                include: [{
+                    model: Category,
+                    where: { id: { [Op.notIn]: budgetedCategoryIds } },
+                    attributes: [],
+                    required: true
+                }]
+            });
+
+            const nonBudgetedRecurringTotal = calculateRecurringTotals(
+                nonBudgetedRecurringTxs,
+                startDateOfMonth,
+                new Date(startDateOfNextMonth.getTime() - 1)
+            );
+
+            // Dépenses one-time SANS catégorie
+            const uncategorizedOneTimeExpenses = await Transaction.sum('amount', {
+                where: {
+                    UserId: userId,
+                    type: 'expense',
+                    transactionType: 'one-time',
+                    date: { [Op.gte]: startDateOfMonth, [Op.lt]: startDateOfNextMonth },
+                    '$Categories.id$': null
+                },
+                include: [{
+                    model: Category,
+                    attributes: [],
+                    required: false
+                }]
+            });
+
+            // Dépenses récurrentes SANS catégorie
+            const uncategorizedRecurringTxs = await Transaction.findAll({
+                where: {
+                    UserId: userId,
+                    type: 'expense',
+                    transactionType: 'recurring',
+                    startDate: { [Op.lt]: startDateOfNextMonth },
+                    [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDateOfMonth } }],
+                    '$Categories.id$': null
+                },
+                include: [{
+                    model: Category,
+                    attributes: [],
+                    required: false
+                }]
+            });
+
+            const uncategorizedRecurringTotal = calculateRecurringTotals(
+                uncategorizedRecurringTxs,
+                startDateOfMonth,
+                new Date(startDateOfNextMonth.getTime() - 1)
+            );
+
+            nonBudgetedExpenses = (nonBudgetedOneTimeExpenses || 0) +
+                                   nonBudgetedRecurringTotal.expense +
+                                   (uncategorizedOneTimeExpenses || 0) +
+                                   uncategorizedRecurringTotal.expense;
+        } else {
+            // Si aucun budget n'est défini, toutes les dépenses sont non budgétées
+            nonBudgetedExpenses = totalExpense;
+        }
+
+        // Total = max(budget, dépenses) des catégories budgétées + dépenses réelles des catégories non budgétées
+        const projectedExpenseWithBudgets = totalBudgetsWithOverspending + nonBudgetedExpenses;
+        const projectedBalanceWithBudgets = startingBalance + totalIncome - projectedExpenseWithBudgets;
+
+        // Calculer aussi le total des budgets pour l'affichage
+        const totalBudgets = budgets.reduce((sum, budget) => sum + budget.amount, 0);
+
+        res.status(200).json({
+            startingBalance,
+            totalIncome,
+            totalExpense,
+            projectedBalanceWithBudgets,
+            totalBudgets
+        });
     } catch (error) {
         console.error("Erreur résumé mensuel:", error);
         res.status(500).json({ message: "Erreur lors du calcul du résumé mensuel." });

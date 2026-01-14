@@ -15,10 +15,11 @@ import { InputText } from 'primereact/inputtext';
 import TransactionForm from '../components/TransactionForm';
 import { Dropdown } from 'primereact/dropdown';
 import useTransactionRefresh from '../hooks/useTransactionRefresh';
+import BudgetTracker from '../components/BudgetTracker';
 
 const MonthlyViewPage = () => {
   const [transactions, setTransactions] = useState([]);
-  const [summary, setSummary] = useState({ startingBalance: 0, totalIncome: 0, totalExpense: 0 });
+  const [summary, setSummary] = useState({ startingBalance: 0, totalIncome: 0, totalExpense: 0, projectedBalanceWithBudgets: 0, totalBudgets: 0 });
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -34,7 +35,8 @@ const MonthlyViewPage = () => {
   const [isNewModalVisible, setIsNewModalVisible] = useState(false);
   const [allCategories, setAllCategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-  
+  const [budgetProgress, setBudgetProgress] = useState([]);
+
   const isMountedRef = useRef(true);
 
   const chartOptions = {
@@ -58,16 +60,18 @@ const MonthlyViewPage = () => {
     const month = currentDate.getMonth() + 1;
     
     try {
-      const [transacResponse, summaryResponse, dailyFlowResponse] = await Promise.all([
+      const [transacResponse, summaryResponse, dailyFlowResponse, budgetProgressResponse] = await Promise.all([
         api.get(`/transactions?year=${year}&month=${month}`),
         api.get(`/transactions/summary/${year}/${month}`),
-        api.get(`/analysis/daily-flow/${year}/${month}`)
+        api.get(`/analysis/daily-flow/${year}/${month}`),
+        api.get(`/budgets/progress/${year}/${month}`)
       ]);
 
       if (!isMountedRef.current) return;
 
       setTransactions(transacResponse.data);
       setSummary(summaryResponse.data);
+      setBudgetProgress(budgetProgressResponse.data);
 
       const dailyFlowData = dailyFlowResponse.data;
 
@@ -304,31 +308,40 @@ const MonthlyViewPage = () => {
         </div>
 
         <div className="grid text-center mb-4">
-          <div className="col-12 md:col-3"><Card title="Solde Début de Mois"><h3 className="m-0">{formatCurrency(summary.startingBalance)}</h3></Card></div>
-          <div className="col-12 md:col-3"><Card title="Total Revenus du Mois"><h3 className="m-0 text-green-400">{formatCurrency(summary.totalIncome)}</h3></Card></div>
-          <div className="col-12 md:col-3"><Card title="Total Dépenses du Mois"><h3 className="m-0 text-red-400">{formatCurrency(summary.totalExpense)}</h3></Card></div>
-          <div className="col-12 md:col-3"><Card title="Solde Fin de Mois"><h3 className="m-0" style={{ color: endOfMonthBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(endOfMonthBalance)}</h3></Card></div>
+          <div className="col-12 md:col-3 lg:col-2"><Card title="Solde Début de Mois"><h3 className="m-0">{formatCurrency(summary.startingBalance)}</h3></Card></div>
+          <div className="col-12 md:col-3 lg:col-2"><Card title="Total Revenus du Mois"><h3 className="m-0 text-green-400">{formatCurrency(summary.totalIncome)}</h3></Card></div>
+          <div className="col-12 md:col-3 lg:col-2"><Card title="Total Dépenses du Mois"><h3 className="m-0 text-red-400">{formatCurrency(summary.totalExpense)}</h3></Card></div>
+          <div className="col-12 md:col-3 lg:col-2"><Card title="Solde Fin de Mois"><h3 className="m-0" style={{ color: endOfMonthBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(endOfMonthBalance)}</h3></Card></div>
+          <div className="col-12 md:col-6 lg:col-2"><Card title="Total Budgets"><h3 className="m-0 text-blue-400">{formatCurrency(summary.totalBudgets)}</h3></Card></div>
+          <div className="col-12 md:col-6 lg:col-2"><Card title="Solde Prév. avec Budgets"><h3 className="m-0" style={{ color: (summary.projectedBalanceWithBudgets || 0) >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.projectedBalanceWithBudgets)}</h3></Card></div>
         </div>
 
         <div className="grid">
-          <div className="col-12 lg:col-4">
+          <div className="col-12 lg:col-3">
             <Card title="Flux Journalier">
               <div style={{ position: 'relative', height: '300px' }}>
                 <Chart type="line" data={lineChartData} options={chartOptions} />
               </div>
             </Card>
           </div>
-          <div className="col-12 lg:col-4">
+          <div className="col-12 lg:col-3">
             <Card title="Progression Cumulée du Mois">
               <div style={{ position: 'relative', height: '300px' }}>
                 <Chart type="line" data={cumulativeChartData} options={chartOptions} />
               </div>
             </Card>
           </div>
-          <div className="col-12 lg:col-4">
+          <div className="col-12 lg:col-3">
             <Card title="Répartition Revenus / Dépenses">
               <div style={{ position: 'relative', height: '300px' }}>
                 <Chart type="pie" data={pieChartData} options={chartOptions} />
+              </div>
+            </Card>
+          </div>
+          <div className="col-12 lg:col-3">
+            <Card title="Progression des Budgets">
+              <div style={{ height: '300px', overflowY: 'auto', padding: '0.5rem' }}>
+                <BudgetTracker data={budgetProgress} />
               </div>
             </Card>
           </div>
