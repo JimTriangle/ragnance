@@ -13,7 +13,9 @@ const Transaction = sequelize.define('Transaction', {
   startDate: { type: DataTypes.DATEONLY },
   endDate: { type: DataTypes.DATEONLY, allowNull: true },
   dayOfMonth: { type: DataTypes.INTEGER },
-  dayOfWeek: { type: DataTypes.INTEGER }
+  dayOfWeek: { type: DataTypes.INTEGER },
+  parentRecurringId: { type: DataTypes.INTEGER, allowNull: true },
+  excludedDates: { type: DataTypes.JSON, allowNull: true, defaultValue: [] }
 });
 
 Transaction.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });

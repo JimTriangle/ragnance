@@ -21,6 +21,7 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedProjectBudget, setSelectedProjectBudget] = useState(null);
   const [error, setError] = useState('');
+  const [originalOccurrenceDate, setOriginalOccurrenceDate] = useState(null);
 
   const [categories, setCategories] = useState([]);
   const [projectBudgets, setProjectBudgets] = useState([]);
@@ -43,7 +44,7 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
       setAmount(transactionToEdit.amount);
       setType(transactionToEdit.type);
       setTransactionType(transactionToEdit.transactionType);
-      
+
       // On convertit les dates string "AAAA-MM-JJ" en objets Date pour le calendrier
       setDate(transactionToEdit.date ? new Date(transactionToEdit.date) : null);
       setStartDate(transactionToEdit.startDate ? new Date(transactionToEdit.startDate) : null);
@@ -52,10 +53,27 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
       setFrequency(transactionToEdit.frequency);
       setSelectedCategories(transactionToEdit.Categories ? transactionToEdit.Categories.map(c => c.id) : []);
       setSelectedProjectBudget(transactionToEdit.ProjectBudgetId);
+
+      // Si on édite une occurrence d'une transaction récurrente (elle a un date généré),
+      // on stocke ce date pour l'envoyer au backend
+      if (transactionToEdit.transactionType === 'recurring' && transactionToEdit.date) {
+        const formatDateForAPI = (d) => {
+          if (!d) return null;
+          const dateObj = new Date(d);
+          const year = dateObj.getFullYear();
+          const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+          const day = String(dateObj.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        };
+        setOriginalOccurrenceDate(formatDateForAPI(transactionToEdit.date));
+      } else {
+        setOriginalOccurrenceDate(null);
+      }
     } else {
-      setLabel(''); setAmount(null); setType(null); setTransactionType('one-time'); 
-      setDate(new Date()); setFrequency(null); setStartDate(null); setEndDate(null); 
-      setSelectedCategories([]); setSelectedProjectBudget(null); 
+      setLabel(''); setAmount(null); setType(null); setTransactionType('one-time');
+      setDate(new Date()); setFrequency(null); setStartDate(null); setEndDate(null);
+      setSelectedCategories([]); setSelectedProjectBudget(null);
+      setOriginalOccurrenceDate(null);
     }
   }, [transactionToEdit]);
 
@@ -127,6 +145,11 @@ const formatDateForAPI = (d) => {
 
     try {
       if (transactionToEdit) {
+        // Si on modifie une occurrence spécifique d'une transaction récurrente,
+        // on ajoute le champ modifyingOccurrenceDate pour que le backend crée une exception
+        if (originalOccurrenceDate && transactionType === 'recurring') {
+          transactionData.modifyingOccurrenceDate = originalOccurrenceDate;
+        }
         await api.put(`/transactions/${transactionToEdit.id}`, transactionData);
       } else {
         await api.post('/transactions', transactionData);
