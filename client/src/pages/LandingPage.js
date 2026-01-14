@@ -31,22 +31,23 @@ const LandingPage = () => {
             <main className="landing-main">
                 {/* SECTION DES CHOIX PRINCIPAUX */}
                 <section className="features">
-                    <h2>Choisissez votre outil</h2>
+                    <h2>Gérez votre budget</h2>
                     <div className="grid">
-                        <div className="col-12 md:col-6">
+                        <div className="col-12">
                             <Card title="Ragnance Budget">
                                 <i className="pi pi-wallet feature-icon"></i>
                                 <p>Prenez le contrôle de vos finances personnelles avec un suivi simple et efficace de vos dépenses et revenus.</p>
                                 <Button label="Accéder à Budget" onClick={() => handleAccessClick('/budget/dashboard')} className="p-button-raised" />
                             </Card>
                         </div>
-                        <div className="col-12 md:col-6">
+                        {/* MASQUÉ: Accès au trading désactivé */}
+                        {/* <div className="col-12 md:col-6">
                             <Card title="Ragnance Trading">
                                 <i className="pi pi-chart-line feature-icon"></i>
                                 <p>Analysez les marchés, développez et automatisez vos stratégies de trading avec des outils avancés.</p>
                                 <Button label="Accéder à Trading" onClick={() => handleAccessClick('/trading')} className="p-button-raised" />
                             </Card>
-                        </div>
+                        </div> */}
                     </div>
                 </section>
 

@@ -87,14 +87,15 @@ const AppSidebar = ({
                 {/* Section Utilisateur et Actions */}
                 <div className="sidebar-footer">
                     {/* Bouton de changement de section */}
-                    {section === 'budget' && user?.tradingAccess && (
+                    {/* MASQUÉ: Accès au trading désactivé */}
+                    {/* {section === 'budget' && user?.tradingAccess && (
                         <Button
                             label="Passer au Trading"
                             icon="pi pi-chart-line"
                             className="w-full mb-2 p-button-secondary p-button-sm"
                             onClick={() => handleSectionSwitch('trading')}
                         />
-                    )}
+                    )} */}
                     {section === 'trading' && user?.budgetAccess && (
                         <Button
                             label="Passer au Budget"
