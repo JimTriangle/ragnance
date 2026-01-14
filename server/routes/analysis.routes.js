@@ -154,9 +154,23 @@ router.get('/category-breakdown', isAuth, async (req, res) => {
 router.get('/budget-history', isAuth, async (req, res) => {
     const userId = req.user.id;
     try {
-        // 1. Récupérer tous les budgets de l'utilisateur avec leur catégorie
+        // Obtenir la date actuelle pour filtrer les budgets futurs
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1; // 0-indexed to 1-indexed
+
+        // 1. Récupérer tous les budgets de l'utilisateur avec leur catégorie (exclure les mois futurs)
         const allBudgets = await Budget.findAll({
-            where: { UserId: userId },
+            where: {
+                UserId: userId,
+                [Op.or]: [
+                    { year: { [Op.lt]: currentYear } },
+                    {
+                        year: currentYear,
+                        month: { [Op.lte]: currentMonth }
+                    }
+                ]
+            },
             include: {
                 model: Category,
                 attributes: ['name', 'color'],
