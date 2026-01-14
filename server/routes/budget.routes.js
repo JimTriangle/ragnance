@@ -153,4 +153,51 @@ router.post('/', isAuth, async (req, res) => {
     } catch (error) { res.status(500).json({ message: "Erreur serveur" }); }
 });
 
+// Copier les budgets d'un mois vers un autre
+router.post('/copy', isAuth, async (req, res) => {
+    const { fromYear, fromMonth, toYear, toMonth } = req.body;
+    try {
+        // Récupérer les budgets du mois source
+        const sourceBudgets = await Budget.findAll({
+            where: {
+                UserId: req.user.id,
+                year: parseInt(fromYear),
+                month: parseInt(fromMonth)
+            }
+        });
+
+        if (sourceBudgets.length === 0) {
+            return res.status(404).json({ message: "Aucun budget trouvé pour le mois source" });
+        }
+
+        // Créer ou mettre à jour les budgets pour le mois destination
+        const copiedBudgets = [];
+        for (const sourceBudget of sourceBudgets) {
+            const [budget, created] = await Budget.findOrCreate({
+                where: {
+                    UserId: req.user.id,
+                    year: parseInt(toYear),
+                    month: parseInt(toMonth),
+                    CategoryId: sourceBudget.CategoryId
+                },
+                defaults: { amount: sourceBudget.amount }
+            });
+
+            if (!created) {
+                await budget.update({ amount: sourceBudget.amount });
+            }
+
+            copiedBudgets.push(budget);
+        }
+
+        res.status(200).json({
+            message: `${copiedBudgets.length} budget(s) copié(s) avec succès`,
+            budgets: copiedBudgets
+        });
+    } catch (error) {
+        console.error("Erreur lors de la copie des budgets:", error);
+        res.status(500).json({ message: "Erreur serveur" });
+    }
+});
+
 module.exports = router;

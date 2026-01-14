@@ -13,6 +13,8 @@ const BudgetsPage = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const { showToast } = React.useContext(ToastContext);
     const debounceTimeout = useRef(null);
+    const [hasBudgets, setHasBudgets] = useState(true);
+    const [isLoadingCopy, setIsLoadingCopy] = useState(false);
 
     const fetchData = useCallback(async () => {
         const year = currentDate.getFullYear();
@@ -28,6 +30,7 @@ const BudgetsPage = () => {
                 return acc;
             }, {});
             setBudgets(budgetMap);
+            setHasBudgets(budgetsRes.data.length > 0);
         } catch (error) { console.error("Erreur fetch budgets", error); }
     }, [currentDate]);
 
@@ -79,6 +82,38 @@ const BudgetsPage = () => {
         });
     };
 
+    const copyFromPreviousMonth = async () => {
+        setIsLoadingCopy(true);
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1;
+
+        // Calculer le mois précédent
+        const prevDate = new Date(currentDate);
+        prevDate.setMonth(prevDate.getMonth() - 1);
+        const prevYear = prevDate.getFullYear();
+        const prevMonth = prevDate.getMonth() + 1;
+
+        try {
+            const response = await api.post('/budgets/copy', {
+                fromYear: prevYear,
+                fromMonth: prevMonth,
+                toYear: year,
+                toMonth: month
+            });
+
+            showToast('success', 'Succès', response.data.message);
+            await fetchData(); // Recharger les données
+        } catch (error) {
+            if (error.response?.status === 404) {
+                showToast('warn', 'Attention', 'Aucun budget trouvé pour le mois précédent');
+            } else {
+                showToast('error', 'Erreur', 'Échec de la copie des budgets');
+            }
+        } finally {
+            setIsLoadingCopy(false);
+        }
+    };
+
     const budgetEditor = (rowData) => {
         return <AmountInput
             value={budgets[rowData.id] || null}
@@ -98,6 +133,25 @@ const BudgetsPage = () => {
                 <h1 className="text-2xl capitalize">{`Budgets Mensuels pour ${monthName} ${year}`}</h1>
                 <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} />
             </div>
+
+            {!hasBudgets && trackedCategories.length > 0 && (
+                <div className="card mb-4 p-3 bg-blue-50 border-blue-200">
+                    <div className="flex align-items-center justify-content-between">
+                        <div>
+                            <i className="pi pi-info-circle mr-2 text-blue-500"></i>
+                            <span className="text-blue-800">Aucun budget défini pour ce mois. Voulez-vous copier les budgets du mois précédent ?</span>
+                        </div>
+                        <Button
+                            label="Copier les budgets"
+                            icon="pi pi-copy"
+                            className="p-button-sm"
+                            onClick={copyFromPreviousMonth}
+                            loading={isLoadingCopy}
+                        />
+                    </div>
+                </div>
+            )}
+
             <div className="card">
                 <DataTable value={trackedCategories} size="small">
                     <Column field="name" header="Catégorie" />
