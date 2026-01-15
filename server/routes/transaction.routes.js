@@ -6,18 +6,7 @@ const Category = require('../models/Category.model');
 const Budget = require('../models/Budget.model');
 const { Op, fn, col } = require('sequelize');
 const sequelize = require('../config/database');
-const xlsx = require('xlsx');
-
-/**
- * Helper pour vérifier si une date doit être exclue de la génération d'occurrences
- */
-const shouldExcludeDate = (transaction, date) => {
-    if (!transaction.excludedDates || transaction.excludedDates.length === 0) {
-        return false;
-    }
-    const dateStr = date.toISOString().split('T')[0]; // Format YYYY-MM-DD
-    return transaction.excludedDates.includes(dateStr);
-};
+const xlsx = require('xlsx'); 
 
 /**
  * [Conservé] Helper pour calculer le total des transactions récurrentes sur une période.
@@ -57,9 +46,7 @@ const calculateRecurringTotals = (transactions, periodStart, periodEnd) => {
 
             // Compte les occurrences semaine par semaine
             while (currentDate <= loopEndDate) {
-                if (currentDate >= tStartDate && !shouldExcludeDate(r, currentDate)) {
-                    occurrences++;
-                }
+                if (currentDate >= tStartDate) occurrences++;
                 currentDate.setUTCDate(currentDate.getUTCDate() + 7);
             }
         } else if (r.frequency === 'monthly' || r.frequency === 'yearly') {
@@ -74,7 +61,7 @@ const calculateRecurringTotals = (transactions, periodStart, periodEnd) => {
 
                     const occurrenceDate = new Date(Date.UTC(year, month, r.dayOfMonth));
 
-                    if (occurrenceDate.getUTCMonth() === month && occurrenceDate <= loopEndDate && occurrenceDate >= tStartDate && !shouldExcludeDate(r, occurrenceDate)) {
+                    if (occurrenceDate.getUTCMonth() === month && occurrenceDate <= loopEndDate && occurrenceDate >= tStartDate) {
                         occurrences++;
                     }
                 }
@@ -131,14 +118,14 @@ router.get('/dashboard-list', isAuth, async (req, res) => {
                 const first = new Date(startOfMonth);
                 while (first.getUTCDay() !== targetDay) first.setUTCDate(first.getUTCDate() + 1);
                 for (let d = new Date(first); d < startOfNextMonth; d.setUTCDate(d.getUTCDate() + 7)) {
-                    if (d >= start && (!end || d <= end) && !shouldExcludeDate(r, d)) {
+                    if (d >= start && (!end || d <= end)) {
                         const plain = r.get({ plain: true });
                         occurrences.push({ ...plain, date: new Date(d) });
                     }
                 }
             } else if (r.frequency === 'monthly') {
                 const occ = new Date(Date.UTC(startOfMonth.getUTCFullYear(), startOfMonth.getUTCMonth(), r.dayOfMonth));
-                if (occ >= start && (!end || occ <= end) && !shouldExcludeDate(r, occ)) {
+                if (occ >= start && (!end || occ <= end)) {
                     const plain = r.get({ plain: true });
                     occurrences.push({ ...plain, date: occ });
                 }
@@ -147,7 +134,7 @@ router.get('/dashboard-list', isAuth, async (req, res) => {
                 if (startMonth === startOfMonth.getUTCMonth()) {
                     const day = r.dayOfMonth || start.getUTCDate();
                     const occ = new Date(Date.UTC(startOfMonth.getUTCFullYear(), startOfMonth.getUTCMonth(), day));
-                    if (occ >= start && (!end || occ <= end) && !shouldExcludeDate(r, occ)) {
+                    if (occ >= start && (!end || occ <= end)) {
                         const plain = r.get({ plain: true });
                         occurrences.push({ ...plain, date: occ });
                     }
@@ -198,14 +185,14 @@ router.get('/', isAuth, async (req, res) => {
                     const firstDay = new Date(startDateOfMonth);
                     while (firstDay.getUTCDay() !== targetDay) firstDay.setUTCDate(firstDay.getUTCDate() + 1);
                     for (let d = new Date(firstDay); d < startOfNextMonth; d.setUTCDate(d.getUTCDate() + 7)) {
-                        if (d >= start && (!end || d <= end) && !shouldExcludeDate(r, d)) {
+                        if (d >= start && (!end || d <= end)) {
                             const plain = r.get({ plain: true });
                             recurringOccurrences.push({ ...plain, date: new Date(d) });
                         }
                     }
                 } else if (r.frequency === 'monthly') {
                     const occurrence = new Date(Date.UTC(currentYear, currentMonth - 1, r.dayOfMonth));
-                    if (occurrence >= start && (!end || occurrence <= end) && !shouldExcludeDate(r, occurrence)) {
+                    if (occurrence >= start && (!end || occurrence <= end)) {
                         const plain = r.get({ plain: true });
                         recurringOccurrences.push({ ...plain, date: occurrence });
                     }
@@ -214,7 +201,7 @@ router.get('/', isAuth, async (req, res) => {
                     if (startMonth === currentMonth) {
                         const day = r.dayOfMonth || start.getUTCDate();
                         const occurrence = new Date(Date.UTC(currentYear, currentMonth - 1, day));
-                        if (occurrence >= start && (!end || occurrence <= end) && !shouldExcludeDate(r, occurrence)) {
+                        if (occurrence >= start && (!end || occurrence <= end)) {
                             const plain = r.get({ plain: true });
                             recurringOccurrences.push({ ...plain, date: occurrence });
                         }
@@ -711,14 +698,14 @@ router.get('/export-excel/:year/:month', isAuth, async (req, res) => {
                 const firstDay = new Date(startDateOfMonth);
                 while (firstDay.getUTCDay() !== targetDay) firstDay.setUTCDate(firstDay.getUTCDate() + 1);
                 for (let d = new Date(firstDay); d < startOfNextMonth; d.setUTCDate(d.getUTCDate() + 7)) {
-                    if (d >= start && (!end || d <= end) && !shouldExcludeDate(r, d)) {
+                    if (d >= start && (!end || d <= end)) {
                         const plain = r.get({ plain: true });
                         recurringOccurrences.push({ ...plain, date: new Date(d) });
                     }
                 }
             } else if (r.frequency === 'monthly') {
                 const occurrence = new Date(Date.UTC(currentYear, currentMonth - 1, r.dayOfMonth));
-                if (occurrence >= start && (!end || occurrence <= end) && !shouldExcludeDate(r, occurrence)) {
+                if (occurrence >= start && (!end || occurrence <= end)) {
                     const plain = r.get({ plain: true });
                     recurringOccurrences.push({ ...plain, date: occurrence });
                 }
@@ -727,7 +714,7 @@ router.get('/export-excel/:year/:month', isAuth, async (req, res) => {
                 if (startMonth === currentMonth) {
                     const day = r.dayOfMonth || start.getUTCDate();
                     const occurrence = new Date(Date.UTC(currentYear, currentMonth - 1, day));
-                    if (occurrence >= start && (!end || occurrence <= end) && !shouldExcludeDate(r, occurrence)) {
+                    if (occurrence >= start && (!end || occurrence <= end)) {
                         const plain = r.get({ plain: true });
                         recurringOccurrences.push({ ...plain, date: occurrence });
                     }
@@ -973,7 +960,7 @@ router.post('/', isAuth, async (req, res) => {
 });
 
 router.put('/:id', isAuth, async (req, res) => {
-    const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, dayOfWeek: inputDayOfWeek, categoryIds, ProjectBudgetId, modifyingOccurrenceDate } = req.body;
+    const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, dayOfWeek: inputDayOfWeek, categoryIds, ProjectBudgetId } = req.body;
 
     let processedStartDate = startDate;
     let processedDayOfWeek = inputDayOfWeek;
@@ -998,55 +985,20 @@ router.put('/:id', isAuth, async (req, res) => {
                 throw error;
             }
 
-            // Cas 1: Modification d'une occurrence spécifique d'une transaction récurrente
-            // On détecte cela quand la transaction parente est récurrente et qu'on passe modifyingOccurrenceDate
-            if (transaction.transactionType === 'recurring' && modifyingOccurrenceDate) {
-                // Créer une nouvelle transaction one-time pour cette date spécifique
-                const newTransaction = await Transaction.create({
-                    label,
-                    amount,
-                    type,
-                    transactionType: 'one-time',
-                    date: modifyingOccurrenceDate,
-                    UserId: req.user.id,
-                    ProjectBudgetId,
-                    parentRecurringId: transaction.id
-                }, { transaction: t });
+            await transaction.update({
+                label, amount, type, transactionType, frequency, dayOfMonth, dayOfWeek: processedDayOfWeek,
+                date: date || null,
+                startDate: processedStartDate,
+                endDate: endDate || null,
+                ProjectBudgetId
+            }, { transaction: t });
 
-                // Ajouter la date à la liste des exclusions de la transaction récurrente parente
-                const currentExcluded = transaction.excludedDates || [];
-                const dateStr = modifyingOccurrenceDate;
-                if (!currentExcluded.includes(dateStr)) {
-                    await transaction.update({
-                        excludedDates: [...currentExcluded, dateStr]
-                    }, { transaction: t });
-                }
-
-                // Gérer les catégories pour la nouvelle transaction
-                if (categoryIds !== undefined) {
-                    const validCategoryIds = await sanitizeCategoryIds(categoryIds, req.user.id, 'PUT /transactions');
-                    await newTransaction.setCategories(validCategoryIds, { transaction: t });
-                }
-
-                updatedTransaction = await Transaction.findByPk(newTransaction.id, { include: [Category], transaction: t });
+            if (categoryIds !== undefined) {
+                const validCategoryIds = await sanitizeCategoryIds(categoryIds, req.user.id, 'PUT /transactions');
+                await transaction.setCategories(validCategoryIds, { transaction: t });
             }
-            // Cas 2: Modification normale (template récurrente ou transaction one-time)
-            else {
-                await transaction.update({
-                    label, amount, type, transactionType, frequency, dayOfMonth, dayOfWeek: processedDayOfWeek,
-                    date: date || null,
-                    startDate: processedStartDate,
-                    endDate: endDate || null,
-                    ProjectBudgetId
-                }, { transaction: t });
 
-                if (categoryIds !== undefined) {
-                    const validCategoryIds = await sanitizeCategoryIds(categoryIds, req.user.id, 'PUT /transactions');
-                    await transaction.setCategories(validCategoryIds, { transaction: t });
-                }
-
-                updatedTransaction = await Transaction.findByPk(req.params.id, { include: [Category], transaction: t });
-            }
+            updatedTransaction = await Transaction.findByPk(req.params.id, { include: [Category], transaction: t });
         });
 
         if (!updatedTransaction) {
