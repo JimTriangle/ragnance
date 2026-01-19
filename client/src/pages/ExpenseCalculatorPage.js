@@ -162,91 +162,47 @@ const ExpenseCalculatorPage = () => {
     <div className="p-3">
       <h1 className="text-2xl font-bold mb-3">Calculateur de répartition des charges</h1>
 
-      {/* Section Personnes */}
-      <Card title="Personnes et revenus" className="mb-3">
-        <Button
-          label="Ajouter une personne"
-          icon="pi pi-plus"
-          onClick={openPersonDialog}
-          className="mb-2"
-        />
+      {/* Grille à deux colonnes pour Personnes et Charges */}
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        {/* Section Personnes */}
+        <Card title="Personnes et revenus">
+          <Button
+            label="Ajouter une personne"
+            icon="pi pi-plus"
+            onClick={openPersonDialog}
+            className="mb-2"
+          />
 
-        {people.length > 0 && (
-          <DataTable value={totalPerPerson} size="small" className="mb-2">
-            <Column field="name" header="Nom" />
-            <Column
-              field="income"
-              header="Revenu mensuel"
-              body={(rowData) => `${rowData.income.toFixed(2)} €`}
-            />
-            <Column
-              field="percentage"
-              header="% du revenu total"
-              body={(rowData) => `${rowData.percentage.toFixed(2)} %`}
-            />
-            <Column
-              field="totalExpenses"
-              header="Total charges"
-              body={(rowData) => `${rowData.totalExpenses.toFixed(2)} €`}
-            />
-            <Column
-              body={(rowData) => (
-                <div className="flex gap-2">
-                  <Button
-                    icon="pi pi-pencil"
-                    onClick={() => editPerson(rowData)}
-                    className="p-button-rounded p-button-text p-button-info"
-                    tooltip="Modifier"
-                  />
-                  <Button
-                    icon="pi pi-trash"
-                    onClick={() => removePerson(rowData.id)}
-                    className="p-button-rounded p-button-text p-button-danger"
-                    tooltip="Supprimer"
-                  />
-                </div>
-              )}
-            />
-          </DataTable>
-        )}
-
-        {people.length > 0 && (
-          <div className="mt-2 text-lg font-bold">
-            Revenu total : {totalIncome.toFixed(2)} €
-          </div>
-        )}
-      </Card>
-
-      {/* Section Charges */}
-      <Card title="Charges mensuelles" className="mb-3">
-        <Button
-          label="Ajouter une charge"
-          icon="pi pi-plus"
-          onClick={openExpenseDialog}
-          className="mb-2"
-        />
-
-        {expenses.length > 0 && (
-          <>
-            <DataTable value={expenses} size="small" className="mb-2">
-              <Column field="name" header="Charge" />
+          {people.length > 0 && (
+            <DataTable value={totalPerPerson} size="small" className="mb-2">
+              <Column field="name" header="Nom" />
               <Column
-                field="amount"
-                header="Montant"
-                body={(rowData) => `${rowData.amount.toFixed(2)} €`}
+                field="income"
+                header="Revenu mensuel"
+                body={(rowData) => `${rowData.income.toFixed(2)} €`}
+              />
+              <Column
+                field="percentage"
+                header="% du revenu total"
+                body={(rowData) => `${rowData.percentage.toFixed(2)} %`}
+              />
+              <Column
+                field="totalExpenses"
+                header="Total charges"
+                body={(rowData) => `${rowData.totalExpenses.toFixed(2)} €`}
               />
               <Column
                 body={(rowData) => (
                   <div className="flex gap-2">
                     <Button
                       icon="pi pi-pencil"
-                      onClick={() => editExpense(rowData)}
+                      onClick={() => editPerson(rowData)}
                       className="p-button-rounded p-button-text p-button-info"
                       tooltip="Modifier"
                     />
                     <Button
                       icon="pi pi-trash"
-                      onClick={() => removeExpense(rowData.id)}
+                      onClick={() => removePerson(rowData.id)}
                       className="p-button-rounded p-button-text p-button-danger"
                       tooltip="Supprimer"
                     />
@@ -254,13 +210,60 @@ const ExpenseCalculatorPage = () => {
                 )}
               />
             </DataTable>
+          )}
 
+          {people.length > 0 && (
             <div className="mt-2 text-lg font-bold">
-              Total des charges : {totalExpenses.toFixed(2)} €
+              Revenu total : {totalIncome.toFixed(2)} €
             </div>
-          </>
-        )}
-      </Card>
+          )}
+        </Card>
+
+        {/* Section Charges */}
+        <Card title="Charges mensuelles">
+          <Button
+            label="Ajouter une charge"
+            icon="pi pi-plus"
+            onClick={openExpenseDialog}
+            className="mb-2"
+          />
+
+          {expenses.length > 0 && (
+            <>
+              <DataTable value={expenses} size="small" className="mb-2">
+                <Column field="name" header="Charge" />
+                <Column
+                  field="amount"
+                  header="Montant"
+                  body={(rowData) => `${rowData.amount.toFixed(2)} €`}
+                />
+                <Column
+                  body={(rowData) => (
+                    <div className="flex gap-2">
+                      <Button
+                        icon="pi pi-pencil"
+                        onClick={() => editExpense(rowData)}
+                        className="p-button-rounded p-button-text p-button-info"
+                        tooltip="Modifier"
+                      />
+                      <Button
+                        icon="pi pi-trash"
+                        onClick={() => removeExpense(rowData.id)}
+                        className="p-button-rounded p-button-text p-button-danger"
+                        tooltip="Supprimer"
+                      />
+                    </div>
+                  )}
+                />
+              </DataTable>
+
+              <div className="mt-2 text-lg font-bold">
+                Total des charges : {totalExpenses.toFixed(2)} €
+              </div>
+            </>
+          )}
+        </Card>
+      </div>
 
       {/* Section Répartition détaillée */}
       {people.length > 0 && expenses.length > 0 && (
