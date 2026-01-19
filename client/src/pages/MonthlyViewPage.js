@@ -16,6 +16,9 @@ import TransactionForm from '../components/TransactionForm';
 import { Dropdown } from 'primereact/dropdown';
 import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import BudgetTracker from '../components/BudgetTracker';
+import useTour from '../hooks/useTour';
+import TourButton from '../components/TourButton';
+import '../styles/tour.css';
 
 const MonthlyViewPage = () => {
   const [transactions, setTransactions] = useState([]);
@@ -38,6 +41,99 @@ const MonthlyViewPage = () => {
   const [budgetProgress, setBudgetProgress] = useState([]);
 
   const isMountedRef = useRef(true);
+
+  // Configuration du guide utilisateur
+  const tourSteps = [
+    {
+      element: '[data-tour-id="monthly-title"]',
+      popover: {
+        title: 'Vue Mensuelle 📅',
+        description: 'Cette page vous permet d\'analyser en détail toutes vos transactions pour un mois spécifique. Naviguez entre les mois et visualisez vos flux financiers.',
+        side: 'bottom',
+        align: 'center'
+      }
+    },
+    {
+      element: '[data-tour-id="month-navigation"]',
+      popover: {
+        title: 'Navigation par Mois ⬅️➡️',
+        description: 'Utilisez les flèches pour naviguer entre les différents mois. Le bouton "Exporter en Excel" permet de télécharger toutes vos transactions du mois.',
+        side: 'bottom',
+        align: 'center'
+      }
+    },
+    {
+      element: '[data-tour-id="summary-cards"]',
+      popover: {
+        title: 'Résumé Mensuel 💰',
+        description: 'Ces cartes résument votre situation financière du mois : solde de début, total des revenus et dépenses, solde de fin, et l\'impact de vos budgets.',
+        side: 'bottom',
+        align: 'start'
+      }
+    },
+    {
+      element: '[data-tour-id="chart-daily-flow"]',
+      popover: {
+        title: 'Flux Journalier 📊',
+        description: 'Ce graphique montre vos revenus (vert) et dépenses (rouge) jour par jour. Identifiez facilement les pics de dépenses ou de revenus.',
+        side: 'top',
+        align: 'center'
+      }
+    },
+    {
+      element: '[data-tour-id="chart-cumulative"]',
+      popover: {
+        title: 'Progression Cumulée 📈',
+        description: 'Visualisez l\'évolution cumulée de vos dépenses tout au long du mois. Pratique pour suivre votre consommation progressive.',
+        side: 'top',
+        align: 'center'
+      }
+    },
+    {
+      element: '[data-tour-id="chart-pie"]',
+      popover: {
+        title: 'Répartition Revenus/Dépenses 🎯',
+        description: 'Ce graphique circulaire compare rapidement le total de vos revenus et dépenses du mois.',
+        side: 'top',
+        align: 'center'
+      }
+    },
+    {
+      element: '[data-tour-id="budget-progress"]',
+      popover: {
+        title: 'Progression des Budgets 💳',
+        description: 'Suivez en temps réel l\'avancement de vos budgets mensuels. Les barres de progression indiquent le pourcentage utilisé.',
+        side: 'top',
+        align: 'center'
+      }
+    },
+    {
+      element: '[data-tour-id="transactions-table"]',
+      popover: {
+        title: 'Liste des Transactions 📋',
+        description: 'Toutes vos transactions du mois sont listées ici. Vous pouvez les rechercher, les filtrer par catégorie, et les trier selon vos besoins.',
+        side: 'top',
+        align: 'start'
+      }
+    },
+    {
+      element: '[data-tour-id="add-transaction-btn"]',
+      popover: {
+        title: 'Ajouter une Transaction ➕',
+        description: 'Cliquez ici pour ajouter rapidement une nouvelle transaction (revenu ou dépense).',
+        side: 'right',
+        align: 'start'
+      }
+    },
+    {
+      popover: {
+        title: 'C\'est terminé ! ✨',
+        description: 'Vous maîtrisez maintenant la vue mensuelle. Utilisez le bouton "i" en bas à droite pour revoir ce guide à tout moment.',
+      }
+    }
+  ];
+
+  const { startTour } = useTour('monthly-view', tourSteps, true);
 
   const chartOptions = {
     maintainAspectRatio: false,
@@ -259,7 +355,7 @@ const MonthlyViewPage = () => {
 
   const tableHeader = (
     <div className="flex flex-wrap justify-content-between align-items-center gap-2">
-      <Button label="Ajouter une transaction" icon="pi pi-plus" className="p-button-success p-button-sm" onClick={() => setIsNewModalVisible(true)} />
+      <Button label="Ajouter une transaction" icon="pi pi-plus" className="p-button-success p-button-sm" onClick={() => setIsNewModalVisible(true)} data-tour-id="add-transaction-btn" />
       <div className="flex align-items-center gap-2">
         <Dropdown value={selectedCategoryId} options={categoryOptions} onChange={(e) => setSelectedCategoryId(e.value)} placeholder="Catégorie" showClear className="p-inputtext-sm" />
         <span className="p-input-icon-left">
@@ -297,17 +393,18 @@ const MonthlyViewPage = () => {
 
   return (
     <div>
+      <TourButton onStartTour={startTour} tooltip="Revoir le guide de la Vue Mensuelle" />
       <div className="p-4">
-        <div className="flex justify-content-between align-items-center mb-4">
+        <div className="flex justify-content-between align-items-center mb-4" data-tour-id="month-navigation">
           <Button icon="pi pi-arrow-left" onClick={() => changeMonth(-1)} />
           <div className="flex flex-column align-items-center gap-2">
-            <h1 className="text-2xl capitalize m-0">{`Analyse de ${monthName} ${year}`}</h1>
+            <h1 className="text-2xl capitalize m-0" data-tour-id="monthly-title">{`Analyse de ${monthName} ${year}`}</h1>
             <Button label="Exporter en Excel" icon="pi pi-file-excel" className="p-button-success p-button-sm" onClick={handleExportExcel} />
           </div>
           <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} />
         </div>
 
-        <div className="grid text-center mb-4">
+        <div className="grid text-center mb-4" data-tour-id="summary-cards">
           <div className="col-12 md:col-3 lg:col-2"><Card title="Solde Début de Mois"><h3 className="m-0">{formatCurrency(summary.startingBalance)}</h3></Card></div>
           <div className="col-12 md:col-3 lg:col-2"><Card title="Total Revenus du Mois"><h3 className="m-0 text-green-400">{formatCurrency(summary.totalIncome)}</h3></Card></div>
           <div className="col-12 md:col-3 lg:col-2"><Card title="Total Dépenses du Mois"><h3 className="m-0 text-red-400">{formatCurrency(summary.totalExpense)}</h3></Card></div>
@@ -317,28 +414,28 @@ const MonthlyViewPage = () => {
         </div>
 
         <div className="grid">
-          <div className="col-12 lg:col-3">
+          <div className="col-12 lg:col-3" data-tour-id="chart-daily-flow">
             <Card title="Flux Journalier">
               <div style={{ position: 'relative', height: '300px' }}>
                 <Chart type="line" data={lineChartData} options={chartOptions} />
               </div>
             </Card>
           </div>
-          <div className="col-12 lg:col-3">
+          <div className="col-12 lg:col-3" data-tour-id="chart-cumulative">
             <Card title="Progression Cumulée du Mois">
               <div style={{ position: 'relative', height: '300px' }}>
                 <Chart type="line" data={cumulativeChartData} options={chartOptions} />
               </div>
             </Card>
           </div>
-          <div className="col-12 lg:col-3">
+          <div className="col-12 lg:col-3" data-tour-id="chart-pie">
             <Card title="Répartition Revenus / Dépenses">
               <div style={{ position: 'relative', height: '300px' }}>
                 <Chart type="pie" data={pieChartData} options={chartOptions} />
               </div>
             </Card>
           </div>
-          <div className="col-12 lg:col-3">
+          <div className="col-12 lg:col-3" data-tour-id="budget-progress">
             <Card title="Progression des Budgets">
               <div style={{ height: '300px', overflowY: 'auto', padding: '0.5rem' }}>
                 <BudgetTracker data={budgetProgress} />
@@ -347,7 +444,7 @@ const MonthlyViewPage = () => {
           </div>
         </div>
 
-        <div className="card mt-4">
+        <div className="card mt-4" data-tour-id="transactions-table">
           <DataTable value={selectedCategoryId ? transactions.filter(t => t.Categories && t.Categories.some(c => c.id === selectedCategoryId)) : transactions} loading={loading} size="small" header={tableHeader} globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50, 100]} pt={{ bodyCell: { style: { padding: '0.25rem 0.5rem' } } }}>
             <Column field="label" header="Libellé" body={labelBodyTemplate} sortable />
             <Column field="amount" header="Montant" body={(rowData) => formatCurrency(rowData.amount)} sortable />

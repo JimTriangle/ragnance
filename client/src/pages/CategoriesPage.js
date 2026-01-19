@@ -10,6 +10,9 @@ import { InputText } from 'primereact/inputtext';
 import { ColorPicker } from 'primereact/colorpicker';
 import { InputSwitch } from 'primereact/inputswitch';
 import { Tag } from 'primereact/tag';
+import useTour from '../hooks/useTour';
+import TourButton from '../components/TourButton';
+import '../styles/tour.css';
 
 const CategoriesPage = () => {
     const [categories, setCategories] = useState([]);
@@ -25,6 +28,54 @@ const CategoriesPage = () => {
     const [isTracked, setIsTracked] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef(null);
+
+    // Configuration du guide utilisateur
+    const tourSteps = [
+        {
+            element: '[data-tour-id="categories-title"]',
+            popover: {
+                title: 'Gestion des Catégories 🏷️',
+                description: 'Les catégories vous permettent d\'organiser vos transactions. Créez des catégories personnalisées pour mieux suivre vos dépenses et revenus.',
+                side: 'bottom',
+                align: 'start'
+            }
+        },
+        {
+            element: '[data-tour-id="add-category-btn"]',
+            popover: {
+                title: 'Nouvelle Catégorie ➕',
+                description: 'Cliquez ici pour créer une nouvelle catégorie. Vous pourrez lui donner un nom, une couleur, et choisir si elle doit être suivie mensuellement.',
+                side: 'bottom',
+                align: 'start'
+            }
+        },
+        {
+            element: '[data-tour-id="categories-table"]',
+            popover: {
+                title: 'Liste des Catégories 📋',
+                description: 'Toutes vos catégories sont affichées ici avec leur couleur distinctive. Les tags colorés vous aideront à identifier rapidement vos catégories dans les transactions.',
+                side: 'top',
+                align: 'start'
+            }
+        },
+        {
+            element: '[data-tour-id="tracked-column"]',
+            popover: {
+                title: 'Suivi Mensuel 📊',
+                description: 'Activez cette option pour qu\'une catégorie soit incluse dans les statistiques et analyses mensuelles. Utile pour suivre vos principales sources de dépenses.',
+                side: 'left',
+                align: 'center'
+            }
+        },
+        {
+            popover: {
+                title: 'Astuce 💡',
+                description: 'Vous pouvez modifier ou supprimer vos catégories à tout moment. Les catégories bien organisées facilitent l\'analyse de vos finances. Utilisez des couleurs distinctes pour mieux les identifier !',
+            }
+        }
+    ];
+
+    const { startTour } = useTour('categories', tourSteps, true);
 
     const fetchCategories = useCallback(async () => {
         const response = await api.get('/categories');
@@ -126,7 +177,7 @@ const CategoriesPage = () => {
 
     const tableHeader = (
         <div className="flex flex-wrap justify-content-between align-items-center gap-2">
-            <Button label="Nouvelle Catégorie" icon="pi pi-plus" className="p-button-success p-button-sm" onClick={openNew} />
+            <Button label="Nouvelle Catégorie" icon="pi pi-plus" className="p-button-success p-button-sm" onClick={openNew} data-tour-id="add-category-btn" />
             <span className="p-input-icon-left">
                 <i className="pi pi-search" />
                 <InputText value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder="Rechercher..." className="p-inputtext-sm" />
@@ -136,12 +187,13 @@ const CategoriesPage = () => {
 
     return (
         <div className="p-4">
+            <TourButton onStartTour={startTour} tooltip="Revoir le guide des Catégories" />
             <Toast ref={toast} />
-            <h1>Gestion des Catégories</h1>
-            <div className="card mt-4">
+            <h1 data-tour-id="categories-title">Gestion des Catégories</h1>
+            <div className="card mt-4" data-tour-id="categories-table">
                 <DataTable value={categories} dataKey="id" size="small" responsiveLayout="scroll" header={tableHeader} globalFilter={globalFilter}>
                     <Column field="name" header="Nom" body={nameBodyTemplate} sortable />
-                    <Column header="Suivi Mensuel" body={trackedBodyTemplate} style={{ width: '10rem', textAlign: 'center' }} />
+                    <Column header="Suivi Mensuel" body={trackedBodyTemplate} style={{ width: '10rem', textAlign: 'center' }} headerStyle={{ textAlign: 'center' }} data-tour-id="tracked-column" />
                     <Column body={actionBodyTemplate} header="Actions" style={{ width: '8rem', textAlign: 'center' }} />
                 </DataTable>
             </div>

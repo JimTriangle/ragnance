@@ -6,6 +6,9 @@ import { Dialog } from 'primereact/dialog';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import AmountInput from '../components/AmountInput';
+import useTour from '../hooks/useTour';
+import TourButton from '../components/TourButton';
+import '../styles/tour.css';
 
 const ExpenseCalculatorPage = () => {
   // Fonction helper pour obtenir le mois courant au format YYYY-MM
@@ -47,7 +50,73 @@ const ExpenseCalculatorPage = () => {
   const [editingPersonId, setEditingPersonId] = useState(null);
   const [editingExpenseId, setEditingExpenseId] = useState(null);
 
-  // Charger les données sauvegardées pour le mois sélectionné
+  // Configuration du guide utilisateur
+  const tourSteps = [
+    {
+      element: '[data-tour-id="calculator-title"]',
+      popover: {
+        title: 'Calculateur de Charges 🧮',
+        description: 'Cet outil vous permet de répartir équitablement les charges entre plusieurs personnes en fonction de leurs revenus. Idéal pour les colocations ou la vie de couple.',
+        side: 'bottom',
+        align: 'start'
+      }
+    },
+    {
+      element: '[data-tour-id="people-section"]',
+      popover: {
+        title: 'Section Personnes 👥',
+        description: 'Ajoutez ici toutes les personnes qui partagent les charges avec leur revenu mensuel. Le système calculera automatiquement le pourcentage de contribution de chacun.',
+        side: 'right',
+        align: 'start'
+      }
+    },
+    {
+      element: '[data-tour-id="add-person-btn"]',
+      popover: {
+        title: 'Ajouter une Personne ➕',
+        description: 'Cliquez ici pour ajouter une nouvelle personne. Vous devrez indiquer son nom et son revenu mensuel.',
+        side: 'bottom',
+        align: 'start'
+      }
+    },
+    {
+      element: '[data-tour-id="expenses-section"]',
+      popover: {
+        title: 'Section Charges 💰',
+        description: 'Ajoutez toutes vos charges mensuelles communes : loyer, électricité, internet, courses, etc. Chaque charge sera automatiquement répartie proportionnellement.',
+        side: 'left',
+        align: 'start'
+      }
+    },
+    {
+      element: '[data-tour-id="add-expense-btn"]',
+      popover: {
+        title: 'Ajouter une Charge ➕',
+        description: 'Cliquez ici pour ajouter une nouvelle charge commune. Indiquez le nom de la charge et son montant mensuel.',
+        side: 'bottom',
+        align: 'start'
+      }
+    },
+    {
+      element: '[data-tour-id="distribution-section"]',
+      popover: {
+        title: 'Répartition Détaillée 📊',
+        description: 'Cette section affiche la répartition détaillée de chaque charge entre toutes les personnes. Vous verrez exactement combien chacun doit payer pour chaque charge.',
+        side: 'top',
+        align: 'start'
+      }
+    },
+    {
+      popover: {
+        title: 'Astuce 💡',
+        description: 'Vos données sont sauvegardées automatiquement dans votre navigateur. Vous pouvez modifier ou supprimer les personnes et charges à tout moment. Relancez ce guide via le bouton "i" en bas à droite.',
+      }
+    }
+  ];
+
+  const { startTour } = useTour('expense-calculator', tourSteps, true);
+
+  // Charger les données sauvegardées au démarrage
   useEffect(() => {
     const storageKey = `expenseCalculator_${selectedMonth}`;
     const savedData = localStorage.getItem(storageKey);
@@ -261,7 +330,8 @@ const ExpenseCalculatorPage = () => {
 
   return (
     <div className="p-3">
-      <h1 className="text-2xl font-bold mb-3">Calculateur de répartition des charges</h1>
+      <TourButton onStartTour={startTour} tooltip="Revoir le guide du Calculateur" />
+      <h1 className="text-2xl font-bold mb-3" data-tour-id="calculator-title">Calculateur de répartition des charges</h1>
 
       {/* Navigation mensuelle */}
       <Card className="mb-3">
@@ -306,12 +376,13 @@ const ExpenseCalculatorPage = () => {
       {/* Grille à deux colonnes pour Personnes et Charges */}
       <div className="grid grid-cols-2 gap-3 mb-3">
         {/* Section Personnes */}
-        <Card title="Personnes et revenus">
+        <Card title="Personnes et revenus" data-tour-id="people-section">
           <Button
             label="Ajouter une personne"
             icon="pi pi-plus"
             onClick={openPersonDialog}
             className="mb-2"
+            data-tour-id="add-person-btn"
           />
 
           {people.length > 0 && (
@@ -361,12 +432,13 @@ const ExpenseCalculatorPage = () => {
         </Card>
 
         {/* Section Charges */}
-        <Card title="Charges mensuelles">
+        <Card title="Charges mensuelles" data-tour-id="expenses-section">
           <Button
             label="Ajouter une charge"
             icon="pi pi-plus"
             onClick={openExpenseDialog}
             className="mb-2"
+            data-tour-id="add-expense-btn"
           />
 
           {expenses.length > 0 && (
@@ -408,7 +480,7 @@ const ExpenseCalculatorPage = () => {
 
       {/* Section Répartition détaillée - Affichage en blocs */}
       {people.length > 0 && expenses.length > 0 && (
-        <Card title="Répartition détaillée des charges">
+        <Card title="Répartition détaillée des charges" data-tour-id="distribution-section>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {expenseDistribution.map(expense => (
               <Card

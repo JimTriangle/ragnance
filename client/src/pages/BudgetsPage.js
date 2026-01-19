@@ -6,6 +6,9 @@ import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import AmountInput from '../components/AmountInput';
+import useTour from '../hooks/useTour';
+import TourButton from '../components/TourButton';
+import '../styles/tour.css';
 
 const BudgetsPage = () => {
     const [trackedCategories, setTrackedCategories] = useState([]);
@@ -15,6 +18,54 @@ const BudgetsPage = () => {
     const debounceTimeout = useRef(null);
     const [hasBudgets, setHasBudgets] = useState(true);
     const [isLoadingCopy, setIsLoadingCopy] = useState(false);
+
+    // Configuration du guide utilisateur
+    const tourSteps = [
+        {
+            element: '[data-tour-id="budgets-title"]',
+            popover: {
+                title: 'Budgets Mensuels 💰',
+                description: 'Définissez des budgets mensuels pour chacune de vos catégories suivies. Cela vous aide à contrôler vos dépenses et à mieux gérer vos finances.',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '[data-tour-id="month-navigation"]',
+            popover: {
+                title: 'Navigation par Mois ⬅️➡️',
+                description: 'Utilisez les flèches pour naviguer entre les mois. Vous pouvez définir des budgets différents pour chaque mois.',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '[data-tour-id="copy-budgets"]',
+            popover: {
+                title: 'Copier les Budgets 📋',
+                description: 'Gagnez du temps ! Si vous n\'avez pas de budgets pour ce mois, vous pouvez copier automatiquement ceux du mois précédent.',
+                side: 'bottom',
+                align: 'start'
+            }
+        },
+        {
+            element: '[data-tour-id="budgets-table"]',
+            popover: {
+                title: 'Définir les Budgets 🎯',
+                description: 'Entrez un montant de budget pour chaque catégorie. Les changements sont automatiquement sauvegardés après 1 seconde d\'inactivité.',
+                side: 'top',
+                align: 'start'
+            }
+        },
+        {
+            popover: {
+                title: 'Conseil 💡',
+                description: 'Seules les catégories avec "Suivi Mensuel" activé apparaissent ici. Activez cette option dans la page Catégories pour ajouter d\'autres catégories à suivre.',
+            }
+        }
+    ];
+
+    const { startTour } = useTour('budgets', tourSteps, true);
 
     const fetchData = useCallback(async () => {
         const year = currentDate.getFullYear();
@@ -128,14 +179,15 @@ const BudgetsPage = () => {
 
     return (
         <div className="p-4">
-            <div className="flex justify-content-between align-items-center mb-4">
+            <TourButton onStartTour={startTour} tooltip="Revoir le guide des Budgets" />
+            <div className="flex justify-content-between align-items-center mb-4" data-tour-id="month-navigation">
                 <Button icon="pi pi-arrow-left" onClick={() => changeMonth(-1)} />
-                <h1 className="text-2xl capitalize">{`Budgets Mensuels pour ${monthName} ${year}`}</h1>
+                <h1 className="text-2xl capitalize" data-tour-id="budgets-title">{`Budgets Mensuels pour ${monthName} ${year}`}</h1>
                 <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} />
             </div>
 
             {!hasBudgets && trackedCategories.length > 0 ? (
-                <div className="card mb-4 p-3 bg-blue-50 border-blue-200">
+                <div className="card mb-4 p-3 bg-blue-50 border-blue-200" data-tour-id="copy-budgets">
                     <div className="flex align-items-center justify-content-between">
                         <div>
                             <i className="pi pi-info-circle mr-2 text-blue-500"></i>
@@ -151,7 +203,7 @@ const BudgetsPage = () => {
                     </div>
                 </div>
             ) : (
-                <div className="card">
+                <div className="card" data-tour-id="budgets-table">
                     <DataTable value={trackedCategories} size="small">
                         <Column field="name" header="Catégorie" />
                         <Column header="Budget" body={budgetEditor} />
