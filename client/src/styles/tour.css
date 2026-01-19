@@ -101,16 +101,19 @@
 .driver-active-element {
   border-radius: 8px !important;
   /* Bordure visible pour mettre en évidence l'élément */
-  outline: 3px solid var(--primary-color, #64b5f6) !important;
-  outline-offset: 2px !important;
-  /* Effet de glow/lueur autour de l'élément */
-  box-shadow: 0 0 0 4px rgba(100, 181, 246, 0.3),
-              0 0 20px 8px rgba(100, 181, 246, 0.4) !important;
+  outline: 4px solid var(--primary-color, #64b5f6) !important;
+  outline-offset: 3px !important;
+  /* Effet de glow/lueur intensifié autour de l'élément */
+  box-shadow: 0 0 0 6px rgba(100, 181, 246, 0.6),
+              0 0 30px 12px rgba(100, 181, 246, 0.7),
+              0 0 50px 20px rgba(100, 181, 246, 0.5) !important;
   /* Z-index élevé pour s'assurer qu'il est au-dessus de l'overlay */
   position: relative !important;
   z-index: 10000 !important;
   /* Assurer que l'arrière-plan est visible */
   background-color: inherit !important;
+  /* Filtre pour augmenter légèrement la luminosité */
+  filter: brightness(1.1) !important;
 }
 
 /* Animation du popover */
@@ -200,7 +203,9 @@
 }
 
 [data-theme="light"] .driver-active-element {
-  outline: 3px solid #1976d2 !important;
-  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.3),
-              0 0 20px 8px rgba(25, 118, 210, 0.4) !important;
+  outline: 4px solid #1976d2 !important;
+  box-shadow: 0 0 0 6px rgba(25, 118, 210, 0.6),
+              0 0 30px 12px rgba(25, 118, 210, 0.7),
+              0 0 50px 20px rgba(25, 118, 210, 0.5) !important;
+  filter: brightness(1.1) !important;
 }
