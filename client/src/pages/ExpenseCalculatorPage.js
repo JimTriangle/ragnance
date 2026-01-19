@@ -162,8 +162,8 @@ const ExpenseCalculatorPage = () => {
     <div className="p-3">
       <h1 className="text-2xl font-bold mb-3">Calculateur de répartition des charges</h1>
 
-      {/* Grille à deux colonnes pour Personnes et Charges */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      {/* Grille à trois colonnes pour Personnes, Charges et Répartition */}
+      <div className="grid grid-cols-3 gap-3 mb-3">
         {/* Section Personnes */}
         <Card title="Personnes et revenus">
           <Button
@@ -263,28 +263,28 @@ const ExpenseCalculatorPage = () => {
             </>
           )}
         </Card>
-      </div>
 
-      {/* Section Répartition détaillée */}
-      {people.length > 0 && expenses.length > 0 && (
-        <Card title="Répartition détaillée des charges">
-          {expenseDistribution.map(expense => (
-            <div key={expense.id} className="mb-3 pb-2" style={{ borderBottom: '1px solid #495057' }}>
-              <h3 className="text-base font-bold mb-1">
-                {expense.name} ({expense.amount.toFixed(2)} €)
-              </h3>
-              <DataTable value={expense.shares} size="small">
-                <Column field="personName" header="Personne" />
-                <Column
-                  field="amount"
-                  header="Montant à payer"
-                  body={(rowData) => `${rowData.amount.toFixed(2)} €`}
-                />
-              </DataTable>
-            </div>
-          ))}
-        </Card>
-      )}
+        {/* Section Répartition détaillée */}
+        {people.length > 0 && expenses.length > 0 && (
+          <Card title="Répartition détaillée des charges">
+            {expenseDistribution.map(expense => (
+              <div key={expense.id} className="mb-3 pb-2" style={{ borderBottom: '1px solid #495057' }}>
+                <h3 className="text-base font-bold mb-1">
+                  {expense.name} ({expense.amount.toFixed(2)} €)
+                </h3>
+                <DataTable value={expense.shares} size="small">
+                  <Column field="personName" header="Personne" />
+                  <Column
+                    field="amount"
+                    header="Montant à payer"
+                    body={(rowData) => `${rowData.amount.toFixed(2)} €`}
+                  />
+                </DataTable>
+              </div>
+            ))}
+          </Card>
+        )}
+      </div>
 
       {/* Dialog pour ajouter/modifier une personne */}
       <Dialog
