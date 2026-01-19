@@ -58,27 +58,61 @@ const BudgetLayout = () => {
         notifyTransactionRefresh();
     };
 
-    // Définition des liens de navigation pour la section Budget
+    // Définition des liens de navigation pour la section Budget, organisés par thématique
     const budgetNavItems = [
+        // Liens principaux (non groupés)
         { to: '/budget/dashboard', label: 'Dashboard', icon: 'pi pi-home' },
         { to: '/budget/monthly', label: 'Vue Mensuelle', icon: 'pi pi-calendar' },
-        { to: '/budget/categories', label: 'Catégories', icon: 'pi pi-tags' },
-        { to: '/budget/budgets', label: 'Budgets Mensuels', icon: 'pi pi-wallet' },
-        { to: '/budget/project-budgets', label: 'Budgets Projet', icon: 'pi pi-briefcase' },
-        { to: '/budget/savings', label: 'Épargne', icon: 'pi pi-money-bill' },
-        { to: '/budget/savings-goals', label: 'Objectifs d\'Épargne', icon: 'pi pi-flag' },
-        { to: '/budget/analysis', label: 'Dépenses', icon: 'pi pi-chart-bar' },
-        { to: '/budget/budget-analysis', label: 'Analyse Budgets', icon: 'pi pi-chart-line' },
-        { to: '/budget/calculator', label: 'Répartition des Charges', icon: 'pi pi-calculator' },
+
+        // Section Budgets
+        {
+            section: 'Budgets',
+            items: [
+                { to: '/budget/categories', label: 'Catégories de budgets', icon: 'pi pi-tags' },
+                { to: '/budget/budgets', label: 'Budgets mensuels', icon: 'pi pi-wallet' },
+                { to: '/budget/project-budgets', label: 'Budgets projets', icon: 'pi pi-briefcase' },
+            ]
+        },
+
+        // Section Épargne(s)
+        {
+            section: 'Épargne(s)',
+            items: [
+                { to: '/budget/savings', label: 'Détail épargne(s)', icon: 'pi pi-money-bill' },
+                { to: '/budget/savings-goals', label: 'Objectifs épargne(s)', icon: 'pi pi-flag' },
+            ]
+        },
+
+        // Section Analyses
+        {
+            section: 'Analyses',
+            items: [
+                { to: '/budget/budget-analysis', label: 'Analyse budgets', icon: 'pi pi-chart-line' },
+                { to: '/budget/analysis', label: 'Analyse dépenses', icon: 'pi pi-chart-bar' },
+            ]
+        },
+
+        // Section Calculateur
+        {
+            section: 'Calculateur',
+            items: [
+                { to: '/budget/calculator', label: 'Répartition de charges', icon: 'pi pi-calculator' },
+            ]
+        },
     ];
 
-    // Ajouter le lien Admin si l'utilisateur est admin
+    // Ajouter la section Administration si l'utilisateur est admin
     if (user?.role === 'admin') {
         budgetNavItems.push({
-            to: '/budget/admin',
-            label: 'Admin',
-            icon: 'pi pi-cog',
-            danger: true
+            section: 'Administration',
+            items: [
+                {
+                    to: '/budget/admin',
+                    label: 'Espace Admin',
+                    icon: 'pi pi-cog',
+                    danger: true
+                }
+            ]
         });
     }
 
