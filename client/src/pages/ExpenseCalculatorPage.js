@@ -8,6 +8,36 @@ import { Column } from 'primereact/column';
 import AmountInput from '../components/AmountInput';
 
 const ExpenseCalculatorPage = () => {
+  // Fonction helper pour obtenir le mois courant au format YYYY-MM
+  const getCurrentMonth = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  };
+
+  // Fonction helper pour formater l'affichage du mois
+  const formatMonthDisplay = (monthKey) => {
+    const [year, month] = monthKey.split('-');
+    const date = new Date(year, parseInt(month) - 1);
+    return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
+  };
+
+  // Fonction pour obtenir le mois précédent
+  const getPreviousMonth = (monthKey) => {
+    const [year, month] = monthKey.split('-');
+    const date = new Date(year, parseInt(month) - 1);
+    date.setMonth(date.getMonth() - 1);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  };
+
+  // Fonction pour obtenir le mois suivant
+  const getNextMonth = (monthKey) => {
+    const [year, month] = monthKey.split('-');
+    const date = new Date(year, parseInt(month) - 1);
+    date.setMonth(date.getMonth() + 1);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  };
+
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
   const [people, setPeople] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [personDialog, setPersonDialog] = useState(false);
@@ -17,41 +47,75 @@ const ExpenseCalculatorPage = () => {
   const [editingPersonId, setEditingPersonId] = useState(null);
   const [editingExpenseId, setEditingExpenseId] = useState(null);
 
-  // Charger les données sauvegardées au démarrage
+  // Charger les données sauvegardées pour le mois sélectionné
   useEffect(() => {
-    const savedPeople = localStorage.getItem('expenseCalculator_people');
-    const savedExpenses = localStorage.getItem('expenseCalculator_expenses');
+    const storageKey = `expenseCalculator_${selectedMonth}`;
+    const savedData = localStorage.getItem(storageKey);
 
-    if (savedPeople) {
+    if (savedData) {
       try {
-        setPeople(JSON.parse(savedPeople));
+        const data = JSON.parse(savedData);
+        setPeople(data.people || []);
+        setExpenses(data.expenses || []);
       } catch (error) {
-        console.error('Erreur lors du chargement des personnes:', error);
+        console.error('Erreur lors du chargement des données:', error);
+        setPeople([]);
+        setExpenses([]);
       }
+    } else {
+      // Si aucune donnée pour ce mois, on réinitialise
+      setPeople([]);
+      setExpenses([]);
     }
+  }, [selectedMonth]);
 
-    if (savedExpenses) {
-      try {
-        setExpenses(JSON.parse(savedExpenses));
-      } catch (error) {
-        console.error('Erreur lors du chargement des charges:', error);
+  // Migration unique des anciennes données au format mensuel (au premier chargement)
+  useEffect(() => {
+    const oldPeopleKey = 'expenseCalculator_people';
+    const oldExpensesKey = 'expenseCalculator_expenses';
+    const migrationDoneKey = 'expenseCalculator_migrated';
+
+    // Vérifier si la migration n'a pas déjà été faite
+    if (!localStorage.getItem(migrationDoneKey)) {
+      const oldPeople = localStorage.getItem(oldPeopleKey);
+      const oldExpenses = localStorage.getItem(oldExpensesKey);
+
+      if (oldPeople || oldExpenses) {
+        try {
+          const currentMonthKey = getCurrentMonth();
+          const newStorageKey = `expenseCalculator_${currentMonthKey}`;
+
+          const migratedData = {
+            people: oldPeople ? JSON.parse(oldPeople) : [],
+            expenses: oldExpenses ? JSON.parse(oldExpenses) : []
+          };
+
+          localStorage.setItem(newStorageKey, JSON.stringify(migratedData));
+
+          // Supprimer les anciennes clés
+          localStorage.removeItem(oldPeopleKey);
+          localStorage.removeItem(oldExpensesKey);
+
+          // Marquer la migration comme terminée
+          localStorage.setItem(migrationDoneKey, 'true');
+
+          console.log('Migration des données vers le format mensuel réussie');
+        } catch (error) {
+          console.error('Erreur lors de la migration des données:', error);
+        }
+      } else {
+        // Pas de données à migrer, marquer quand même comme fait
+        localStorage.setItem(migrationDoneKey, 'true');
       }
     }
   }, []);
 
-  // Sauvegarder les personnes quand elles changent
+  // Sauvegarder les données quand elles changent
   useEffect(() => {
-    if (people.length > 0 || localStorage.getItem('expenseCalculator_people')) {
-      localStorage.setItem('expenseCalculator_people', JSON.stringify(people));
-    }
-  }, [people]);
-
-  // Sauvegarder les charges quand elles changent
-  useEffect(() => {
-    if (expenses.length > 0 || localStorage.getItem('expenseCalculator_expenses')) {
-      localStorage.setItem('expenseCalculator_expenses', JSON.stringify(expenses));
-    }
-  }, [expenses]);
+    const storageKey = `expenseCalculator_${selectedMonth}`;
+    const data = { people, expenses };
+    localStorage.setItem(storageKey, JSON.stringify(data));
+  }, [people, expenses, selectedMonth]);
 
   // Calculer le revenu total
   const totalIncome = useMemo(() => {
@@ -158,9 +222,86 @@ const ExpenseCalculatorPage = () => {
     setExpenseDialog(true);
   };
 
+  // Fonctions de navigation entre les mois
+  const goToPreviousMonth = () => {
+    setSelectedMonth(getPreviousMonth(selectedMonth));
+  };
+
+  const goToNextMonth = () => {
+    setSelectedMonth(getNextMonth(selectedMonth));
+  };
+
+  const goToCurrentMonth = () => {
+    setSelectedMonth(getCurrentMonth());
+  };
+
+  // Fonction pour copier les données du mois précédent
+  const copyFromPreviousMonth = () => {
+    const previousMonth = getPreviousMonth(selectedMonth);
+    const previousStorageKey = `expenseCalculator_${previousMonth}`;
+    const previousData = localStorage.getItem(previousStorageKey);
+
+    if (previousData) {
+      try {
+        const data = JSON.parse(previousData);
+        setPeople(data.people || []);
+        setExpenses(data.expenses || []);
+      } catch (error) {
+        console.error('Erreur lors de la copie des données du mois précédent:', error);
+      }
+    }
+  };
+
+  // Vérifier si le mois précédent a des données
+  const hasPreviousMonthData = () => {
+    const previousMonth = getPreviousMonth(selectedMonth);
+    const previousStorageKey = `expenseCalculator_${previousMonth}`;
+    return localStorage.getItem(previousStorageKey) !== null;
+  };
+
   return (
     <div className="p-3">
       <h1 className="text-2xl font-bold mb-3">Calculateur de répartition des charges</h1>
+
+      {/* Navigation mensuelle */}
+      <Card className="mb-3">
+        <div className="flex justify-content-between align-items-center gap-3 flex-wrap">
+          <div className="flex align-items-center gap-2">
+            <Button
+              icon="pi pi-chevron-left"
+              onClick={goToPreviousMonth}
+              className="p-button-rounded"
+              tooltip="Mois précédent"
+            />
+            <h2 className="text-xl font-bold m-0" style={{ minWidth: '200px', textAlign: 'center' }}>
+              {formatMonthDisplay(selectedMonth)}
+            </h2>
+            <Button
+              icon="pi pi-chevron-right"
+              onClick={goToNextMonth}
+              className="p-button-rounded"
+              tooltip="Mois suivant"
+            />
+            {selectedMonth !== getCurrentMonth() && (
+              <Button
+                label="Aujourd'hui"
+                icon="pi pi-calendar"
+                onClick={goToCurrentMonth}
+                className="p-button-outlined"
+              />
+            )}
+          </div>
+          {hasPreviousMonthData() && (
+            <Button
+              label="Copier du mois précédent"
+              icon="pi pi-copy"
+              onClick={copyFromPreviousMonth}
+              className="p-button-outlined p-button-secondary"
+              tooltip={`Copier les données de ${formatMonthDisplay(getPreviousMonth(selectedMonth))}`}
+            />
+          )}
+        </div>
+      </Card>
 
       {/* Grille à deux colonnes pour Personnes et Charges */}
       <div className="grid grid-cols-2 gap-3 mb-3">
