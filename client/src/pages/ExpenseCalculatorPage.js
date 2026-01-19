@@ -404,28 +404,28 @@ const ExpenseCalculatorPage = () => {
             </>
           )}
         </Card>
-      </div>
 
-      {/* Section Répartition détaillée */}
-      {people.length > 0 && expenses.length > 0 && (
-        <Card title="Répartition détaillée des charges">
-          {expenseDistribution.map(expense => (
-            <div key={expense.id} className="mb-3 pb-2" style={{ borderBottom: '1px solid #495057' }}>
-              <h3 className="text-base font-bold mb-1">
-                {expense.name} ({expense.amount.toFixed(2)} €)
-              </h3>
-              <DataTable value={expense.shares} size="small">
-                <Column field="personName" header="Personne" />
-                <Column
-                  field="amount"
-                  header="Montant à payer"
-                  body={(rowData) => `${rowData.amount.toFixed(2)} €`}
-                />
-              </DataTable>
-            </div>
-          ))}
-        </Card>
-      )}
+        {/* Section Répartition détaillée */}
+        {people.length > 0 && expenses.length > 0 && (
+          <Card title="Répartition détaillée des charges">
+            {expenseDistribution.map(expense => (
+              <div key={expense.id} className="mb-3 pb-2" style={{ borderBottom: '1px solid #495057' }}>
+                <h3 className="text-base font-bold mb-1">
+                  {expense.name} ({expense.amount.toFixed(2)} €)
+                </h3>
+                <DataTable value={expense.shares} size="small">
+                  <Column field="personName" header="Personne" />
+                  <Column
+                    field="amount"
+                    header="Montant à payer"
+                    body={(rowData) => `${rowData.amount.toFixed(2)} €`}
+                  />
+                </DataTable>
+              </div>
+            ))}
+          </Card>
+        )}
+      </div>
 
       {/* Dialog pour ajouter/modifier une personne */}
       <Dialog
