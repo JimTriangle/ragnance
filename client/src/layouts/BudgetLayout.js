@@ -69,6 +69,7 @@ const BudgetLayout = () => {
         { to: '/budget/savings-goals', label: 'Objectifs d\'Épargne', icon: 'pi pi-flag' },
         { to: '/budget/analysis', label: 'Dépenses', icon: 'pi pi-chart-bar' },
         { to: '/budget/budget-analysis', label: 'Analyse Budgets', icon: 'pi pi-chart-line' },
+        { to: '/budget/calculator', label: 'Répartition des Charges', icon: 'pi pi-calculator' },
     ];
 
     // Ajouter le lien Admin si l'utilisateur est admin

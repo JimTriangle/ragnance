@@ -26,6 +26,7 @@ import AnalysisPage from './pages/AnalysisPage';
 import BudgetAnalysisPage from './pages/BudgetAnalysisPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
+import ExpenseCalculatorPage from './pages/ExpenseCalculatorPage';
 
 // Pages de la section Trading
 import TradingDashboardPage from './pages/trading/TradingDashboardPage';
@@ -60,6 +61,7 @@ function App() {
                         <Route path="savings-goals" element={<SavingsGoalsPage />} />
                         <Route path="analysis" element={<AnalysisPage />} />
                         <Route path="budget-analysis" element={<BudgetAnalysisPage />} />
+                        <Route path="calculator" element={<ExpenseCalculatorPage />} />
                         <Route path="profile" element={<ProfilePage />} />
                         <Route element={<AdminRoute />}><Route path="admin" element={<AdminPage />} /></Route>
                     </Route>
