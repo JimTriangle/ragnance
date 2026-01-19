@@ -71,7 +71,8 @@ const useTour = (tourId, steps, autoStart = true, options = {}) => {
       disableActiveInteraction: false,
 
       // Padding autour de l'élément en surbrillance
-      padding: 10,
+      stagePadding: 10,
+      stageRadius: 8,
 
       ...options
     };
