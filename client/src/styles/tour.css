@@ -1,0 +1,189 @@
+/* Styles personnalisés pour Driver.js - Guide utilisateur */
+
+/* Override des styles par défaut de Driver.js pour matcher le thème */
+.driver-popover {
+  background: var(--surface-card, #1e1e1e) !important;
+  color: var(--text-color, #ffffff) !important;
+  border: 1px solid var(--surface-border, #383838) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+.driver-popover-title {
+  color: var(--primary-color, #64b5f6) !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.driver-popover-description {
+  color: var(--text-color, #dddddd) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Boutons de navigation */
+.driver-popover-footer {
+  margin-top: 1rem !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.driver-popover-navigation-btns {
+  display: flex !important;
+  gap: 0.5rem !important;
+}
+
+.driver-popover-btn {
+  background: var(--primary-color, #64b5f6) !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.driver-popover-btn:hover {
+  background: var(--primary-color-emphasis, #4e9fe6) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.driver-popover-btn-disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+.driver-popover-prev-btn {
+  background: var(--surface-100, #383838) !important;
+  color: var(--text-color, #dddddd) !important;
+}
+
+.driver-popover-prev-btn:hover {
+  background: var(--surface-200, #484848) !important;
+}
+
+/* Bouton de fermeture */
+.driver-popover-close-btn {
+  color: var(--text-color-secondary, #999999) !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 1.5rem !important;
+  cursor: pointer !important;
+  padding: 0.25rem !important;
+  transition: color 0.2s ease !important;
+  position: absolute !important;
+  top: 0.5rem !important;
+  right: 0.5rem !important;
+}
+
+.driver-popover-close-btn:hover {
+  color: var(--text-color, #ffffff) !important;
+}
+
+/* Indicateur de progression */
+.driver-popover-progress-text {
+  color: var(--text-color-secondary, #999999) !important;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+}
+
+/* Overlay (fond sombre) */
+.driver-overlay {
+  background: rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+/* Élément en surbrillance */
+.driver-active-element {
+  border-radius: 8px !important;
+}
+
+/* Animation du popover */
+@keyframes driverPopoverFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.driver-popover {
+  animation: driverPopoverFadeIn 0.3s ease-out !important;
+}
+
+/* Bouton flottant de tour (TourButton component) */
+.tour-button {
+  animation: tourButtonPulse 2s infinite !important;
+}
+
+@keyframes tourButtonPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.tour-button:hover {
+  animation: none !important;
+  transform: scale(1.1) !important;
+}
+
+/* Responsive - Mobile */
+@media (max-width: 768px) {
+  .driver-popover {
+    max-width: 90vw !important;
+  }
+
+  .driver-popover-title {
+    font-size: 1.1rem !important;
+  }
+
+  .driver-popover-description {
+    font-size: 0.9rem !important;
+  }
+
+  .driver-popover-btn {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.9rem !important;
+  }
+
+  .tour-button {
+    width: 45px !important;
+    height: 45px !important;
+    bottom: 15px !important;
+    right: 15px !important;
+  }
+}
+
+/* Theme clair (si nécessaire) */
+[data-theme="light"] .driver-popover {
+  background: #ffffff !important;
+  color: #333333 !important;
+  border-color: #e0e0e0 !important;
+}
+
+[data-theme="light"] .driver-popover-title {
+  color: #1976d2 !important;
+}
+
+[data-theme="light"] .driver-popover-description {
+  color: #555555 !important;
+}
+
+[data-theme="light"] .driver-popover-prev-btn {
+  background: #f5f5f5 !important;
+  color: #333333 !important;
+}
+
+[data-theme="light"] .driver-overlay {
+  background: rgba(0, 0, 0, 0.5) !important;
+}

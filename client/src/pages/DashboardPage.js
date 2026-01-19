@@ -3,6 +3,7 @@ import { ToastContext } from '../context/ToastContext';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import useTransactionRefresh from '../hooks/useTransactionRefresh';
+import useTour from '../hooks/useTour';
 
 // Imports PrimeReact
 import { Card } from 'primereact/card';
@@ -13,6 +14,10 @@ import { SelectButton } from 'primereact/selectbutton';
 import PurchaseForecast from '../components/PurchaseForecast';
 import BudgetTracker from '../components/BudgetTracker';
 import ProjectBudgetTracker from '../components/ProjectBudgetTracker';
+import TourButton from '../components/TourButton';
+
+// Styles du tour
+import '../styles/tour.css';
 
 const DashboardPage = () => {
     // États du Dashboard
@@ -29,6 +34,100 @@ const DashboardPage = () => {
     const retryTimeoutRef = useRef(null);
     const retryAttemptsRef = useRef(0);
     const isMountedRef = useRef(true);
+
+    // Configuration du guide utilisateur
+    const tourSteps = [
+        {
+            element: '[data-tour-id="dashboard-title"]',
+            popover: {
+                title: 'Bienvenue sur le Dashboard ! 👋',
+                description: 'Ce tableau de bord vous donne une vue d\'ensemble de votre situation financière. Découvrons ensemble les fonctionnalités principales.',
+                side: 'bottom',
+                align: 'start'
+            }
+        },
+        {
+            element: '[data-tour-id="card-balance"]',
+            popover: {
+                title: 'Solde Actuel 💰',
+                description: 'Votre solde actuel en temps réel. Il reflète toutes vos transactions enregistrées jusqu\'à aujourd\'hui.',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '[data-tour-id="card-projected"]',
+            popover: {
+                title: 'Prévisions de Fin de Mois 📊',
+                description: 'Visualisez votre solde prévisionnel basé sur vos transactions récurrentes et budgets. Si vous avez des budgets, vous verrez aussi le solde si tous les budgets sont remplis.',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '[data-tour-id="card-income-expense"]',
+            popover: {
+                title: 'Revenus & Dépenses 💵',
+                description: 'Le résumé de vos revenus et dépenses prévus pour le mois en cours. Gardez un œil sur cet équilibre !',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '[data-tour-id="chart-daily"]',
+            popover: {
+                title: 'Dépenses Journalières 📈',
+                description: 'Suivez l\'évolution de vos dépenses quotidiennes. Vous pouvez changer la période d\'affichage (7 jours, 1 mois, 3 mois) avec les boutons en haut.',
+                side: 'left',
+                align: 'center'
+            }
+        },
+        {
+            element: '[data-tour-id="chart-category"]',
+            popover: {
+                title: 'Dépenses par Catégorie 🎯',
+                description: 'Identifiez rapidement où va votre argent grâce à ce graphique circulaire. Chaque couleur représente une catégorie de dépense.',
+                side: 'left',
+                align: 'center'
+            }
+        },
+        {
+            element: '[data-tour-id="budget-tracker"]',
+            popover: {
+                title: 'Suivi des Budgets Mensuels 🎯',
+                description: 'Surveillez la progression de vos budgets mensuels. Les barres de progression vous indiquent combien vous avez dépensé par rapport à votre budget alloué.',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '[data-tour-id="project-budgets"]',
+            popover: {
+                title: 'Budgets de Projets 🚀',
+                description: 'Gérez vos projets spécifiques avec des budgets dédiés. Parfait pour suivre les dépenses d\'un événement, d\'un voyage ou d\'un projet particulier.',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '[data-tour-id="purchase-forecast"]',
+            popover: {
+                title: 'Prévision d\'Achats 🛒',
+                description: 'Planifiez vos futurs achats importants et voyez leur impact sur votre budget. Cela vous aide à anticiper et économiser.',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            popover: {
+                title: 'C\'est tout ! ✨',
+                description: 'Vous pouvez à tout moment relancer ce guide en cliquant sur le bouton "i" en bas à droite de l\'écran. Bonne gestion financière !',
+            }
+        }
+    ];
+
+    // Utiliser le hook de tour
+    const { startTour } = useTour('dashboard', tourSteps, true);
 
     // Options des graphiques
     const periodOptions = [{ label: '7j', value: '7d' }, { label: '1m', value: '30d' }, { label: '3m', value: '90d' }];
@@ -273,17 +372,20 @@ const DashboardPage = () => {
     return (
         <div className="p-3">
             <div className="flex justify-content-between align-items-center">
-                <h1 className="text-2xl font-bold">Dashboard Budget</h1>
+                <h1 className="text-2xl font-bold" data-tour-id="dashboard-title">Dashboard Budget</h1>
             </div>
+
+            {/* Bouton pour relancer le guide */}
+            <TourButton onStartTour={startTour} tooltip="Revoir le guide du Dashboard" />
             <div className="grid mt-2">
-                <div className="col-12 md:col-6 lg:col-4">
+                <div className="col-12 md:col-6 lg:col-4" data-tour-id="card-balance">
                     <Card title="Solde Actuel">
                         <div className="flex flex-column gap-2 justify-content-center align-items-center" style={{ minHeight: '96px' }}>
                             <h2 className="m-0" style={{ color: summary.currentBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.currentBalance)}</h2>
                         </div>
                     </Card>
                 </div>
-                <div className="col-12 md:col-6 lg:col-4">
+                <div className="col-12 md:col-6 lg:col-4" data-tour-id="card-projected">
                     <Card title="Solde Fin de Mois (Prév.)">
                         <div className="flex flex-column gap-2">
                             <div>
@@ -299,7 +401,7 @@ const DashboardPage = () => {
                         </div>
                     </Card>
                 </div>
-                <div className="col-12 md:col-6 lg:col-4">
+                <div className="col-12 md:col-6 lg:col-4" data-tour-id="card-income-expense">
                     <Card title="Revenus & Dépenses (Prév.)">
                         <div className="flex flex-column gap-2">
                             <div>
@@ -315,7 +417,7 @@ const DashboardPage = () => {
                 </div>
             </div>
             <div className="grid mt-4">
-                <div className="col-12 lg:col-6">
+                <div className="col-12 lg:col-6" data-tour-id="chart-daily">
                     <Card>
                         <div className="flex justify-content-between align-items-center mb-3">
                             <h2 className="text-xl m-0">Dépenses journalières</h2>
@@ -332,7 +434,7 @@ const DashboardPage = () => {
                         </div>
                     </Card>
                 </div>
-                <div className="col-12 lg:col-6">
+                <div className="col-12 lg:col-6" data-tour-id="chart-category">
                     <Card title="Dépenses par Catégorie" className="h-full">
                         {categoryChartData && categoryChartData.labels.length > 0 ? (
                             <div style={{ position: 'relative', height: '300px' }}>
@@ -343,15 +445,15 @@ const DashboardPage = () => {
                 </div>
             </div>
             <div className="grid mt-4">
-                <div className="col-12 lg:col-4">
+                <div className="col-12 lg:col-4" data-tour-id="budget-tracker">
                     <Card title="Suivi des Budgets Mensuels" className="h-full">
                         <BudgetTracker data={budgetProgressData} />
                     </Card>
                 </div>
-                <div className="col-12 lg:col-4">
+                <div className="col-12 lg:col-4" data-tour-id="project-budgets">
                     <ProjectBudgetTracker budgets={projectBudgets} />
                 </div>
-                <div className="col-12 lg:col-4">
+                <div className="col-12 lg:col-4" data-tour-id="purchase-forecast">
                     <PurchaseForecast onUpdate={fetchData} />
                 </div>
             </div>
