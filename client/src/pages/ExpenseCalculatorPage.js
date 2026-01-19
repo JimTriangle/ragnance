@@ -159,20 +159,20 @@ const ExpenseCalculatorPage = () => {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-3xl font-bold mb-4">Calculateur de répartition des charges</h1>
+    <div className="p-3">
+      <h1 className="text-2xl font-bold mb-3">Calculateur de répartition des charges</h1>
 
       {/* Section Personnes */}
-      <Card title="Personnes et revenus" className="mb-4">
+      <Card title="Personnes et revenus" className="mb-3">
         <Button
           label="Ajouter une personne"
           icon="pi pi-plus"
           onClick={openPersonDialog}
-          className="mb-3"
+          className="mb-2"
         />
 
         {people.length > 0 && (
-          <DataTable value={totalPerPerson} className="mb-3">
+          <DataTable value={totalPerPerson} size="small" className="mb-2">
             <Column field="name" header="Nom" />
             <Column
               field="income"
@@ -211,24 +211,24 @@ const ExpenseCalculatorPage = () => {
         )}
 
         {people.length > 0 && (
-          <div className="mt-3 text-xl font-bold">
+          <div className="mt-2 text-lg font-bold">
             Revenu total : {totalIncome.toFixed(2)} €
           </div>
         )}
       </Card>
 
       {/* Section Charges */}
-      <Card title="Charges mensuelles" className="mb-4">
+      <Card title="Charges mensuelles" className="mb-3">
         <Button
           label="Ajouter une charge"
           icon="pi pi-plus"
           onClick={openExpenseDialog}
-          className="mb-3"
+          className="mb-2"
         />
 
         {expenses.length > 0 && (
           <>
-            <DataTable value={expenses} className="mb-3">
+            <DataTable value={expenses} size="small" className="mb-2">
               <Column field="name" header="Charge" />
               <Column
                 field="amount"
@@ -255,7 +255,7 @@ const ExpenseCalculatorPage = () => {
               />
             </DataTable>
 
-            <div className="mt-3 text-xl font-bold">
+            <div className="mt-2 text-lg font-bold">
               Total des charges : {totalExpenses.toFixed(2)} €
             </div>
           </>
@@ -266,8 +266,8 @@ const ExpenseCalculatorPage = () => {
       {people.length > 0 && expenses.length > 0 && (
         <Card title="Répartition détaillée des charges">
           {expenseDistribution.map(expense => (
-            <div key={expense.id} className="mb-4 pb-3" style={{ borderBottom: '1px solid #495057' }}>
-              <h3 className="text-lg font-bold mb-2">
+            <div key={expense.id} className="mb-3 pb-2" style={{ borderBottom: '1px solid #495057' }}>
+              <h3 className="text-base font-bold mb-1">
                 {expense.name} ({expense.amount.toFixed(2)} €)
               </h3>
               <DataTable value={expense.shares} size="small">
