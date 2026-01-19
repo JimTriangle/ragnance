@@ -93,7 +93,7 @@
 
 /* Overlay (fond sombre) */
 .driver-overlay {
-  background: rgba(0, 0, 0, 0.4) !important;
+  background: rgba(0, 0, 0, 0.3) !important;
   /* Suppression du blur pour une meilleure netteté */
 }
 
@@ -102,7 +102,7 @@
   border-radius: 8px !important;
   /* Bordure visible pour mettre en évidence l'élément */
   outline: 4px solid var(--primary-color, #64b5f6) !important;
-  outline-offset: 3px !important;
+  outline-offset: 0px !important;
   /* Effet de glow/lueur intensifié autour de l'élément */
   box-shadow: 0 0 0 6px rgba(100, 181, 246, 0.6),
               0 0 30px 12px rgba(100, 181, 246, 0.7),
@@ -112,8 +112,8 @@
   z-index: 10000 !important;
   /* Assurer que l'arrière-plan est visible */
   background-color: inherit !important;
-  /* Filtre pour augmenter légèrement la luminosité */
-  filter: brightness(1.1) !important;
+  /* Filtre pour augmenter significativement la luminosité */
+  filter: brightness(1.5) !important;
 }
 
 /* Animation du popover */
@@ -199,13 +199,14 @@
 }
 
 [data-theme="light"] .driver-overlay {
-  background: rgba(0, 0, 0, 0.3) !important;
+  background: rgba(0, 0, 0, 0.2) !important;
 }
 
 [data-theme="light"] .driver-active-element {
   outline: 4px solid #1976d2 !important;
+  outline-offset: 0px !important;
   box-shadow: 0 0 0 6px rgba(25, 118, 210, 0.6),
               0 0 30px 12px rgba(25, 118, 210, 0.7),
               0 0 50px 20px rgba(25, 118, 210, 0.5) !important;
-  filter: brightness(1.1) !important;
+  filter: brightness(1.5) !important;
 }
