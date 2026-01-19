@@ -93,8 +93,8 @@
 
 /* Overlay (fond sombre) */
 .driver-overlay {
-  background: rgba(0, 0, 0, 0.75) !important;
-  backdrop-filter: blur(2px) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  /* Suppression du blur pour une meilleure netteté */
 }
 
 /* Élément en surbrillance */
@@ -196,7 +196,7 @@
 }
 
 [data-theme="light"] .driver-overlay {
-  background: rgba(0, 0, 0, 0.5) !important;
+  background: rgba(0, 0, 0, 0.3) !important;
 }
 
 [data-theme="light"] .driver-active-element {

@@ -65,13 +65,13 @@ const useTour = (tourId, steps, autoStart = true, options = {}) => {
 
       // Style et comportement
       animate: true,
-      overlayOpacity: 0.75,
+      overlayOpacity: 0.4,
       smoothScroll: true,
       allowClose: true,
       disableActiveInteraction: false,
 
-      // Padding autour de l'élément en surbrillance
-      stagePadding: 10,
+      // Padding autour de l'élément en surbrillance (augmenté pour mieux dégager la zone)
+      stagePadding: 15,
       stageRadius: 8,
 
       ...options
