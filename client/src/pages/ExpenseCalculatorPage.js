@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
@@ -16,6 +16,42 @@ const ExpenseCalculatorPage = () => {
   const [currentExpense, setCurrentExpense] = useState({ name: '', amount: 0 });
   const [editingPersonId, setEditingPersonId] = useState(null);
   const [editingExpenseId, setEditingExpenseId] = useState(null);
+
+  // Charger les données sauvegardées au démarrage
+  useEffect(() => {
+    const savedPeople = localStorage.getItem('expenseCalculator_people');
+    const savedExpenses = localStorage.getItem('expenseCalculator_expenses');
+
+    if (savedPeople) {
+      try {
+        setPeople(JSON.parse(savedPeople));
+      } catch (error) {
+        console.error('Erreur lors du chargement des personnes:', error);
+      }
+    }
+
+    if (savedExpenses) {
+      try {
+        setExpenses(JSON.parse(savedExpenses));
+      } catch (error) {
+        console.error('Erreur lors du chargement des charges:', error);
+      }
+    }
+  }, []);
+
+  // Sauvegarder les personnes quand elles changent
+  useEffect(() => {
+    if (people.length > 0 || localStorage.getItem('expenseCalculator_people')) {
+      localStorage.setItem('expenseCalculator_people', JSON.stringify(people));
+    }
+  }, [people]);
+
+  // Sauvegarder les charges quand elles changent
+  useEffect(() => {
+    if (expenses.length > 0 || localStorage.getItem('expenseCalculator_expenses')) {
+      localStorage.setItem('expenseCalculator_expenses', JSON.stringify(expenses));
+    }
+  }, [expenses]);
 
   // Calculer le revenu total
   const totalIncome = useMemo(() => {
