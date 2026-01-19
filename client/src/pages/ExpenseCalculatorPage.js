@@ -14,6 +14,8 @@ const ExpenseCalculatorPage = () => {
   const [expenseDialog, setExpenseDialog] = useState(false);
   const [currentPerson, setCurrentPerson] = useState({ name: '', income: 0 });
   const [currentExpense, setCurrentExpense] = useState({ name: '', amount: 0 });
+  const [editingPersonId, setEditingPersonId] = useState(null);
+  const [editingExpenseId, setEditingExpenseId] = useState(null);
 
   // Calculer le revenu total
   const totalIncome = useMemo(() => {
@@ -56,30 +58,68 @@ const ExpenseCalculatorPage = () => {
     });
   }, [peopleWithPercentages, expenseDistribution]);
 
-  // Fonctions pour ajouter/supprimer des personnes
-  const addPerson = () => {
+  // Fonctions pour ajouter/modifier/supprimer des personnes
+  const savePerson = () => {
     if (currentPerson.name && currentPerson.income > 0) {
-      setPeople([...people, { ...currentPerson, id: Date.now() }]);
+      if (editingPersonId) {
+        // Mode édition
+        setPeople(people.map(p => p.id === editingPersonId ? { ...currentPerson, id: editingPersonId } : p));
+        setEditingPersonId(null);
+      } else {
+        // Mode ajout
+        setPeople([...people, { ...currentPerson, id: Date.now() }]);
+      }
       setCurrentPerson({ name: '', income: 0 });
       setPersonDialog(false);
     }
+  };
+
+  const editPerson = (person) => {
+    setCurrentPerson({ name: person.name, income: person.income });
+    setEditingPersonId(person.id);
+    setPersonDialog(true);
   };
 
   const removePerson = (id) => {
     setPeople(people.filter(p => p.id !== id));
   };
 
-  // Fonctions pour ajouter/supprimer des charges
-  const addExpense = () => {
+  const openPersonDialog = () => {
+    setCurrentPerson({ name: '', income: 0 });
+    setEditingPersonId(null);
+    setPersonDialog(true);
+  };
+
+  // Fonctions pour ajouter/modifier/supprimer des charges
+  const saveExpense = () => {
     if (currentExpense.name && currentExpense.amount > 0) {
-      setExpenses([...expenses, { ...currentExpense, id: Date.now() }]);
+      if (editingExpenseId) {
+        // Mode édition
+        setExpenses(expenses.map(e => e.id === editingExpenseId ? { ...currentExpense, id: editingExpenseId } : e));
+        setEditingExpenseId(null);
+      } else {
+        // Mode ajout
+        setExpenses([...expenses, { ...currentExpense, id: Date.now() }]);
+      }
       setCurrentExpense({ name: '', amount: 0 });
       setExpenseDialog(false);
     }
   };
 
+  const editExpense = (expense) => {
+    setCurrentExpense({ name: expense.name, amount: expense.amount });
+    setEditingExpenseId(expense.id);
+    setExpenseDialog(true);
+  };
+
   const removeExpense = (id) => {
     setExpenses(expenses.filter(e => e.id !== id));
+  };
+
+  const openExpenseDialog = () => {
+    setCurrentExpense({ name: '', amount: 0 });
+    setEditingExpenseId(null);
+    setExpenseDialog(true);
   };
 
   return (
@@ -91,7 +131,7 @@ const ExpenseCalculatorPage = () => {
         <Button
           label="Ajouter une personne"
           icon="pi pi-plus"
-          onClick={() => setPersonDialog(true)}
+          onClick={openPersonDialog}
           className="mb-3"
         />
 
@@ -115,12 +155,20 @@ const ExpenseCalculatorPage = () => {
             />
             <Column
               body={(rowData) => (
-                <Button
-                  icon="pi pi-trash"
-                  onClick={() => removePerson(rowData.id)}
-                  className="p-button-rounded p-button-text p-button-danger"
-                  tooltip="Supprimer"
-                />
+                <div className="flex gap-2">
+                  <Button
+                    icon="pi pi-pencil"
+                    onClick={() => editPerson(rowData)}
+                    className="p-button-rounded p-button-text p-button-info"
+                    tooltip="Modifier"
+                  />
+                  <Button
+                    icon="pi pi-trash"
+                    onClick={() => removePerson(rowData.id)}
+                    className="p-button-rounded p-button-text p-button-danger"
+                    tooltip="Supprimer"
+                  />
+                </div>
               )}
             />
           </DataTable>
@@ -138,7 +186,7 @@ const ExpenseCalculatorPage = () => {
         <Button
           label="Ajouter une charge"
           icon="pi pi-plus"
-          onClick={() => setExpenseDialog(true)}
+          onClick={openExpenseDialog}
           className="mb-3"
         />
 
@@ -153,12 +201,20 @@ const ExpenseCalculatorPage = () => {
               />
               <Column
                 body={(rowData) => (
-                  <Button
-                    icon="pi pi-trash"
-                    onClick={() => removeExpense(rowData.id)}
-                    className="p-button-rounded p-button-text p-button-danger"
-                    tooltip="Supprimer"
-                  />
+                  <div className="flex gap-2">
+                    <Button
+                      icon="pi pi-pencil"
+                      onClick={() => editExpense(rowData)}
+                      className="p-button-rounded p-button-text p-button-info"
+                      tooltip="Modifier"
+                    />
+                    <Button
+                      icon="pi pi-trash"
+                      onClick={() => removeExpense(rowData.id)}
+                      className="p-button-rounded p-button-text p-button-danger"
+                      tooltip="Supprimer"
+                    />
+                  </div>
                 )}
               />
             </DataTable>
@@ -191,11 +247,15 @@ const ExpenseCalculatorPage = () => {
         </Card>
       )}
 
-      {/* Dialog pour ajouter une personne */}
+      {/* Dialog pour ajouter/modifier une personne */}
       <Dialog
-        header="Ajouter une personne"
+        header={editingPersonId ? "Modifier une personne" : "Ajouter une personne"}
         visible={personDialog}
-        onHide={() => setPersonDialog(false)}
+        onHide={() => {
+          setPersonDialog(false);
+          setEditingPersonId(null);
+          setCurrentPerson({ name: '', income: 0 });
+        }}
         style={{ width: '400px' }}
       >
         <div className="flex flex-column gap-3">
@@ -217,20 +277,24 @@ const ExpenseCalculatorPage = () => {
             />
           </div>
           <Button
-            label="Ajouter"
+            label={editingPersonId ? "Enregistrer" : "Ajouter"}
             icon="pi pi-check"
-            onClick={addPerson}
+            onClick={savePerson}
             className="w-full"
             disabled={!currentPerson.name || currentPerson.income <= 0}
           />
         </div>
       </Dialog>
 
-      {/* Dialog pour ajouter une charge */}
+      {/* Dialog pour ajouter/modifier une charge */}
       <Dialog
-        header="Ajouter une charge"
+        header={editingExpenseId ? "Modifier une charge" : "Ajouter une charge"}
         visible={expenseDialog}
-        onHide={() => setExpenseDialog(false)}
+        onHide={() => {
+          setExpenseDialog(false);
+          setEditingExpenseId(null);
+          setCurrentExpense({ name: '', amount: 0 });
+        }}
         style={{ width: '400px' }}
       >
         <div className="flex flex-column gap-3">
@@ -252,9 +316,9 @@ const ExpenseCalculatorPage = () => {
             />
           </div>
           <Button
-            label="Ajouter"
+            label={editingExpenseId ? "Enregistrer" : "Ajouter"}
             icon="pi pi-check"
-            onClick={addExpense}
+            onClick={saveExpense}
             className="w-full"
             disabled={!currentExpense.name || currentExpense.amount <= 0}
           />
