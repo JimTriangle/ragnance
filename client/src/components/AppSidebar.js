@@ -52,23 +52,56 @@ const AppSidebar = ({
                 {/* Navigation principale */}
                 <nav className="flex-grow-1 overflow-y-auto">
                     <div className="flex flex-column gap-1">
-                        {navItems.map((item, index) => (
-                            <NavLink
-                                key={index}
-                                to={item.to}
-                                end={item.end}
-                                className={({ isActive }) =>
-                                    `sidebar-nav-item p-button p-button-text ${isActive ? 'active' : ''} ${item.danger ? 'p-button-danger' : ''}`
-                                }
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleNavigation(item.to);
-                                }}
-                            >
-                                {item.icon && <i className={`${item.icon} mr-2`}></i>}
-                                {item.label}
-                            </NavLink>
-                        ))}
+                        {navItems.map((item, index) => {
+                            // Si c'est une section avec des sous-éléments
+                            if (item.section && item.items) {
+                                return (
+                                    <div key={index} className="mb-2">
+                                        <div className="sidebar-section-title px-3 py-2 text-sm font-semibold text-500">
+                                            {item.section}
+                                        </div>
+                                        <div className="flex flex-column gap-1">
+                                            {item.items.map((subItem, subIndex) => (
+                                                <NavLink
+                                                    key={`${index}-${subIndex}`}
+                                                    to={subItem.to}
+                                                    end={subItem.end}
+                                                    className={({ isActive }) =>
+                                                        `sidebar-nav-item p-button p-button-text ${isActive ? 'active' : ''} ${subItem.danger ? 'p-button-danger' : ''}`
+                                                    }
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleNavigation(subItem.to);
+                                                    }}
+                                                >
+                                                    {subItem.icon && <i className={`${subItem.icon} mr-2`}></i>}
+                                                    {subItem.label}
+                                                </NavLink>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            // Sinon, c'est un élément simple
+                            return (
+                                <NavLink
+                                    key={index}
+                                    to={item.to}
+                                    end={item.end}
+                                    className={({ isActive }) =>
+                                        `sidebar-nav-item p-button p-button-text ${isActive ? 'active' : ''} ${item.danger ? 'p-button-danger' : ''}`
+                                    }
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handleNavigation(item.to);
+                                    }}
+                                >
+                                    {item.icon && <i className={`${item.icon} mr-2`}></i>}
+                                    {item.label}
+                                </NavLink>
+                            );
+                        })}
                     </div>
                 </nav>
 
