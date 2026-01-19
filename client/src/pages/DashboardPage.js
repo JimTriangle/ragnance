@@ -369,10 +369,15 @@ const DashboardPage = () => {
         projectBudgets: projectBudgets?.length || 0
     });
 
+    // Formater le mois en cours pour l'affichage
+    const currentDate = new Date();
+    const currentMonthYear = currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    const formattedMonth = currentMonthYear.charAt(0).toUpperCase() + currentMonthYear.slice(1);
+
     return (
         <div className="p-3">
             <div className="flex justify-content-between align-items-center">
-                <h1 className="text-2xl font-bold" data-tour-id="dashboard-title">Dashboard Budget</h1>
+                <h1 className="text-2xl font-bold" data-tour-id="dashboard-title">Dashboard Budget - {formattedMonth}</h1>
             </div>
 
             {/* Bouton pour relancer le guide */}
