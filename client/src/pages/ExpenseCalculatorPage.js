@@ -404,28 +404,47 @@ const ExpenseCalculatorPage = () => {
             </>
           )}
         </Card>
-
-        {/* Section Répartition détaillée */}
-        {people.length > 0 && expenses.length > 0 && (
-          <Card title="Répartition détaillée des charges">
-            {expenseDistribution.map(expense => (
-              <div key={expense.id} className="mb-3 pb-2" style={{ borderBottom: '1px solid #495057' }}>
-                <h3 className="text-base font-bold mb-1">
-                  {expense.name} ({expense.amount.toFixed(2)} €)
-                </h3>
-                <DataTable value={expense.shares} size="small">
-                  <Column field="personName" header="Personne" />
-                  <Column
-                    field="amount"
-                    header="Montant à payer"
-                    body={(rowData) => `${rowData.amount.toFixed(2)} €`}
-                  />
-                </DataTable>
-              </div>
-            ))}
-          </Card>
-        )}
       </div>
+
+      {/* Section Répartition détaillée - Affichage en blocs */}
+      {people.length > 0 && expenses.length > 0 && (
+        <Card title="Répartition détaillée des charges">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {expenseDistribution.map(expense => (
+              <Card
+                key={expense.id}
+                className="shadow-2"
+                style={{ backgroundColor: 'var(--surface-50)' }}
+              >
+                <div className="text-center">
+                  <h3 className="text-base font-bold mb-2 text-primary">
+                    {expense.name}
+                  </h3>
+                  <div className="text-xl font-bold mb-3" style={{ color: 'var(--primary-color)' }}>
+                    {expense.amount.toFixed(2)} €
+                  </div>
+                  <div className="text-left">
+                    {expense.shares.map(share => (
+                      <div
+                        key={share.personId}
+                        className="flex justify-content-between align-items-center mb-2 p-2"
+                        style={{
+                          backgroundColor: 'var(--surface-0)',
+                          borderRadius: '6px',
+                          fontSize: '0.9rem'
+                        }}
+                      >
+                        <span className="font-semibold">{share.personName}</span>
+                        <span className="text-primary font-bold">{share.amount.toFixed(2)} €</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Dialog pour ajouter/modifier une personne */}
       <Dialog
