@@ -100,13 +100,12 @@
 /* Élément en surbrillance */
 .driver-active-element {
   border-radius: 8px !important;
-  /* Bordure visible pour mettre en évidence l'élément */
-  outline: 4px solid var(--primary-color, #64b5f6) !important;
+  /* Bordure subtile qui ne déborde pas */
+  outline: none !important;
   outline-offset: 0px !important;
-  /* Effet de glow/lueur intensifié autour de l'élément */
-  box-shadow: 0 0 0 6px rgba(100, 181, 246, 0.6),
-              0 0 30px 12px rgba(100, 181, 246, 0.7),
-              0 0 50px 20px rgba(100, 181, 246, 0.5) !important;
+  /* Effet de glow/lueur réduit pour éviter les débordements */
+  box-shadow: 0 0 0 2px rgba(100, 181, 246, 0.4),
+              0 0 8px 2px rgba(100, 181, 246, 0.3) !important;
   /* Z-index élevé pour s'assurer qu'il est au-dessus de l'overlay */
   position: relative !important;
   z-index: 10000 !important;
@@ -203,10 +202,9 @@
 }
 
 [data-theme="light"] .driver-active-element {
-  outline: 4px solid #1976d2 !important;
+  outline: none !important;
   outline-offset: 0px !important;
-  box-shadow: 0 0 0 6px rgba(25, 118, 210, 0.6),
-              0 0 30px 12px rgba(25, 118, 210, 0.7),
-              0 0 50px 20px rgba(25, 118, 210, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.4),
+              0 0 8px 2px rgba(25, 118, 210, 0.3) !important;
   filter: brightness(1.5) !important;
 }
