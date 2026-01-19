@@ -480,7 +480,7 @@ const ExpenseCalculatorPage = () => {
 
       {/* Section Répartition détaillée - Affichage en blocs */}
       {people.length > 0 && expenses.length > 0 && (
-        <Card title="Répartition détaillée des charges" data-tour-id="distribution-section>
+        <Card title="Répartition détaillée des charges" data-tour-id="distribution-section">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {expenseDistribution.map(expense => (
               <Card
