@@ -1,7 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User.model');
-const Category = require('./Category.model');
 
 const Budget = sequelize.define('Budget', {
   amount: {
@@ -19,11 +17,6 @@ const Budget = sequelize.define('Budget', {
   }
 });
 
-// Associations
-Budget.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-User.hasMany(Budget);
-
-Budget.belongsTo(Category, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-Category.hasMany(Budget);
+// Les associations sont définies dans models/associations.js
 
 module.exports = Budget;

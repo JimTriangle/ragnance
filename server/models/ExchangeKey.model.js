@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User.model');
 
 const ExchangeKey = sequelize.define('ExchangeKey', {
   id: {
@@ -42,7 +41,6 @@ const ExchangeKey = sequelize.define('ExchangeKey', {
   },
 });
 
-ExchangeKey.belongsTo(User, { foreignKey: { name: 'userId', allowNull: false }, onDelete: 'CASCADE' });
-User.hasMany(ExchangeKey, { foreignKey: { name: 'userId', allowNull: false } });
+// Les associations sont définies dans models/associations.js
 
 module.exports = ExchangeKey;

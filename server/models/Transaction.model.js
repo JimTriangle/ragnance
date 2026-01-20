@@ -1,7 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User.model');
-const ProjectBudget = require('./ProjectBudget.model');
 
 const Transaction = sequelize.define('Transaction', {
   label: { type: DataTypes.STRING, allowNull: false },
@@ -16,9 +14,6 @@ const Transaction = sequelize.define('Transaction', {
   dayOfWeek: { type: DataTypes.INTEGER }
 });
 
-Transaction.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-User.hasMany(Transaction);
-Transaction.belongsTo(ProjectBudget, { foreignKey: { name: 'ProjectBudgetId', allowNull: true }, onDelete: 'SET NULL' });
-ProjectBudget.hasMany(Transaction, { foreignKey: { name: 'ProjectBudgetId', allowNull: true } });
+// Les associations sont définies dans models/associations.js
 
 module.exports = Transaction;

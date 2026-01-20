@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User.model');
 
 const ProjectBudget = sequelize.define('ProjectBudget', {
   name: {
@@ -23,8 +22,6 @@ const ProjectBudget = sequelize.define('ProjectBudget', {
   }
 });
 
-// Association : Un budget de projet appartient à un utilisateur
-ProjectBudget.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-User.hasMany(ProjectBudget);
+// Les associations sont définies dans models/associations.js
 
 module.exports = ProjectBudget;
