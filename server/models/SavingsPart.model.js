@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Savings = require('./Savings.model');
 
 const SavingsPart = sequelize.define('SavingsPart', {
   description: {
@@ -13,8 +12,6 @@ const SavingsPart = sequelize.define('SavingsPart', {
   }
 });
 
-// Association : Une part appartient à une épargne
-SavingsPart.belongsTo(Savings, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-Savings.hasMany(SavingsPart, { as: 'parts' });
+// Les associations sont définies dans models/associations.js
 
 module.exports = SavingsPart;

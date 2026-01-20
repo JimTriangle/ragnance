@@ -27,6 +27,10 @@ require('./models/Announcement.model');
 require('./models/UserAnnouncement.model');
 require('./models/ConfigEmail.model');
 
+// Configurer les associations après avoir chargé tous les modèles
+const { setupAssociations } = require('./models/associations');
+setupAssociations();
+
 const isAuth = require('./middleware/isAuth');
 const hasBudgetAccess = require('./middleware/hasBudgetAccess');
 const hasTradingAccess = require('./middleware/hasTradingAccess');

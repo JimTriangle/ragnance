@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User.model');
 
 const SavingsGoal = sequelize.define('SavingsGoal', {
   id: {
@@ -50,8 +49,6 @@ const SavingsGoal = sequelize.define('SavingsGoal', {
   timestamps: true
 });
 
-// Association : Un objectif d'épargne appartient à un utilisateur
-SavingsGoal.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-User.hasMany(SavingsGoal);
+// Les associations sont définies dans models/associations.js
 
 module.exports = SavingsGoal;
