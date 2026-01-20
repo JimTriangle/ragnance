@@ -25,6 +25,7 @@ require('./models/ExchangeKey.model');
 require('./models/Strategy.model');
 require('./models/Announcement.model');
 require('./models/UserAnnouncement.model');
+require('./models/ConfigEmail.model');
 
 const isAuth = require('./middleware/isAuth');
 const hasBudgetAccess = require('./middleware/hasBudgetAccess');
@@ -160,7 +161,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 app.use(express.json());
 
-const publicApiRoutes = new Set(['/auth/login', '/auth/refresh', '/auth/register', '/auth/health']);
+const publicApiRoutes = new Set(['/auth/login', '/auth/refresh', '/auth/register', '/auth/health', '/config/emails']);
 const normalizeApiPath = path => {
   if (!path) {
     return '/';
@@ -187,6 +188,7 @@ app.use('/api', (req, res, next) => {
 // ... (toutes les déclarations de routes)
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/announcements', require('./routes/announcement.routes'));
+app.use('/api/config', require('./routes/config.routes'));
 app.use('/api/transactions', isAuth, hasBudgetAccess, require('./routes/transaction.routes.js'));
 app.use('/api/shopping', isAuth, hasBudgetAccess, require('./routes/shopping.routes.js'));
 app.use('/api/admin', require('./routes/admin.routes.js'));
