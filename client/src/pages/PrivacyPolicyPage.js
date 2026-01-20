@@ -50,7 +50,6 @@ const PrivacyPolicyPage = () => {
                         <ul>
                             <li><strong>Données d'identification :</strong> nom d'utilisateur, adresse e-mail, mot de passe (crypté)</li>
                             <li><strong>Données financières :</strong> transactions, budgets, catégories de dépenses, objectifs d'épargne</li>
-                            <li><strong>Données de trading :</strong> clés d'API d'échange (cryptées), stratégies de trading, portfolios</li>
                             <li><strong>Données de connexion :</strong> adresse IP, type de navigateur, données de session</li>
                             <li><strong>Données d'utilisation :</strong> pages visitées, fonctionnalités utilisées, préférences</li>
                         </ul>
@@ -60,10 +59,9 @@ const PrivacyPolicyPage = () => {
                         <h2>4. Finalités du traitement</h2>
                         <p>Vos données personnelles sont utilisées pour :</p>
                         <ul>
-                            <li>Fournir et améliorer nos services de gestion budgétaire et de trading</li>
+                            <li>Fournir et améliorer nos services de gestion budgétaire</li>
                             <li>Gérer votre compte utilisateur et authentifier vos connexions</li>
                             <li>Traiter vos transactions financières et suivre vos budgets</li>
-                            <li>Exécuter vos stratégies de trading automatisées</li>
                             <li>Vous envoyer des notifications importantes concernant votre compte</li>
                             <li>Analyser l'utilisation de la plateforme pour améliorer nos services</li>
                             <li>Assurer la sécurité et prévenir les fraudes</li>
@@ -89,7 +87,6 @@ const PrivacyPolicyPage = () => {
                         </p>
                         <ul>
                             <li><strong>Fournisseurs de services :</strong> hébergement, services cloud, sous réserve d'accords de confidentialité stricts</li>
-                            <li><strong>Plateformes d'échange :</strong> uniquement pour exécuter vos ordres de trading via leurs API</li>
                             <li><strong>Obligations légales :</strong> si requis par la loi ou une autorité compétente</li>
                         </ul>
                     </section>
@@ -98,7 +95,7 @@ const PrivacyPolicyPage = () => {
                         <h2>7. Sécurité des données</h2>
                         <p>Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles appropriées :</p>
                         <ul>
-                            <li>Cryptage des données sensibles (mots de passe, clés API)</li>
+                            <li>Cryptage des données sensibles (mots de passe)</li>
                             <li>Connexions sécurisées via HTTPS</li>
                             <li>Contrôles d'accès stricts aux données</li>
                             <li>Surveillance et audits de sécurité réguliers</li>

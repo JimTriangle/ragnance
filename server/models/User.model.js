@@ -33,6 +33,10 @@ const User = sequelize.define('User', {
   lastLogin: {
     type: DataTypes.DATE,
     allowNull: true,
+  },
+  contact: {
+    type: DataTypes.TEXT,
+    allowNull: true,
   }
   // Les champs 'createdAt' et 'updatedAt' sont ajoutés automatiquement
 });
