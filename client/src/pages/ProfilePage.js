@@ -7,6 +7,7 @@ import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { Divider } from 'primereact/divider';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { InputText } from 'primereact/inputtext';
 
 const ProfilePage = () => {
     const { user } = useContext(AuthContext);
@@ -14,6 +15,8 @@ const ProfilePage = () => {
     const [newPassword, setNewPassword] = useState('');
     const [contact, setContact] = useState('');
     const [isLoadingContact, setIsLoadingContact] = useState(true);
+    const [contactSubject, setContactSubject] = useState('');
+    const [contactMessage, setContactMessage] = useState('');
     const toast = useRef(null);
 
     useEffect(() => {
@@ -46,6 +49,21 @@ const ProfilePage = () => {
         try {
             const response = await api.put('/auth/update-contact', { contact });
             toast.current.show({ severity: 'success', summary: 'Succès', detail: response.data.message, life: 3000 });
+        } catch (error) {
+            toast.current.show({ severity: 'error', summary: 'Erreur', detail: error.response?.data?.message || 'Une erreur est survenue', life: 3000 });
+        }
+    };
+
+    const handleSendContactMessage = async () => {
+        if (!contactSubject || !contactMessage) {
+            toast.current.show({ severity: 'warn', summary: 'Attention', detail: 'Veuillez remplir tous les champs', life: 3000 });
+            return;
+        }
+        try {
+            const response = await api.post('/config/contact', { subject: contactSubject, message: contactMessage });
+            toast.current.show({ severity: 'success', summary: 'Succès', detail: response.data.message, life: 3000 });
+            setContactSubject('');
+            setContactMessage('');
         } catch (error) {
             toast.current.show({ severity: 'error', summary: 'Erreur', detail: error.response?.data?.message || 'Une erreur est survenue', life: 3000 });
         }
@@ -86,6 +104,42 @@ const ProfilePage = () => {
                         className="p-button-sm"
                         onClick={handleSaveContact}
                         disabled={isLoadingContact}
+                    />
+                </div>
+
+                <Divider />
+
+                <div className="mt-4 p-fluid">
+                    <h2 className="text-xl">Contacter l'équipe Ragnance</h2>
+                    <p className="text-sm text-color-secondary mb-3">
+                        Envoyez un message à l'équipe Ragnance pour toute question ou suggestion.
+                    </p>
+                    <div className="field">
+                        <span className="p-float-label">
+                            <InputText
+                                id="contactSubject"
+                                value={contactSubject}
+                                onChange={(e) => setContactSubject(e.target.value)}
+                            />
+                            <label htmlFor="contactSubject">Sujet</label>
+                        </span>
+                    </div>
+                    <div className="field">
+                        <span className="p-float-label">
+                            <InputTextarea
+                                id="contactMessage"
+                                value={contactMessage}
+                                onChange={(e) => setContactMessage(e.target.value)}
+                                rows={5}
+                            />
+                            <label htmlFor="contactMessage">Message</label>
+                        </span>
+                    </div>
+                    <Button
+                        label="Envoyer le message"
+                        icon="pi pi-send"
+                        className="p-button-sm"
+                        onClick={handleSendContactMessage}
                     />
                 </div>
 

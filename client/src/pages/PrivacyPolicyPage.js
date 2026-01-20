@@ -1,12 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import './PrivacyPolicyPage.css';
 import ThemeToggle from '../components/ThemeToggle';
+import api from '../services/api';
 
 const PrivacyPolicyPage = () => {
     const navigate = useNavigate();
+    const [privacyEmail, setPrivacyEmail] = useState('privacy@ragnance.com');
+
+    useEffect(() => {
+        const fetchPrivacyEmail = async () => {
+            try {
+                const response = await api.get('/config/emails');
+                if (response.data.privacy) {
+                    setPrivacyEmail(response.data.privacy);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération de l\'email privacy:', error);
+            }
+        };
+        fetchPrivacyEmail();
+    }, []);
 
     return (
         <div className="privacy-policy-container">
@@ -180,7 +196,7 @@ const PrivacyPolicyPage = () => {
                             veuillez nous contacter :
                         </p>
                         <ul>
-                            <li><strong>Par e-mail :</strong> privacy@ragnance.com</li>
+                            <li><strong>Par e-mail :</strong> {privacyEmail}</li>
                             <li><strong>Via votre profil :</strong> utilisez la fonction de contact dans votre espace utilisateur</li>
                         </ul>
                     </section>

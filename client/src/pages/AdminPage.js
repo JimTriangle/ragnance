@@ -32,6 +32,8 @@ const AdminPage = () => {
     const [isAnnouncementDialogVisible, setIsAnnouncementDialogVisible] = useState(false);
     const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
     const [announcementData, setAnnouncementData] = useState({ title: '', content: '', type: 'feature', publishNow: false });
+    const [contactEmail, setContactEmail] = useState('');
+    const [privacyEmail, setPrivacyEmail] = useState('');
     const roles = [{ label: 'Utilisateur', value: 'user' }, { label: 'Admin', value: 'admin' }];
     const announcementTypes = [
         { label: 'Nouvelle fonctionnalité', value: 'feature' },
@@ -76,10 +78,21 @@ const AdminPage = () => {
         }
     };
 
+    const fetchConfigEmails = async () => {
+        try {
+            const response = await api.get('/config/emails');
+            setContactEmail(response.data.contact || '');
+            setPrivacyEmail(response.data.privacy || '');
+        } catch (error) {
+            console.error('Erreur fetch config emails', error);
+        }
+    };
+
     useEffect(() => {
         fetchUsers();
         fetchTables();
         fetchAnnouncements();
+        fetchConfigEmails();
     }, []);
 
     useEffect(() => {
@@ -188,6 +201,15 @@ const AdminPage = () => {
             await api.put(`/announcements/admin/${id}`, { publishedAt: new Date() });
             toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Annonce publiée' });
             fetchAnnouncements();
+        } catch (error) {
+            toast.current.show({ severity: 'error', summary: 'Erreur', detail: error.response?.data?.message || 'Échec' });
+        }
+    };
+
+    const saveConfigEmails = async () => {
+        try {
+            await api.put('/config/emails', { contact: contactEmail, privacy: privacyEmail });
+            toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Emails de configuration mis à jour' });
         } catch (error) {
             toast.current.show({ severity: 'error', summary: 'Erreur', detail: error.response?.data?.message || 'Échec' });
         }
@@ -401,6 +423,48 @@ const AdminPage = () => {
                             </div>
                         )}
                     </Dialog>
+                </TabPanel>
+                <TabPanel header="Configuration Emails">
+                    <div className="card mt-4">
+                        <h2 className="text-xl mb-4">Emails de configuration</h2>
+                        <p className="text-sm text-color-secondary mb-4">
+                            Configurez les adresses email utilisées sur la plateforme.
+                        </p>
+                        <div className="field">
+                            <span className="p-float-label">
+                                <InputText
+                                    id="contactEmail"
+                                    value={contactEmail}
+                                    onChange={(e) => setContactEmail(e.target.value)}
+                                    className="w-full"
+                                />
+                                <label htmlFor="contactEmail">Email de contact</label>
+                            </span>
+                            <small className="text-color-secondary">
+                                Email de destination pour les messages de contact des utilisateurs
+                            </small>
+                        </div>
+                        <div className="field mt-4">
+                            <span className="p-float-label">
+                                <InputText
+                                    id="privacyEmail"
+                                    value={privacyEmail}
+                                    onChange={(e) => setPrivacyEmail(e.target.value)}
+                                    className="w-full"
+                                />
+                                <label htmlFor="privacyEmail">Email Privacy Policy</label>
+                            </span>
+                            <small className="text-color-secondary">
+                                Email affiché en bas de la page Privacy Policy
+                            </small>
+                        </div>
+                        <Button
+                            label="Sauvegarder"
+                            icon="pi pi-check"
+                            className="mt-4"
+                            onClick={saveConfigEmails}
+                        />
+                    </div>
                 </TabPanel>
             </TabView>
         </div>
