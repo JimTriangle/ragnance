@@ -1,12 +1,12 @@
 .privacy-policy-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2a2a3e 0%, #3b3b58 100%);
     padding: 2rem;
 }
 
 .privacy-policy-header {
     text-align: center;
-    color: white;
+    color: #e0e0e0;
     margin-bottom: 2rem;
 }
 
@@ -14,12 +14,21 @@
     font-size: 2.5rem;
     margin: 2rem 0 0.5rem 0;
     font-weight: 700;
+    color: #ffffff;
 }
 
 .privacy-policy-header .update-date {
     font-size: 0.9rem;
-    opacity: 0.9;
+    color: #b0b0d0;
     margin-bottom: 1rem;
+}
+
+.privacy-policy-header .p-button-text {
+    color: #64b5f6 !important;
+}
+
+.privacy-policy-header .p-button-text:hover {
+    background-color: rgba(100, 181, 246, 0.1) !important;
 }
 
 .privacy-policy-main {
@@ -30,7 +39,8 @@
 .privacy-policy-main .p-card {
     padding: 2rem;
     border-radius: 15px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    background-color: #2c2c3e;
 }
 
 .privacy-policy-main section {
@@ -42,17 +52,17 @@
 }
 
 .privacy-policy-main h2 {
-    color: #667eea;
+    color: #64b5f6;
     font-size: 1.5rem;
     margin-bottom: 1rem;
     font-weight: 600;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 2px solid #495057;
     padding-bottom: 0.5rem;
 }
 
 .privacy-policy-main p {
     line-height: 1.8;
-    color: #333;
+    color: #e0e0e0;
     margin-bottom: 1rem;
 }
 
@@ -63,12 +73,12 @@
 
 .privacy-policy-main li {
     line-height: 1.8;
-    color: #555;
+    color: #b0b0d0;
     margin-bottom: 0.5rem;
 }
 
 .privacy-policy-main strong {
-    color: #667eea;
+    color: #64b5f6;
     font-weight: 600;
 }
 
@@ -78,29 +88,37 @@
 }
 
 :root[data-theme="dark"] .privacy-policy-header {
-    color: #f7fafc;
+    color: #ffffff;
+}
+
+:root[data-theme="dark"] .privacy-policy-header h1 {
+    color: #ffffff;
+}
+
+:root[data-theme="dark"] .privacy-policy-header .update-date {
+    color: #9ca3af;
 }
 
 :root[data-theme="dark"] .privacy-policy-main .p-card {
-    background-color: #2d3748;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    background-color: #1f2937;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
 
 :root[data-theme="dark"] .privacy-policy-main h2 {
-    color: #b794f4;
-    border-bottom-color: #4a5568;
+    color: #60a5fa;
+    border-bottom-color: #374151;
 }
 
 :root[data-theme="dark"] .privacy-policy-main p {
-    color: #e2e8f0;
+    color: #e5e7eb;
 }
 
 :root[data-theme="dark"] .privacy-policy-main li {
-    color: #e2e8f0;
+    color: #d1d5db;
 }
 
 :root[data-theme="dark"] .privacy-policy-main strong {
-    color: #d6bcfa;
+    color: #60a5fa;
     font-weight: 700;
 }
 
