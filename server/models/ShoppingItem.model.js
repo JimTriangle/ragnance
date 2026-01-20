@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User.model');
 
 const ShoppingItem = sequelize.define('ShoppingItem', {
   itemName: {
@@ -21,7 +20,6 @@ const ShoppingItem = sequelize.define('ShoppingItem', {
   }
 });
 
-ShoppingItem.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-User.hasMany(ShoppingItem);
+// Les associations sont définies dans models/associations.js
 
 module.exports = ShoppingItem;

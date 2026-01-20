@@ -41,6 +41,8 @@ function setupAssociations() {
   // Budget associations
   Budget.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
   User.hasMany(Budget);
+  Budget.belongsTo(Category, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
+  Category.hasMany(Budget);
 
   // ProjectBudget associations
   ProjectBudget.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
@@ -49,6 +51,8 @@ function setupAssociations() {
   // Transaction associations
   Transaction.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
   User.hasMany(Transaction);
+  Transaction.belongsTo(ProjectBudget, { foreignKey: { name: 'ProjectBudgetId', allowNull: true }, onDelete: 'SET NULL' });
+  ProjectBudget.hasMany(Transaction, { foreignKey: { name: 'ProjectBudgetId', allowNull: true } });
 
   // Category associations
   Category.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
@@ -62,13 +66,13 @@ function setupAssociations() {
   TransactionCategory.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
   User.hasMany(TransactionCategory);
 
-  // ExchangeKey associations (si nécessaire)
-  // ExchangeKey.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-  // User.hasMany(ExchangeKey);
+  // ExchangeKey associations
+  ExchangeKey.belongsTo(User, { foreignKey: { name: 'userId', allowNull: false }, onDelete: 'CASCADE' });
+  User.hasMany(ExchangeKey, { foreignKey: { name: 'userId', allowNull: false } });
 
-  // Strategy associations (si nécessaire)
-  // Strategy.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-  // User.hasMany(Strategy);
+  // Strategy associations
+  Strategy.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
+  User.hasMany(Strategy);
 
   // Announcement and UserAnnouncement associations
   UserAnnouncement.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });

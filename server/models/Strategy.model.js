@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User.model');
 
 const Strategy = sequelize.define('Strategy', {
   id: { type: DataTypes.STRING, primaryKey: true },
@@ -10,7 +9,6 @@ const Strategy = sequelize.define('Strategy', {
   backtestsCount: { type: DataTypes.INTEGER, defaultValue: 0 }
 });
 
-Strategy.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-User.hasMany(Strategy);
+// Les associations sont définies dans models/associations.js
 
 module.exports = Strategy;
