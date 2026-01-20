@@ -34,8 +34,25 @@ const User = sequelize.define('User', {
     type: DataTypes.DATE,
     allowNull: true,
   },
-  contact: {
-    type: DataTypes.TEXT,
+  // Informations de contact structurées
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  address: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  city: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  postalCode: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  country: {
+    type: DataTypes.STRING,
     allowNull: true,
   }
   // Les champs 'createdAt' et 'updatedAt' sont ajoutés automatiquement
