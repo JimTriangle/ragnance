@@ -54,6 +54,10 @@ function setupAssociations() {
   Transaction.belongsTo(ProjectBudget, { foreignKey: { name: 'ProjectBudgetId', allowNull: true }, onDelete: 'SET NULL' });
   ProjectBudget.hasMany(Transaction, { foreignKey: { name: 'ProjectBudgetId', allowNull: true } });
 
+  // Transaction <-> Category (many-to-many via TransactionCategory)
+  Transaction.belongsToMany(Category, { through: TransactionCategory });
+  Category.belongsToMany(Transaction, { through: TransactionCategory });
+
   // Category associations
   Category.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
   User.hasMany(Category);
@@ -61,10 +65,6 @@ function setupAssociations() {
   // ShoppingItem associations
   ShoppingItem.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
   User.hasMany(ShoppingItem);
-
-  // TransactionCategory associations
-  TransactionCategory.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-  User.hasMany(TransactionCategory);
 
   // ExchangeKey associations
   ExchangeKey.belongsTo(User, { foreignKey: { name: 'userId', allowNull: false }, onDelete: 'CASCADE' });
@@ -79,6 +79,10 @@ function setupAssociations() {
   UserAnnouncement.belongsTo(Announcement, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
   User.hasMany(UserAnnouncement);
   Announcement.hasMany(UserAnnouncement);
+
+  // User <-> Announcement (many-to-many via UserAnnouncement)
+  User.belongsToMany(Announcement, { through: UserAnnouncement, foreignKey: 'UserId' });
+  Announcement.belongsToMany(User, { through: UserAnnouncement, foreignKey: 'AnnouncementId' });
 
   console.log('✓ Associations de modèles configurées avec succès');
 }

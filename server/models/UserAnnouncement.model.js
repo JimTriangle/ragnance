@@ -1,7 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User.model');
-const Announcement = require('./Announcement.model');
 
 const UserAnnouncement = sequelize.define('UserAnnouncement', {
   readAt: {
@@ -11,8 +9,6 @@ const UserAnnouncement = sequelize.define('UserAnnouncement', {
   }
 });
 
-// Associations
-User.belongsToMany(Announcement, { through: UserAnnouncement, foreignKey: 'UserId' });
-Announcement.belongsToMany(User, { through: UserAnnouncement, foreignKey: 'AnnouncementId' });
+// Les associations sont définies dans models/associations.js
 
 module.exports = UserAnnouncement;
