@@ -73,6 +73,14 @@
 }
 
 /* Dark mode support */
+:root[data-theme="dark"] .privacy-policy-container {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+:root[data-theme="dark"] .privacy-policy-header {
+    color: #e2e8f0;
+}
+
 :root[data-theme="dark"] .privacy-policy-main .p-card {
     background-color: #1e1e1e;
 }
