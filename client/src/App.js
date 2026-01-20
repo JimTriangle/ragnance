@@ -13,6 +13,7 @@ import TradingLayout from './layouts/TradingLayout';
 // Pages publiques
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 
 // Pages de la section Budget
 import DashboardPage from './pages/DashboardPage';
@@ -48,6 +49,7 @@ function App() {
                 {/* ROUTES PUBLIQUES */}
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
 
                 {/* --- SECTION BUDGET PROTÉGÉE --- */}
                 <Route path="/budget" element={<BudgetRoute />}>

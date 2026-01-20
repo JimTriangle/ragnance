@@ -4,6 +4,7 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import './LandingPage.css';
 import ThemeToggle from '../components/ThemeToggle';
+import Footer from '../components/Footer';
 
 const LandingPage = () => {
     const navigate = useNavigate();
@@ -91,6 +92,8 @@ const LandingPage = () => {
                     </ul>
                 </section>
             </main>
+
+            <Footer />
         </div>
     );
 };

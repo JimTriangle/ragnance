@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import { Button } from 'primereact/button';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import AppSidebar from '../components/AppSidebar';
+import Footer from '../components/Footer';
 
 // Le Header minimaliste avec bouton hamburger
 const TopBar = ({ onOpenSidebar }) => {
@@ -62,6 +63,7 @@ const TradingLayout = () => {
                 <ConfirmDialog />
                 <Outlet />
             </main>
+            <Footer />
         </div>
     );
 };
