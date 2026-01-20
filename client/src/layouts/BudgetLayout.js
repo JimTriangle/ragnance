@@ -9,6 +9,7 @@ import AnnouncementBadge from '../components/AnnouncementBadge';
 import AnnouncementDialog from '../components/AnnouncementDialog';
 import AppSidebar from '../components/AppSidebar';
 import { TransactionRefreshContext } from '../context/TransactionRefreshContext';
+import Footer from '../components/Footer';
 
 // Le Header minimaliste avec bouton hamburger
 const TopBar = ({ onOpenSidebar, onAddTransaction, onShowAnnouncements }) => {
@@ -168,6 +169,7 @@ const BudgetLayout = () => {
                 <ConfirmDialog />
                 <Outlet /> {/* C'est ici que vos pages (Dashboard, MonthlyView...) s'afficheront */}
             </main>
+            <Footer />
             <Button icon="pi pi-plus" className="fab-button p-button-rounded p-button-primary" onClick={openModal} />
             <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '50vw' }} onHide={closeModal}>
                 <TransactionForm onComplete={handleComplete} />
