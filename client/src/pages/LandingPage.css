@@ -105,3 +105,81 @@
         text-align: center;
     }
 }
+
+/* --- STYLES POUR LA SECTION SÉCURITÉ --- */
+
+.security-section {
+    text-align: center;
+    margin-bottom: 4rem;
+    padding-top: 2rem;
+}
+
+.security-section h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.security-badges {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.security-badge-card {
+    background: linear-gradient(135deg, #2c2c3e 0%, #3b3b58 100%);
+    border: 1px solid #495057;
+    transition: all 0.3s ease;
+}
+
+.security-badge-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.security-badge-content {
+    text-align: center;
+    padding: 1rem;
+}
+
+.security-badge-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.security-badge-grade {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: #4caf50;
+    margin: 1rem 0;
+    text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+}
+
+.security-badge-content h4 {
+    font-size: 1.3rem;
+    margin: 1rem 0 0.5rem 0;
+    color: #e0e0e0;
+}
+
+.security-badge-content p {
+    color: #b0b0d0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Responsive pour les badges de sécurité */
+@media screen and (max-width: 768px) {
+    .security-badges {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .security-badge-grade {
+        font-size: 3rem;
+    }
+}

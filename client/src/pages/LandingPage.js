@@ -91,6 +91,37 @@ const LandingPage = () => {
                         <li>🔄 **Transactions Récurrentes :** Gagnez du temps en configurant vos charges fixes (loyer, abonnements...).</li>
                     </ul>
                 </section>
+
+                <section className="security-section">
+                    <h2>Sécurité et Confidentialité</h2>
+                    <p className="text-center" style={{ maxWidth: '800px', margin: '0 auto 2rem auto', color: '#b0b0d0' }}>
+                        Vos données financières sont précieuses. Ragnance met en œuvre les meilleures pratiques de sécurité pour protéger vos informations.
+                    </p>
+                    <div className="security-badges">
+                        <Card className="security-badge-card">
+                            <div className="security-badge-content">
+                                <i className="pi pi-shield security-badge-icon"></i>
+                                <div className="security-badge-grade">A+</div>
+                                <h4>Security Headers</h4>
+                                <p>Note maximale sur securityheaders.com</p>
+                            </div>
+                        </Card>
+                        <Card className="security-badge-card">
+                            <div className="security-badge-content">
+                                <i className="pi pi-lock security-badge-icon"></i>
+                                <h4>Chiffrement HTTPS</h4>
+                                <p>Toutes les communications sont sécurisées</p>
+                            </div>
+                        </Card>
+                        <Card className="security-badge-card">
+                            <div className="security-badge-content">
+                                <i className="pi pi-eye-slash security-badge-icon"></i>
+                                <h4>Confidentialité</h4>
+                                <p>Vos données restent privées et sous votre contrôle</p>
+                            </div>
+                        </Card>
+                    </div>
+                </section>
             </main>
 
             <Footer />
