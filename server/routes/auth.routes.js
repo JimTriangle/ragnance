@@ -141,16 +141,30 @@ router.put('/change-password', isAuth, async (req, res) => {
 });
 
 router.put('/update-contact', isAuth, async (req, res) => {
-  const { contact } = req.body;
+  const { phone, address, city, postalCode, country } = req.body;
   const userId = req.user.id;
   try {
     const user = await User.findByPk(userId);
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé." });
     }
-    user.contact = contact;
+    // Mise à jour des champs de contact structurés
+    if (phone !== undefined) user.phone = phone;
+    if (address !== undefined) user.address = address;
+    if (city !== undefined) user.city = city;
+    if (postalCode !== undefined) user.postalCode = postalCode;
+    if (country !== undefined) user.country = country;
     await user.save();
-    res.status(200).json({ message: "Informations de contact mises à jour avec succès.", contact: user.contact });
+    res.status(200).json({
+      message: "Informations de contact mises à jour avec succès.",
+      contact: {
+        phone: user.phone,
+        address: user.address,
+        city: user.city,
+        postalCode: user.postalCode,
+        country: user.country
+      }
+    });
   } catch (error) {
     console.error("Erreur mise à jour contact:", error);
     res.status(500).json({ message: "Erreur lors de la mise à jour des informations de contact." });
@@ -164,7 +178,15 @@ router.get('/contact', isAuth, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé." });
     }
-    res.status(200).json({ contact: user.contact || '' });
+    res.status(200).json({
+      contact: {
+        phone: user.phone || '',
+        address: user.address || '',
+        city: user.city || '',
+        postalCode: user.postalCode || '',
+        country: user.country || ''
+      }
+    });
   } catch (error) {
     console.error("Erreur récupération contact:", error);
     res.status(500).json({ message: "Erreur lors de la récupération des informations de contact." });
