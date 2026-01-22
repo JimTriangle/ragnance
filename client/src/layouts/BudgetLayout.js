@@ -7,12 +7,14 @@ import { Dialog } from 'primereact/dialog';
 import TransactionForm from '../components/TransactionForm';
 import AnnouncementBadge from '../components/AnnouncementBadge';
 import AnnouncementDialog from '../components/AnnouncementDialog';
+import ReminderDialog from '../components/ReminderDialog';
 import AppSidebar from '../components/AppSidebar';
 import { TransactionRefreshContext } from '../context/TransactionRefreshContext';
 import Footer from '../components/Footer';
+import api from '../services/api';
 
 // Le Header minimaliste avec bouton hamburger
-const TopBar = ({ onOpenSidebar, onAddTransaction, onShowAnnouncements }) => {
+const TopBar = ({ onOpenSidebar, onAddTransaction, onShowAnnouncements, onShowReminders }) => {
     return (
         <div className="top-bar flex justify-content-between align-items-center p-3" style={{ background: '#242931', borderBottom: '1px solid #495057' }}>
             <div className="flex align-items-center gap-2">
@@ -25,6 +27,14 @@ const TopBar = ({ onOpenSidebar, onAddTransaction, onShowAnnouncements }) => {
                 <h2 className="m-0 text-primary">Budget</h2>
             </div>
             <div className="flex align-items-center gap-2">
+                <Button
+                    icon="pi pi-bell"
+                    className="p-button-text p-button-rounded"
+                    onClick={onShowReminders}
+                    tooltip="Voir les rappels"
+                    tooltipOptions={{ position: 'bottom' }}
+                    aria-label="Voir les rappels"
+                />
                 <AnnouncementBadge onClick={onShowAnnouncements} />
                 <Button
                     label="Ajouter une transaction"
@@ -42,6 +52,7 @@ const BudgetLayout = () => {
     const { user } = useContext(AuthContext);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isAnnouncementVisible, setIsAnnouncementVisible] = useState(false);
+    const [isReminderVisible, setIsReminderVisible] = useState(false);
     const [isSidebarVisible, setIsSidebarVisible] = useState(false);
     const { notifyTransactionRefresh } = useContext(TransactionRefreshContext);
 
@@ -50,6 +61,9 @@ const BudgetLayout = () => {
 
     const openAnnouncements = () => setIsAnnouncementVisible(true);
     const closeAnnouncements = () => setIsAnnouncementVisible(false);
+
+    const openReminders = () => setIsReminderVisible(true);
+    const closeReminders = () => setIsReminderVisible(false);
 
     const openSidebar = () => setIsSidebarVisible(true);
     const closeSidebar = () => setIsSidebarVisible(false);
@@ -140,6 +154,26 @@ const BudgetLayout = () => {
         return () => clearTimeout(timer);
     }, []);
 
+    // Vérifier et afficher les rappels au chargement
+    useEffect(() => {
+        const checkReminders = async () => {
+            try {
+                const response = await api.get('/transactions/reminders');
+                if (response.data && response.data.length > 0) {
+                    setIsReminderVisible(true);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la vérification des rappels:', error);
+            }
+        };
+
+        const timer = setTimeout(() => {
+            checkReminders();
+        }, 4000); // 4 secondes après le chargement, pour laisser les annonces s'afficher d'abord
+
+        return () => clearTimeout(timer);
+    }, []);
+
     useEffect(() => {
         const handleKeydown = (e) => {
             if (e.key?.toLowerCase() === 'n' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
@@ -157,6 +191,7 @@ const BudgetLayout = () => {
                 onOpenSidebar={openSidebar}
                 onAddTransaction={openModal}
                 onShowAnnouncements={openAnnouncements}
+                onShowReminders={openReminders}
             />
             <AppSidebar
                 visible={isSidebarVisible}
@@ -175,6 +210,7 @@ const BudgetLayout = () => {
                 <TransactionForm onComplete={handleComplete} />
             </Dialog>
             <AnnouncementDialog visible={isAnnouncementVisible} onHide={closeAnnouncements} />
+            <ReminderDialog visible={isReminderVisible} onHide={closeReminders} />
         </div>
     );
 };

@@ -7,6 +7,8 @@ import { Button } from 'primereact/button';
 import { Message } from 'primereact/message';
 import { AutoComplete } from 'primereact/autocomplete';
 import { MultiSelect } from 'primereact/multiselect';
+import { Checkbox } from 'primereact/checkbox';
+import { InputNumber } from 'primereact/inputnumber';
 import AmountInput from './AmountInput';
 
 const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
@@ -20,6 +22,8 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
   const [endDate, setEndDate] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedProjectBudget, setSelectedProjectBudget] = useState(null);
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderDaysBefore, setReminderDaysBefore] = useState(3);
   const [error, setError] = useState('');
 
   const [categories, setCategories] = useState([]);
@@ -43,7 +47,7 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
       setAmount(transactionToEdit.amount);
       setType(transactionToEdit.type);
       setTransactionType(transactionToEdit.transactionType);
-      
+
       // On convertit les dates string "AAAA-MM-JJ" en objets Date pour le calendrier
       setDate(transactionToEdit.date ? new Date(transactionToEdit.date) : null);
       setStartDate(transactionToEdit.startDate ? new Date(transactionToEdit.startDate) : null);
@@ -52,10 +56,13 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
       setFrequency(transactionToEdit.frequency);
       setSelectedCategories(transactionToEdit.Categories ? transactionToEdit.Categories.map(c => c.id) : []);
       setSelectedProjectBudget(transactionToEdit.ProjectBudgetId);
+      setReminderEnabled(transactionToEdit.reminderEnabled || false);
+      setReminderDaysBefore(transactionToEdit.reminderDaysBefore || 3);
     } else {
-      setLabel(''); setAmount(null); setType(null); setTransactionType('one-time'); 
-      setDate(new Date()); setFrequency(null); setStartDate(null); setEndDate(null); 
-      setSelectedCategories([]); setSelectedProjectBudget(null); 
+      setLabel(''); setAmount(null); setType(null); setTransactionType('one-time');
+      setDate(new Date()); setFrequency(null); setStartDate(null); setEndDate(null);
+      setSelectedCategories([]); setSelectedProjectBudget(null);
+      setReminderEnabled(false); setReminderDaysBefore(3);
     }
   }, [transactionToEdit]);
 
@@ -97,7 +104,9 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
     const transactionData = {
       label, amount, type, transactionType,
       categoryIds: sanitizedCategoryIds,
-      ProjectBudgetId: Number.isNaN(normalizedProjectBudgetId) ? null : normalizedProjectBudgetId
+      ProjectBudgetId: Number.isNaN(normalizedProjectBudgetId) ? null : normalizedProjectBudgetId,
+      reminderEnabled: type === 'expense' ? reminderEnabled : false,
+      reminderDaysBefore: type === 'expense' && reminderEnabled ? reminderDaysBefore : null
     };
 
 const formatDateForAPI = (d) => {
@@ -169,6 +178,35 @@ const formatDateForAPI = (d) => {
 
         {type === 'expense' && (
           <div className="field col-12 mt-3"><span className="p-float-label"><Dropdown id="projectBudget" value={selectedProjectBudget} options={projectBudgets} onChange={(e) => setSelectedProjectBudget(e.value)} optionLabel="name" optionValue="id" placeholder="Associer à un budget de projet (optionnel)" showClear /><label htmlFor="projectBudget">Budget de Projet</label></span></div>
+        )}
+
+        {type === 'expense' && (
+          <div className="field col-12 mt-3">
+            <div className="flex align-items-center">
+              <Checkbox
+                inputId="reminderEnabled"
+                checked={reminderEnabled}
+                onChange={(e) => setReminderEnabled(e.checked)}
+              />
+              <label htmlFor="reminderEnabled" className="ml-2">Activer un rappel pour cette dépense</label>
+            </div>
+            {reminderEnabled && (
+              <div className="field mt-2">
+                <span className="p-float-label">
+                  <InputNumber
+                    id="reminderDaysBefore"
+                    value={reminderDaysBefore}
+                    onValueChange={(e) => setReminderDaysBefore(e.value)}
+                    min={0}
+                    max={365}
+                    showButtons
+                    suffix=" jour(s) avant"
+                  />
+                  <label htmlFor="reminderDaysBefore">Fréquence du rappel</label>
+                </span>
+              </div>
+            )}
+          </div>
         )}
 
         {transactionType === 'one-time' && (
