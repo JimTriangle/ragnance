@@ -11,7 +11,9 @@ const Transaction = sequelize.define('Transaction', {
   startDate: { type: DataTypes.DATEONLY },
   endDate: { type: DataTypes.DATEONLY, allowNull: true },
   dayOfMonth: { type: DataTypes.INTEGER },
-  dayOfWeek: { type: DataTypes.INTEGER }
+  dayOfWeek: { type: DataTypes.INTEGER },
+  reminderEnabled: { type: DataTypes.BOOLEAN, defaultValue: false },
+  reminderDaysBefore: { type: DataTypes.INTEGER, allowNull: true }
 });
 
 // Les associations sont définies dans models/associations.js

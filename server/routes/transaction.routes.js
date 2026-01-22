@@ -1028,4 +1028,91 @@ router.delete('/:id', isAuth, async (req, res) => {
     }
 });
 
+router.get('/reminders', isAuth, async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+
+        // Récupérer toutes les transactions avec rappel activé
+        const transactions = await Transaction.findAll({
+            where: {
+                UserId: userId,
+                type: 'expense',
+                reminderEnabled: true,
+                reminderDaysBefore: { [Op.not]: null }
+            },
+            include: [Category]
+        });
+
+        const reminders = [];
+
+        transactions.forEach(tx => {
+            let transactionDate = null;
+
+            if (tx.transactionType === 'one-time') {
+                transactionDate = new Date(tx.date);
+            } else if (tx.transactionType === 'recurring' && tx.startDate) {
+                // Pour les récurrentes, trouver la prochaine occurrence
+                const start = new Date(tx.startDate);
+                const end = tx.endDate ? new Date(tx.endDate) : null;
+
+                if (tx.frequency === 'weekly') {
+                    const targetDay = tx.dayOfWeek ?? start.getUTCDay();
+                    let nextOccurrence = new Date(today);
+
+                    // Trouver le prochain jour de la semaine correspondant
+                    while (nextOccurrence.getUTCDay() !== targetDay || nextOccurrence < start) {
+                        nextOccurrence.setUTCDate(nextOccurrence.getUTCDate() + 1);
+                    }
+
+                    if (!end || nextOccurrence <= end) {
+                        transactionDate = nextOccurrence;
+                    }
+                } else if (tx.frequency === 'monthly') {
+                    // Prochaine occurrence mensuelle
+                    const currentMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), tx.dayOfMonth));
+                    const nextMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, tx.dayOfMonth));
+
+                    if (currentMonth >= start && currentMonth >= today && (!end || currentMonth <= end)) {
+                        transactionDate = currentMonth;
+                    } else if (nextMonth >= start && (!end || nextMonth <= end)) {
+                        transactionDate = nextMonth;
+                    }
+                } else if (tx.frequency === 'yearly') {
+                    const startMonth = start.getUTCMonth();
+                    const startDay = tx.dayOfMonth || start.getUTCDate();
+                    const currentYear = new Date(Date.UTC(today.getUTCFullYear(), startMonth, startDay));
+                    const nextYear = new Date(Date.UTC(today.getUTCFullYear() + 1, startMonth, startDay));
+
+                    if (currentYear >= start && currentYear >= today && (!end || currentYear <= end)) {
+                        transactionDate = currentYear;
+                    } else if (nextYear >= start && (!end || nextYear <= end)) {
+                        transactionDate = nextYear;
+                    }
+                }
+            }
+
+            if (transactionDate && transactionDate >= today) {
+                const daysUntil = Math.floor((transactionDate - today) / (1000 * 60 * 60 * 24));
+
+                // Vérifier si on doit rappeler cette transaction
+                if (daysUntil <= tx.reminderDaysBefore) {
+                    const txPlain = tx.get({ plain: true });
+                    reminders.push({
+                        ...txPlain,
+                        upcomingDate: transactionDate.toISOString().split('T')[0],
+                        daysUntil
+                    });
+                }
+            }
+        });
+
+        res.status(200).json(reminders);
+    } catch (error) {
+        console.error("Erreur GET /reminders:", error);
+        res.status(500).json({ message: "Erreur lors de la récupération des rappels." });
+    }
+});
+
 module.exports = router;
