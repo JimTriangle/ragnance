@@ -151,6 +151,86 @@ router.get('/category-breakdown', isAuth, async (req, res) => {
     }
 });
 
+router.get('/income-category-breakdown', isAuth, async (req, res) => {
+    const { startDate, endDate } = req.query;
+    const userId = req.user.id;
+    if (!startDate || !endDate) return res.status(400).json({ message: "Les dates de début et de fin sont requises." });
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    try {
+        const finalBreakdown = new Map();
+        const oneTimeIncomes = await Transaction.findAll({ where: { UserId: userId, type: 'income', transactionType: 'one-time', date: { [Op.between]: [start, end] } }, include: [Category] });
+
+        oneTimeIncomes.forEach(t => {
+            t.Categories.forEach(cat => {
+                if (!finalBreakdown.has(cat.name)) finalBreakdown.set(cat.name, { categoryName: cat.name, categoryColor: cat.color, totalAmount: 0, transactionCount: 0 });
+                const existing = finalBreakdown.get(cat.name);
+                existing.totalAmount += t.amount;
+                existing.transactionCount++;
+            });
+        });
+
+        const recurringIncomes = await Transaction.findAll({
+            where: {
+                UserId: userId, type: 'income', transactionType: 'recurring',
+                startDate: { [Op.lte]: end },
+                [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: start } }]
+            },
+            include: [Category]
+        });
+
+        recurringIncomes.forEach(r => {
+            let occurrences = 0;
+            const [startYear, startMonth, startDay] = r.startDate.split('-').map(Number);
+            const finalEndDateStr = r.endDate || endDate;
+            const startPeriodStr = startDate;
+
+            for (let i = 0; ; i++) {
+                let nextYear = startYear;
+                let nextMonth = startMonth;
+
+                if (r.frequency === 'monthly') {
+                    nextMonth += i;
+                    nextYear += Math.floor((nextMonth - 1) / 12);
+                    nextMonth = ((nextMonth - 1) % 12) + 1;
+                } else if (r.frequency === 'yearly') {
+                    nextYear += i;
+                } else {
+                    break;
+                }
+
+                const nextOccurrenceStr = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`;
+
+                if (nextOccurrenceStr > finalEndDateStr || nextOccurrenceStr > endDate) {
+                    break;
+                }
+
+                if (nextOccurrenceStr >= startPeriodStr) {
+                    occurrences++;
+                }
+            }
+
+            if (occurrences > 0) {
+                const recurringTotal = occurrences * r.amount;
+                r.Categories.forEach(cat => {
+                    if (!finalBreakdown.has(cat.name)) finalBreakdown.set(cat.name, { categoryName: cat.name, categoryColor: cat.color, totalAmount: 0, transactionCount: 0 });
+                    const existing = finalBreakdown.get(cat.name);
+                    existing.totalAmount += recurringTotal;
+                    existing.transactionCount += occurrences;
+                });
+            }
+        });
+
+        const results = Array.from(finalBreakdown.values()).sort((a, b) => b.totalAmount - a.totalAmount);
+        res.status(200).json(results);
+    } catch (error) {
+        console.error("Erreur analyse par catégorie (revenus):", error);
+        res.status(500).json({ message: "Erreur serveur lors de l'analyse." });
+    }
+});
+
 router.get('/budget-history', isAuth, async (req, res) => {
     const userId = req.user.id;
     try {
