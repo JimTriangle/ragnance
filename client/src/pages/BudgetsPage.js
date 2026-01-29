@@ -15,7 +15,7 @@ const BudgetsPage = () => {
     const [budgets, setBudgets] = useState({});
     const [currentDate, setCurrentDate] = useState(new Date());
     const { showToast } = React.useContext(ToastContext);
-    const debounceTimeout = useRef(null);
+    const debounceTimeouts = useRef({});
     const [hasBudgets, setHasBudgets] = useState(true);
     const [isLoadingCopy, setIsLoadingCopy] = useState(false);
 
@@ -100,17 +100,22 @@ const BudgetsPage = () => {
 
     const handleBudgetChange = (categoryId, amount) => {
         setBudgets(prevBudgets => ({ ...prevBudgets, [categoryId]: amount }));
-        if (debounceTimeout.current) {
-            clearTimeout(debounceTimeout.current);
+
+        // Capturer l'année et le mois au moment de la modification
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1;
+
+        // Utiliser un timeout par catégorie pour éviter d'annuler les modifications sur d'autres catégories
+        if (debounceTimeouts.current[categoryId]) {
+            clearTimeout(debounceTimeouts.current[categoryId]);
         }
-        debounceTimeout.current = setTimeout(() => {
-            saveBudget(categoryId, amount);
+        debounceTimeouts.current[categoryId] = setTimeout(() => {
+            saveBudget(categoryId, amount, year, month);
+            delete debounceTimeouts.current[categoryId];
         }, 1000);
     };
 
-    const saveBudget = async (categoryId, amountToSave) => {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth() + 1;
+    const saveBudget = async (categoryId, amountToSave, year, month) => {
         const finalAmount = amountToSave === null || amountToSave === undefined ? 0 : amountToSave;
         try {
             await api.post('/budgets', {
