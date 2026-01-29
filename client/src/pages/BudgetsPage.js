@@ -19,6 +19,9 @@ const BudgetsPage = () => {
     const [hasBudgets, setHasBudgets] = useState(true);
     const [isLoadingCopy, setIsLoadingCopy] = useState(false);
 
+    // Ref pour toujours avoir accès à la date courante dans les closures
+    const currentDateRef = useRef(currentDate);
+
     // Configuration du guide utilisateur
     const tourSteps = [
         {
@@ -89,6 +92,11 @@ const BudgetsPage = () => {
         fetchData();
     }, [fetchData]);
 
+    // Maintenir le ref à jour avec la date courante
+    useEffect(() => {
+        currentDateRef.current = currentDate;
+    }, [currentDate]);
+
     useTransactionRefresh(fetchData);
 
     useEffect(() => {
@@ -101,9 +109,10 @@ const BudgetsPage = () => {
     const handleBudgetChange = (categoryId, amount) => {
         setBudgets(prevBudgets => ({ ...prevBudgets, [categoryId]: amount }));
 
-        // Capturer l'année et le mois au moment de la modification
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth() + 1;
+        // Utiliser le ref pour obtenir la date actuelle (évite les problèmes de closure obsolète)
+        const currentDateValue = currentDateRef.current;
+        const year = currentDateValue.getFullYear();
+        const month = currentDateValue.getMonth() + 1;
 
         // Utiliser un timeout par catégorie pour éviter d'annuler les modifications sur d'autres catégories
         if (debounceTimeouts.current[categoryId]) {
