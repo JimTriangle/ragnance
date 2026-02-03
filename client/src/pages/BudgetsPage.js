@@ -200,7 +200,7 @@ const BudgetsPage = () => {
                 <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} />
             </div>
 
-            {!hasBudgets && trackedCategories.length > 0 ? (
+            {!hasBudgets && trackedCategories.length > 0 && (
                 <div className="card mb-4 p-3 bg-blue-50 border-blue-200" data-tour-id="copy-budgets">
                     <div className="flex align-items-center justify-content-between">
                         <div>
@@ -216,14 +216,14 @@ const BudgetsPage = () => {
                         />
                     </div>
                 </div>
-            ) : (
-                <div className="card" data-tour-id="budgets-table">
-                    <DataTable value={trackedCategories} size="small">
-                        <Column field="name" header="Catégorie" />
-                        <Column header="Budget" body={budgetEditor} />
-                    </DataTable>
-                </div>
             )}
+
+            <div className="card" data-tour-id="budgets-table">
+                <DataTable value={trackedCategories} size="small">
+                    <Column field="name" header="Catégorie" />
+                    <Column header="Budget" body={budgetEditor} />
+                </DataTable>
+            </div>
         </div>
     );
 };
