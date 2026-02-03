@@ -140,6 +140,16 @@ const BudgetsPage = () => {
     };
 
     const changeMonth = (amount) => {
+        // Annuler TOUS les timeouts de sauvegarde en cours pour éviter
+        // de sauvegarder des données sur le mauvais mois
+        Object.keys(debounceTimeouts.current).forEach(key => {
+            clearTimeout(debounceTimeouts.current[key]);
+            delete debounceTimeouts.current[key];
+        });
+
+        // Réinitialiser les budgets pour éviter d'afficher les anciennes valeurs
+        setBudgets({});
+
         setCurrentDate(prevDate => {
             const newDate = new Date(prevDate);
             newDate.setMonth(newDate.getMonth() + amount);
@@ -179,8 +189,12 @@ const BudgetsPage = () => {
         }
     };
 
+    // Clé unique pour forcer le re-render des inputs quand le mois change
+    const monthKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
+
     const budgetEditor = (rowData) => {
         return <AmountInput
+            key={`${monthKey}-${rowData.id}`}
             value={budgets[rowData.id] || null}
             placeholder="Définir un budget"
             onChange={(value) => handleBudgetChange(rowData.id, value)}
