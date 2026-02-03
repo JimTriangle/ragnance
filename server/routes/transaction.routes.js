@@ -76,6 +76,54 @@ const calculateRecurringTotals = (transactions, periodStart, periodEnd) => {
     return { income: totalIncome, expense: totalExpense };
 };
 
+/**
+ * Helper pour calculer le nombre d'occurrences d'une seule transaction récurrente sur une période.
+ */
+const calculateRecurringOccurrences = (tx, periodStart, periodEnd) => {
+    if (!tx.startDate) return 0;
+
+    let occurrences = 0;
+    const tStartDate = new Date(tx.startDate);
+    const tEndDate = tx.endDate ? new Date(tx.endDate) : null;
+
+    let currentDate = periodStart > tStartDate ? new Date(periodStart) : new Date(tStartDate);
+    const loopEndDate = tEndDate && tEndDate < periodEnd ? tEndDate : periodEnd;
+
+    if (tx.frequency === 'weekly') {
+        const targetDay = (tx.dayOfWeek === null || tx.dayOfWeek === undefined)
+            ? new Date(tx.startDate).getUTCDay()
+            : tx.dayOfWeek;
+
+        while (currentDate.getUTCDay() !== targetDay) {
+            currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+            if (currentDate > loopEndDate) break;
+        }
+
+        while (currentDate <= loopEndDate) {
+            if (currentDate >= tStartDate) occurrences++;
+            currentDate.setUTCDate(currentDate.getUTCDate() + 7);
+        }
+    } else if (tx.frequency === 'monthly' || tx.frequency === 'yearly') {
+        if (!tx.dayOfMonth) return 0;
+        for (let year = currentDate.getUTCFullYear(); year <= loopEndDate.getUTCFullYear(); year++) {
+            const startMonth = (year === currentDate.getUTCFullYear()) ? currentDate.getUTCMonth() : 0;
+            const endMonthLoop = (year === loopEndDate.getUTCFullYear()) ? loopEndDate.getUTCMonth() : 11;
+
+            for (let month = startMonth; month <= endMonthLoop; month++) {
+                if (tx.frequency === 'yearly' && month !== tStartDate.getUTCMonth()) continue;
+
+                const occurrenceDate = new Date(Date.UTC(year, month, tx.dayOfMonth));
+
+                if (occurrenceDate.getUTCMonth() === month && occurrenceDate <= loopEndDate && occurrenceDate >= tStartDate) {
+                    occurrences++;
+                }
+            }
+        }
+    }
+
+    return occurrences;
+};
+
 
 router.get('/labels', isAuth, async (req, res) => {
     try {
@@ -871,11 +919,15 @@ router.get('/stats/expenses-by-category', isAuth, async (req, res) => {
     const today = new Date();
     const startOfMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
     const startOfNextMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 1));
+    const endOfMonth = new Date(startOfNextMonth.getTime() - 1);
+
     try {
-        const transactions = await Transaction.findAll({
+        // Récupérer les transactions one-time du mois
+        const oneTimeTransactions = await Transaction.findAll({
             where: {
                 UserId: userId,
                 type: 'expense',
+                transactionType: 'one-time',
                 date: { [Op.gte]: startOfMonth, [Op.lt]: startOfNextMonth }
             },
             include: [{
@@ -886,8 +938,30 @@ router.get('/stats/expenses-by-category', isAuth, async (req, res) => {
             }]
         });
 
+        // Récupérer les transactions récurrentes actives pendant le mois
+        const recurringTransactions = await Transaction.findAll({
+            where: {
+                UserId: userId,
+                type: 'expense',
+                transactionType: 'recurring',
+                startDate: { [Op.lt]: startOfNextMonth },
+                [Op.or]: [
+                    { endDate: { [Op.is]: null } },
+                    { endDate: { [Op.gte]: startOfMonth } }
+                ]
+            },
+            include: [{
+                model: Category,
+                attributes: ['id', 'name', 'color'],
+                through: { attributes: [] },
+                required: true
+            }]
+        });
+
         const categoryTotals = {};
-        transactions.forEach(tx => {
+
+        // Traiter les transactions one-time
+        oneTimeTransactions.forEach(tx => {
             const share = tx.amount / tx.Categories.length;
             tx.Categories.forEach(c => {
                 if (!categoryTotals[c.id]) {
@@ -895,6 +969,21 @@ router.get('/stats/expenses-by-category', isAuth, async (req, res) => {
                 }
                 categoryTotals[c.id].total += share;
             });
+        });
+
+        // Traiter les transactions récurrentes
+        recurringTransactions.forEach(tx => {
+            const occurrences = calculateRecurringOccurrences(tx, startOfMonth, endOfMonth);
+            if (occurrences > 0) {
+                const totalAmount = occurrences * tx.amount;
+                const share = totalAmount / tx.Categories.length;
+                tx.Categories.forEach(c => {
+                    if (!categoryTotals[c.id]) {
+                        categoryTotals[c.id] = { categoryName: c.name, categoryColor: c.color, total: 0 };
+                    }
+                    categoryTotals[c.id].total += share;
+                });
+            }
         });
 
         let results = Object.values(categoryTotals).sort((a, b) => b.total - a.total);
