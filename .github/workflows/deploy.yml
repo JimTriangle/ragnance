@@ -189,6 +189,20 @@ jobs:
 
             echo "✅ Dépendances installées avec succès"
 
+            echo "🔄 Exécution des migrations..."
+            # Migrations Sequelize (si configurées)
+            if [ -f "node_modules/.bin/sequelize" ]; then
+              npx sequelize-cli db:migrate --env production || echo "⚠️ Migrations Sequelize ignorées"
+            fi
+            # Scripts de migration personnalisés
+            for migration_script in migrate-*.js; do
+              if [ -f "$migration_script" ]; then
+                echo "▶️ Exécution de $migration_script..."
+                node "$migration_script" || echo "⚠️ $migration_script a échoué (non bloquant)"
+              fi
+            done
+            echo "✅ Migrations terminées"
+
             echo "🔄 Gestion de PM2..."
             if pm2 describe ${{ env.APP_NAME }} >/dev/null 2>&1; then
               echo "🔄 Redémarrage de l'application existante..."
