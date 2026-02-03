@@ -15,6 +15,14 @@ const Budget = sequelize.define('Budget', {
     type: DataTypes.INTEGER,
     allowNull: false
   }
+}, {
+  indexes: [
+    {
+      unique: true,
+      fields: ['UserId', 'CategoryId', 'year', 'month'],
+      name: 'unique_user_category_year_month'
+    }
+  ]
 });
 
 // Les associations sont définies dans models/associations.js
