@@ -8,7 +8,6 @@ import useTour from '../hooks/useTour';
 // Imports PrimeReact
 import { Card } from 'primereact/card';
 import { Chart } from 'primereact/chart';
-import { SelectButton } from 'primereact/selectbutton';
 
 // Composants
 import PurchaseForecast from '../components/PurchaseForecast';
@@ -22,11 +21,10 @@ import '../styles/tour.css';
 const DashboardPage = () => {
     // États du Dashboard
     const [summary, setSummary] = useState({ currentBalance: 0, projectedBalance: 0, totalProjectedIncome: 0, totalProjectedExpense: 0, projectedBalanceWithBudgets: 0, totalBudgets: 0 });
-    const [lineChartData, setLineChartData] = useState(null);
+    const [monthlyBalanceData, setMonthlyBalanceData] = useState(null);
     const [categoryChartData, setCategoryChartData] = useState(null);
     const [budgetProgressData, setBudgetProgressData] = useState([]);
     const [projectBudgets, setProjectBudgets] = useState([]);
-    const [chartPeriod, setChartPeriod] = useState('30d');
     const [dataLoaded, setDataLoaded] = useState(false);
     
     const { showToast } = useContext(ToastContext);
@@ -76,8 +74,8 @@ const DashboardPage = () => {
         {
             element: '[data-tour-id="chart-daily"]',
             popover: {
-                title: 'Dépenses Journalières 📈',
-                description: 'Suivez l\'évolution de vos dépenses quotidiennes. Vous pouvez changer la période d\'affichage (7 jours, 1 mois, 3 mois) avec les boutons en haut.',
+                title: 'Solde Début de Mois 📈',
+                description: 'Visualisez l\'évolution de votre solde en début de mois. Le graphique affiche les 3 derniers mois, le mois en cours et une projection sur 6 mois.',
                 side: 'left',
                 align: 'center'
             }
@@ -130,8 +128,14 @@ const DashboardPage = () => {
     const { startTour } = useTour('dashboard', tourSteps, true);
 
     // Options des graphiques
-    const periodOptions = [{ label: '7j', value: '7d' }, { label: '1m', value: '30d' }, { label: '3m', value: '90d' }];
-    const lineChartOptions = { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } }, y: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } } } };
+    const lineChartOptions = {
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+            y: { ticks: { color: '#CCC', callback: (value) => value.toLocaleString('fr-FR') + ' €' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+        }
+    };
     const pieChartOptions = {
         maintainAspectRatio: false,
         plugins: { legend: { labels: { color: '#CCC' } } }
@@ -237,31 +241,47 @@ const DashboardPage = () => {
         }
     }, [showToast, isLoggedIn, isLoading]);
 
-    const fetchLineChartData = useCallback(async (period) => {
+    const fetchMonthlyBalances = useCallback(async () => {
         if (!isLoggedIn || isLoading) {
             return;
         }
 
-        let startDate, endDate = new Date();
-        const today = new Date();
-        switch (period) {
-            case '7d': startDate = new Date(new Date().setDate(today.getDate() - 7)); break;
-            case '90d': startDate = new Date(new Date().setMonth(today.getMonth() - 3)); break;
-            case '30d': default: startDate = new Date(new Date().setDate(today.getDate() - 30)); break;
-        }
         try {
-            console.log('🔄 Chargement graphique ligne - période:', period, 'startDate:', startDate.toISOString(), 'endDate:', endDate.toISOString());
-            const response = await api.get(`/transactions/stats/expenses-by-day?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
-            console.log('📉 Données graphique ligne reçues:', response.data);
+            console.log('🔄 Chargement des soldes mensuels...');
+            const response = await api.get('/transactions/stats/monthly-balances');
+            console.log('📉 Soldes mensuels reçus:', response.data);
             if (isMountedRef.current) {
-                setLineChartData({
-                    labels: response.data.map(item => new Date(item.day).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })),
-                    datasets: [{ label: 'Dépenses Journalières', data: response.data.map(item => item.total), fill: true, backgroundColor: 'rgba(46, 204, 113, 0.2)', borderColor: '#2ECC71', tension: 0.4 }]
+                const data = response.data;
+                const currentIndex = data.findIndex(m => m.isCurrent);
+
+                const borderColors = data.map((_, i) => {
+                    if (i < currentIndex) return '#2ECC71';
+                    if (i === currentIndex) return '#27AE60';
+                    return 'rgba(46, 204, 113, 0.5)';
+                });
+
+                setMonthlyBalanceData({
+                    labels: data.map(m => m.label),
+                    datasets: [{
+                        label: 'Solde début de mois',
+                        data: data.map(m => m.balance),
+                        backgroundColor: 'rgba(46, 204, 113, 0.15)',
+                        borderColor: '#2ECC71',
+                        borderWidth: 2,
+                        segment: {
+                            borderDash: ctx => ctx.p0DataIndex >= currentIndex ? [5, 5] : [],
+                            borderColor: ctx => ctx.p0DataIndex >= currentIndex ? 'rgba(46, 204, 113, 0.5)' : '#2ECC71'
+                        },
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: data.map((_, i) => i === currentIndex ? 6 : 4),
+                        pointBackgroundColor: borderColors
+                    }]
                 });
             }
         } catch (error) {
-            console.log("❌ Erreur fetch line chart data - Status:", error?.response?.status, 'Message:', error?.message);
-            console.log("❌ Détails complets line chart:", error);
+            console.log("❌ Erreur fetch monthly balances - Status:", error?.response?.status, 'Message:', error?.message);
+            console.log("❌ Détails complets monthly balances:", error);
         }
     }, [isLoggedIn, isLoading]);
 
@@ -280,7 +300,7 @@ const DashboardPage = () => {
                     if (isMountedRef.current) {
                         console.log('⏰ Timer déclenché, appel fetchData...');
                         fetchData();
-                        fetchLineChartData(chartPeriod);
+                        fetchMonthlyBalances();
                     } else {
                         console.warn('⚠️ Composant démonté, annulation du chargement');
                     }
@@ -301,14 +321,7 @@ const DashboardPage = () => {
             isMountedRef.current = false;
             if (cleanup) cleanup();
         };
-    }, [isLoggedIn, isLoading, authTimestamp, fetchData, fetchLineChartData, chartPeriod]); // AJOUT : authTimestamp dans les dépendances
-
-    // Chargement du graphique quand la période change
-    useEffect(() => {
-        if (!isLoading && isLoggedIn && dataLoaded) {
-            fetchLineChartData(chartPeriod);
-        }
-    }, [chartPeriod, fetchLineChartData, isLoading, isLoggedIn, dataLoaded]);
+    }, [isLoggedIn, isLoading, authTimestamp, fetchData, fetchMonthlyBalances]);
 
     const refreshAfterTransaction = useCallback(async () => {
         if (isLoading || !isLoggedIn) {
@@ -320,7 +333,7 @@ const DashboardPage = () => {
         }
 
         const success = await fetchData();
-        await fetchLineChartData(chartPeriod);
+        await fetchMonthlyBalances();
 
         if (success) {
             retryAttemptsRef.current = 0;
@@ -336,7 +349,7 @@ const DashboardPage = () => {
             retryTimeoutRef.current = null;
             refreshAfterTransaction();
         }, 2000);
-    }, [fetchData, fetchLineChartData, chartPeriod, isLoading, isLoggedIn]);
+    }, [fetchData, fetchMonthlyBalances, isLoading, isLoggedIn]);
 
     useTransactionRefresh(refreshAfterTransaction);
 
@@ -363,7 +376,7 @@ const DashboardPage = () => {
     console.log('✨ Affichage du dashboard complet');
     console.log('🔍 État des données:', {
         summary,
-        lineChartData: lineChartData ? 'présent' : 'null',
+        monthlyBalanceData: monthlyBalanceData ? 'présent' : 'null',
         categoryChartData: categoryChartData ? 'présent' : 'null',
         budgetProgressData: budgetProgressData?.length || 0,
         projectBudgets: projectBudgets?.length || 0
@@ -425,12 +438,11 @@ const DashboardPage = () => {
                 <div className="col-12 lg:col-6" data-tour-id="chart-daily">
                     <Card>
                         <div className="flex justify-content-between align-items-center mb-3">
-                            <h2 className="text-xl m-0">Dépenses journalières</h2>
-                            <SelectButton value={chartPeriod} options={periodOptions} onChange={(e) => setChartPeriod(e.value)} unselectable={false} />
+                            <h2 className="text-xl m-0">Solde début de mois</h2>
                         </div>
                         <div style={{ position: 'relative', height: '300px' }}>
-                            {lineChartData ? (
-                                <Chart type="line" data={lineChartData} options={lineChartOptions} />
+                            {monthlyBalanceData ? (
+                                <Chart type="line" data={monthlyBalanceData} options={lineChartOptions} />
                             ) : (
                                 <div className="flex justify-content-center align-items-center h-full">
                                     <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
