@@ -885,6 +885,72 @@ router.get('/stats/expenses-by-day', isAuth, async (req, res) => {
     }
 });
 
+router.get('/stats/monthly-balances', isAuth, async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const today = new Date();
+        const currentYear = today.getUTCFullYear();
+        const currentMonth = today.getUTCMonth(); // 0-indexed
+
+        // Generate the 10 months: 3 past + current + 6 future
+        const months = [];
+        for (let offset = -3; offset <= 6; offset++) {
+            const d = new Date(Date.UTC(currentYear, currentMonth + offset, 1));
+            months.push({ year: d.getUTCFullYear(), month: d.getUTCMonth() }); // 0-indexed month
+        }
+
+        // Fetch all one-time transactions for the user up to today
+        const allOneTimeTxs = await Transaction.findAll({
+            where: { UserId: userId, transactionType: 'one-time', date: { [Op.lte]: today } },
+            attributes: ['type', 'amount', 'date']
+        });
+
+        // Fetch all recurring transactions for the user
+        const allRecurringTxs = await Transaction.findAll({
+            where: { UserId: userId, transactionType: 'recurring' }
+        });
+
+        const results = [];
+
+        for (const m of months) {
+            const startOfMonth = new Date(Date.UTC(m.year, m.month, 1));
+
+            // One-time transactions before this month
+            const oneTimeIncome = allOneTimeTxs
+                .filter(t => new Date(t.date) < startOfMonth && t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+            const oneTimeExpense = allOneTimeTxs
+                .filter(t => new Date(t.date) < startOfMonth && t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+
+            // Recurring transactions up to the day before this month
+            const periodEnd = new Date(startOfMonth.getTime() - 1);
+            const recurringTotals = calculateRecurringTotals(
+                allRecurringTxs,
+                new Date('1970-01-01'),
+                periodEnd
+            );
+
+            const balance = (oneTimeIncome + recurringTotals.income) - (oneTimeExpense + recurringTotals.expense);
+
+            const label = startOfMonth.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+
+            results.push({
+                year: m.year,
+                month: m.month + 1, // 1-indexed for display
+                label,
+                balance: Math.round(balance * 100) / 100,
+                isCurrent: m.year === currentYear && m.month === currentMonth
+            });
+        }
+
+        res.status(200).json(results);
+    } catch (error) {
+        console.error("Erreur stats/monthly-balances:", error);
+        res.status(500).json({ message: "Erreur lors du calcul des soldes mensuels." });
+    }
+});
+
 const sanitizeCategoryIds = async (categoryIds, userId, context = 'POST /transactions') => {
     if (!Array.isArray(categoryIds) || categoryIds.length === 0) {
         return [];
