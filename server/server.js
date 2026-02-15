@@ -141,6 +141,9 @@ sequelize.sync({ force: false })
     } catch (e) {
       console.error('Seed strategies failed:', e.message);
     }
+  })
+  .catch(err => {
+    console.error('Échec de la synchronisation des tables:', err);
   });
 
 // CORS géré par Nginx en production.
