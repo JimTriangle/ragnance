@@ -461,7 +461,7 @@ const MonthlyViewPage = () => {
       </Dialog>
 
       <Dialog header="Ajouter une Transaction" visible={isNewModalVisible} style={{ width: '50vw' }} onHide={() => setIsNewModalVisible(false)}>
-        <TransactionForm onComplete={handleComplete} />
+        <TransactionForm onComplete={handleComplete} defaultDate={currentDate} />
       </Dialog>
     </div>
   );
