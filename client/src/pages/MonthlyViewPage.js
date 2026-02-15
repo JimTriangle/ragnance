@@ -447,7 +447,7 @@ const MonthlyViewPage = () => {
         <div className="card mt-4" data-tour-id="transactions-table">
           <DataTable value={selectedCategoryId ? transactions.filter(t => t.Categories && t.Categories.some(c => c.id === selectedCategoryId)) : transactions} loading={loading} size="small" header={tableHeader} globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50, 100]} pt={{ bodyCell: { style: { padding: '0.25rem 0.5rem' } } }}>
             <Column field="label" header="Libellé" body={labelBodyTemplate} sortable />
-            <Column field="amount" header="Montant" body={(rowData) => formatCurrency(rowData.amount)} sortable />
+            <Column field="amount" header="Montant" body={(rowData) => <span style={{ color: rowData.type === 'income' ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(rowData.amount)}</span>} sortable />
             <Column field="type" header="Type" body={typeTemplate} sortable />
             <Column header="Catégories" body={categoryBodyTemplate} />
             <Column field="date" header="Date" body={formatDate} sortable />
