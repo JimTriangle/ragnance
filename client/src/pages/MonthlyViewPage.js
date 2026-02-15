@@ -14,11 +14,23 @@ import { Chart } from 'primereact/chart';
 import { InputText } from 'primereact/inputtext';
 import TransactionForm from '../components/TransactionForm';
 import { Dropdown } from 'primereact/dropdown';
+import { MultiSelect } from 'primereact/multiselect';
 import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import BudgetTracker from '../components/BudgetTracker';
 import useTour from '../hooks/useTour';
 import TourButton from '../components/TourButton';
 import '../styles/tour.css';
+
+const COLUMN_CONFIG = [
+  { key: 'label',      header: 'Libellé',    field: 'label',     sortable: true,  bodyRef: 'labelBodyTemplate' },
+  { key: 'amount',     header: 'Montant',    field: 'amount',    sortable: true,  bodyRef: 'amountBodyTemplate' },
+  { key: 'type',       header: 'Type',       field: 'type',      sortable: true,  bodyRef: 'typeTemplate' },
+  { key: 'categories', header: 'Catégories', field: null,        sortable: false, bodyRef: 'categoryBodyTemplate' },
+  { key: 'date',       header: 'Date',       field: 'date',      sortable: true,  bodyRef: 'formatDate' },
+  { key: 'createdAt',  header: 'Saisi le',   field: 'createdAt', sortable: true,  bodyRef: 'createdAtDate' },
+];
+const DEFAULT_VISIBLE_COLUMNS = COLUMN_CONFIG.map(c => c.key);
+const COLUMN_VISIBILITY_STORAGE_KEY = 'monthlyView_visibleColumns';
 
 const MonthlyViewPage = () => {
   const [transactions, setTransactions] = useState([]);
@@ -39,6 +51,18 @@ const MonthlyViewPage = () => {
   const [allCategories, setAllCategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [budgetProgress, setBudgetProgress] = useState([]);
+  const [visibleColumns, setVisibleColumns] = useState(() => {
+    try {
+      const stored = localStorage.getItem(COLUMN_VISIBILITY_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const validKeys = COLUMN_CONFIG.map(c => c.key);
+        const filtered = parsed.filter(k => validKeys.includes(k));
+        return filtered.length > 0 ? filtered : DEFAULT_VISIBLE_COLUMNS;
+      }
+    } catch (e) {}
+    return DEFAULT_VISIBLE_COLUMNS;
+  });
 
   const isMountedRef = useRef(true);
 
@@ -341,6 +365,17 @@ const MonthlyViewPage = () => {
     </div>
   );
 
+  const onColumnVisibilityChange = (e) => {
+    setVisibleColumns(e.value);
+    localStorage.setItem(COLUMN_VISIBILITY_STORAGE_KEY, JSON.stringify(e.value));
+  };
+
+  const amountBodyTemplate = (rowData) => (
+    <span style={{ color: rowData.type === 'income' ? 'var(--green-400)' : 'var(--red-400)' }}>
+      {formatCurrency(rowData.amount)}
+    </span>
+  );
+
   const actionBodyTemplate = (rowData) => (
     <div className="flex justify-content-center gap-2">
       <Button icon="pi pi-pencil" className="p-button-rounded p-button-success p-button-sm" onClick={() => handleEditClick(rowData)} />
@@ -357,6 +392,7 @@ const MonthlyViewPage = () => {
     <div className="flex flex-wrap justify-content-between align-items-center gap-2">
       <Button label="Ajouter une transaction" icon="pi pi-plus" className="p-button-success p-button-sm" onClick={() => setIsNewModalVisible(true)} data-tour-id="add-transaction-btn" />
       <div className="flex align-items-center gap-2">
+        <MultiSelect value={visibleColumns} options={COLUMN_CONFIG.map(c => ({ label: c.header, value: c.key }))} onChange={onColumnVisibilityChange} placeholder="Colonnes" className="p-inputtext-sm" display="chip" style={{ maxWidth: '20rem' }} />
         <Dropdown value={selectedCategoryId} options={categoryOptions} onChange={(e) => setSelectedCategoryId(e.value)} placeholder="Catégorie" showClear className="p-inputtext-sm" />
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
@@ -381,6 +417,15 @@ const MonthlyViewPage = () => {
         ))}
       </div>
     );
+  };
+
+  const bodyTemplates = {
+    labelBodyTemplate,
+    amountBodyTemplate,
+    typeTemplate,
+    categoryBodyTemplate,
+    formatDate,
+    createdAtDate,
   };
 
   if (authLoading) {
@@ -446,12 +491,11 @@ const MonthlyViewPage = () => {
 
         <div className="card mt-4" data-tour-id="transactions-table">
           <DataTable value={selectedCategoryId ? transactions.filter(t => t.Categories && t.Categories.some(c => c.id === selectedCategoryId)) : transactions} loading={loading} size="small" header={tableHeader} globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50, 100]} pt={{ bodyCell: { style: { padding: '0.25rem 0.5rem' } } }}>
-            <Column field="label" header="Libellé" body={labelBodyTemplate} sortable />
-            <Column field="amount" header="Montant" body={(rowData) => <span style={{ color: rowData.type === 'income' ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(rowData.amount)}</span>} sortable />
-            <Column field="type" header="Type" body={typeTemplate} sortable />
-            <Column header="Catégories" body={categoryBodyTemplate} />
-            <Column field="date" header="Date" body={formatDate} sortable />
-            <Column field="createdAt" header="Saisi le" body={createdAtDate} sortable />
+            {COLUMN_CONFIG
+              .filter(col => visibleColumns.includes(col.key))
+              .map(col => (
+                <Column key={col.key} field={col.field} header={col.header} body={bodyTemplates[col.bodyRef]} sortable={col.sortable} />
+              ))}
             <Column body={actionBodyTemplate} header="Actions" style={{ width: '7rem', textAlign: 'center' }} />
           </DataTable>
         </div>
