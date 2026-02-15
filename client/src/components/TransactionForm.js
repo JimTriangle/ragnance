@@ -64,7 +64,7 @@ const TransactionForm = ({ onComplete, transactionToEdit = null, defaultDate = n
       setSelectedCategories([]); setSelectedProjectBudget(null);
       setReminderEnabled(false); setReminderDaysBefore(3);
     }
-  }, [transactionToEdit]);
+  }, [transactionToEdit, defaultDate]);
 
   const searchLabel = (event) => {
     setTimeout(() => {
