@@ -35,8 +35,8 @@ function setupAssociations() {
   User.hasMany(SavingsGoal);
 
   // SavingsGoalContribution associations
-  SavingsGoalContribution.belongsTo(SavingsGoal, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-  SavingsGoal.hasMany(SavingsGoalContribution, { as: 'contributions' });
+  SavingsGoalContribution.belongsTo(SavingsGoal, { foreignKey: { name: 'SavingsGoalId', allowNull: false }, onDelete: 'CASCADE' });
+  SavingsGoal.hasMany(SavingsGoalContribution, { as: 'contributions', foreignKey: 'SavingsGoalId' });
 
   // Budget associations
   Budget.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
