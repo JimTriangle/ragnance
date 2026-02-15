@@ -84,6 +84,22 @@ const TransactionForm = ({ onComplete, transactionToEdit = null, defaultDate = n
     e.preventDefault();
     setError('');
 
+    // Validation des champs obligatoires avec messages explicites
+    const champsManquants = [];
+    if (!label || !label.trim()) champsManquants.push('Libellé');
+    if (amount === null || amount === undefined) champsManquants.push('Montant');
+    if (!type) champsManquants.push('Type (Dépense / Revenu)');
+    if (transactionType === 'one-time' && !date) champsManquants.push('Date');
+    if (transactionType === 'recurring') {
+      if (!frequency) champsManquants.push('Fréquence');
+      if (!startDate) champsManquants.push('Date de 1ère application');
+    }
+
+    if (champsManquants.length > 0) {
+      setError(`Veuillez renseigner : ${champsManquants.join(', ')}.`);
+      return;
+    }
+
     if (selectedProjectBudget) {
       const budget = projectBudgets.find(b => b.id === selectedProjectBudget);
       const transactionDate = transactionType === 'one-time' ? date : startDate;
@@ -120,10 +136,6 @@ const formatDateForAPI = (d) => {
     };
 
     if (transactionType === 'recurring') {
-      if (!frequency || !startDate) {
-        setError('Pour une transaction récurrente, la fréquence et la date de début sont requises.');
-        return;
-      }
       transactionData.frequency = frequency;
       transactionData.startDate = formatDateForAPI(startDate);
       transactionData.endDate = formatDateForAPI(endDate);

@@ -1070,6 +1070,15 @@ router.get('/stats/expenses-by-category', isAuth, async (req, res) => {
 router.post('/', isAuth, async (req, res) => {
     const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, dayOfWeek: inputDayOfWeek, categoryIds, ProjectBudgetId } = req.body;
 
+    // --- Validation des champs obligatoires ---
+    const champsManquants = [];
+    if (!label || !String(label).trim()) champsManquants.push('Libellé');
+    if (amount === null || amount === undefined) champsManquants.push('Montant');
+    if (!type) champsManquants.push('Type (Dépense / Revenu)');
+    if (champsManquants.length > 0) {
+        return res.status(400).json({ message: `Veuillez renseigner : ${champsManquants.join(', ')}.` });
+    }
+
     // --- Validation et Normalisation ---
     let processedStartDate = startDate;
     let processedDayOfWeek = inputDayOfWeek;
@@ -1116,6 +1125,15 @@ router.post('/', isAuth, async (req, res) => {
 
 router.put('/:id', isAuth, async (req, res) => {
     const { label, amount, type, transactionType, date, frequency, startDate, endDate, dayOfMonth, dayOfWeek: inputDayOfWeek, categoryIds, ProjectBudgetId } = req.body;
+
+    // --- Validation des champs obligatoires ---
+    const champsManquants = [];
+    if (!label || !String(label).trim()) champsManquants.push('Libellé');
+    if (amount === null || amount === undefined) champsManquants.push('Montant');
+    if (!type) champsManquants.push('Type (Dépense / Revenu)');
+    if (champsManquants.length > 0) {
+        return res.status(400).json({ message: `Veuillez renseigner : ${champsManquants.join(', ')}.` });
+    }
 
     let processedStartDate = startDate;
     let processedDayOfWeek = inputDayOfWeek;
