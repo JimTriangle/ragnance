@@ -27,8 +27,8 @@ function setupAssociations() {
   User.hasMany(Savings);
 
   // SavingsPart associations
-  SavingsPart.belongsTo(Savings, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-  Savings.hasMany(SavingsPart, { as: 'parts' });
+  SavingsPart.belongsTo(Savings, { foreignKey: { name: 'SavingsId', allowNull: false }, onDelete: 'CASCADE' });
+  Savings.hasMany(SavingsPart, { as: 'parts', foreignKey: 'SavingsId' });
 
   // SavingsGoal associations
   SavingsGoal.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
