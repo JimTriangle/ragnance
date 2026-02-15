@@ -11,12 +11,12 @@ import { Checkbox } from 'primereact/checkbox';
 import { InputNumber } from 'primereact/inputnumber';
 import AmountInput from './AmountInput';
 
-const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
+const TransactionForm = ({ onComplete, transactionToEdit = null, defaultDate = null }) => {
   const [label, setLabel] = useState('');
   const [amount, setAmount] = useState(null);
   const [type, setType] = useState(null);
   const [transactionType, setTransactionType] = useState('one-time');
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(defaultDate || new Date());
   const [frequency, setFrequency] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -60,7 +60,7 @@ const TransactionForm = ({ onComplete, transactionToEdit = null }) => {
       setReminderDaysBefore(transactionToEdit.reminderDaysBefore || 3);
     } else {
       setLabel(''); setAmount(null); setType(null); setTransactionType('one-time');
-      setDate(new Date()); setFrequency(null); setStartDate(null); setEndDate(null);
+      setDate(defaultDate || new Date()); setFrequency(null); setStartDate(null); setEndDate(null);
       setSelectedCategories([]); setSelectedProjectBudget(null);
       setReminderEnabled(false); setReminderDaysBefore(3);
     }
