@@ -158,15 +158,29 @@ router.patch('/:id/archive', async (req, res) => {
 
 // DELETE /api/savings/:id - Supprimer une épargne
 router.delete('/:id', async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const savings = await Savings.findOne({
-            where: { id: req.params.id, UserId: req.user.id }
+            where: { id: req.params.id, UserId: req.user.id },
+            transaction: t
         });
-        if (!savings) return res.status(404).json({ message: "Épargne non trouvée." });
+        if (!savings) {
+            await t.rollback();
+            return res.status(404).json({ message: "Épargne non trouvée." });
+        }
 
-        await savings.destroy();
+        // Supprimer explicitement les parts associées avant l'épargne
+        // pour éviter les erreurs de contrainte FK avec SQLite
+        await SavingsPart.destroy({
+            where: { SavingsId: savings.id },
+            transaction: t
+        });
+
+        await savings.destroy({ transaction: t });
+        await t.commit();
         res.status(200).json({ message: "Épargne supprimée." });
     } catch (error) {
+        await t.rollback();
         console.error("Erreur suppression épargne:", error);
         res.status(500).json({ message: "Erreur serveur" });
     }
