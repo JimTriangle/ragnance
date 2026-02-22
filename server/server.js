@@ -26,6 +26,7 @@ require('./models/Strategy.model');
 require('./models/Announcement.model');
 require('./models/UserAnnouncement.model');
 require('./models/ConfigEmail.model');
+require('./models/ExpenseCalculatorMonth.model');
 
 // Configurer les associations après avoir chargé tous les modèles
 const { setupAssociations } = require('./models/associations');
@@ -205,6 +206,7 @@ app.use('/api/project-budgets', isAuth, hasBudgetAccess, require('./routes/Proje
 app.use('/api/savings', isAuth, hasBudgetAccess, require('./routes/Savings.routes.js'));
 app.use('/api/savings-goals', isAuth, hasBudgetAccess, require('./routes/SavingsGoal.routes.js'));
 app.use('/api/analysis', isAuth, hasBudgetAccess, require('./routes/analysis.routes.js'));
+app.use('/api/expense-calculator', isAuth, hasBudgetAccess, require('./routes/expenseCalculator.routes.js'));
 app.use('/api/dashboard', isAuth, hasTradingAccess, require('./routes/dashboard.routes.js'));
 app.use('/api/portfolios', isAuth, hasTradingAccess, require('./routes/portfolio.routes'));
 app.use('/api/markets', isAuth, hasTradingAccess, require('./routes/market.routes'));

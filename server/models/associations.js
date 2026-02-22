@@ -19,6 +19,7 @@ const Strategy = require('./Strategy.model');
 const Announcement = require('./Announcement.model');
 const UserAnnouncement = require('./UserAnnouncement.model');
 const ConfigEmail = require('./ConfigEmail.model');
+const ExpenseCalculatorMonth = require('./ExpenseCalculatorMonth.model');
 
 // Définir toutes les associations ici
 function setupAssociations() {
@@ -83,6 +84,10 @@ function setupAssociations() {
   // User <-> Announcement (many-to-many via UserAnnouncement)
   User.belongsToMany(Announcement, { through: UserAnnouncement, foreignKey: 'UserId' });
   Announcement.belongsToMany(User, { through: UserAnnouncement, foreignKey: 'AnnouncementId' });
+
+  // ExpenseCalculatorMonth associations
+  ExpenseCalculatorMonth.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
+  User.hasMany(ExpenseCalculatorMonth);
 
   console.log('✓ Associations de modèles configurées avec succès');
 }
