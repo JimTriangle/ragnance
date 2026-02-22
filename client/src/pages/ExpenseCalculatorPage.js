@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
@@ -8,6 +8,7 @@ import { Column } from 'primereact/column';
 import AmountInput from '../components/AmountInput';
 import useTour from '../hooks/useTour';
 import TourButton from '../components/TourButton';
+import api from '../services/api';
 import '../styles/tour.css';
 
 const ExpenseCalculatorPage = () => {
@@ -49,6 +50,10 @@ const ExpenseCalculatorPage = () => {
   const [currentExpense, setCurrentExpense] = useState({ name: '', amount: 0 });
   const [editingPersonId, setEditingPersonId] = useState(null);
   const [editingExpenseId, setEditingExpenseId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [monthsWithData, setMonthsWithData] = useState([]);
+  // Ref pour le debounce de sauvegarde
+  const saveTimeoutRef = useRef(null);
 
   // Configuration du guide utilisateur
   const tourSteps = [
@@ -116,75 +121,95 @@ const ExpenseCalculatorPage = () => {
 
   const { startTour } = useTour('expense-calculator', tourSteps, true);
 
-  // Charger les données sauvegardées au démarrage
+  // Charger la liste des mois ayant des données (pour la navigation)
   useEffect(() => {
-    const storageKey = `expenseCalculator_${selectedMonth}`;
-    const savedData = localStorage.getItem(storageKey);
-
-    if (savedData) {
-      try {
-        const data = JSON.parse(savedData);
-        setPeople(data.people || []);
-        setExpenses(data.expenses || []);
-      } catch (error) {
-        console.error('Erreur lors du chargement des données:', error);
-        setPeople([]);
-        setExpenses([]);
-      }
-    } else {
-      // Si aucune donnée pour ce mois, on réinitialise
-      setPeople([]);
-      setExpenses([]);
-    }
-  }, [selectedMonth]);
-
-  // Migration unique des anciennes données au format mensuel (au premier chargement)
-  useEffect(() => {
-    const oldPeopleKey = 'expenseCalculator_people';
-    const oldExpensesKey = 'expenseCalculator_expenses';
-    const migrationDoneKey = 'expenseCalculator_migrated';
-
-    // Vérifier si la migration n'a pas déjà été faite
-    if (!localStorage.getItem(migrationDoneKey)) {
-      const oldPeople = localStorage.getItem(oldPeopleKey);
-      const oldExpenses = localStorage.getItem(oldExpensesKey);
-
-      if (oldPeople || oldExpenses) {
-        try {
-          const currentMonthKey = getCurrentMonth();
-          const newStorageKey = `expenseCalculator_${currentMonthKey}`;
-
-          const migratedData = {
-            people: oldPeople ? JSON.parse(oldPeople) : [],
-            expenses: oldExpenses ? JSON.parse(oldExpenses) : []
-          };
-
-          localStorage.setItem(newStorageKey, JSON.stringify(migratedData));
-
-          // Supprimer les anciennes clés
-          localStorage.removeItem(oldPeopleKey);
-          localStorage.removeItem(oldExpensesKey);
-
-          // Marquer la migration comme terminée
-          localStorage.setItem(migrationDoneKey, 'true');
-
-          console.log('Migration des données vers le format mensuel réussie');
-        } catch (error) {
-          console.error('Erreur lors de la migration des données:', error);
-        }
-      } else {
-        // Pas de données à migrer, marquer quand même comme fait
-        localStorage.setItem(migrationDoneKey, 'true');
-      }
-    }
+    api.get('/expense-calculator/months/list')
+      .then(res => setMonthsWithData(res.data))
+      .catch(() => {});
   }, []);
 
-  // Sauvegarder les données quand elles changent
+  // Charger les données depuis l'API quand le mois change
   useEffect(() => {
-    const storageKey = `expenseCalculator_${selectedMonth}`;
-    const data = { people, expenses };
-    localStorage.setItem(storageKey, JSON.stringify(data));
-  }, [people, expenses, selectedMonth]);
+    const [year, month] = selectedMonth.split('-');
+    setLoading(true);
+    api.get(`/expense-calculator/${year}/${month}`)
+      .then(res => {
+        setPeople(res.data.people || []);
+        setExpenses(res.data.expenses || []);
+      })
+      .catch(() => {
+        // Fallback localStorage si l'API échoue
+        const storageKey = `expenseCalculator_${selectedMonth}`;
+        const savedData = localStorage.getItem(storageKey);
+        if (savedData) {
+          try {
+            const data = JSON.parse(savedData);
+            setPeople(data.people || []);
+            setExpenses(data.expenses || []);
+          } catch {
+            setPeople([]);
+            setExpenses([]);
+          }
+        } else {
+          setPeople([]);
+          setExpenses([]);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [selectedMonth]);
+
+  // Sauvegarde debounced vers l'API (appelée explicitement après chaque action utilisateur)
+  const saveToApi = useCallback((currentPeople, currentExpenses, month) => {
+    const [year, monthNum] = month.split('-');
+    // Sauvegarde localStorage en fallback
+    localStorage.setItem(`expenseCalculator_${month}`, JSON.stringify({ people: currentPeople, expenses: currentExpenses }));
+    // Debounce API save
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      api.put(`/expense-calculator/${year}/${monthNum}`, { people: currentPeople, expenses: currentExpenses })
+        .then(() => {
+          setMonthsWithData(prev => {
+            const key = `${year}-${monthNum.padStart(2, '0')}`;
+            if (!prev.includes(key)) return [key, ...prev];
+            return prev;
+          });
+        })
+        .catch(err => console.error('Erreur sauvegarde calculateur:', err));
+    }, 800);
+  }, []);
+
+  // Migration unique des anciennes données localStorage vers l'API (au premier chargement)
+  useEffect(() => {
+    const migrationDoneKey = 'expenseCalculator_api_migrated';
+    if (localStorage.getItem(migrationDoneKey)) return;
+
+    // Chercher toutes les clés localStorage du calculateur
+    const keysToMigrate = Object.keys(localStorage).filter(k => k.startsWith('expenseCalculator_') && k !== 'expenseCalculator_migrated' && k !== migrationDoneKey);
+    if (keysToMigrate.length === 0) {
+      localStorage.setItem(migrationDoneKey, 'true');
+      return;
+    }
+
+    Promise.all(keysToMigrate.map(key => {
+      const monthKey = key.replace('expenseCalculator_', '');
+      if (!/^\d{4}-\d{2}$/.test(monthKey)) return Promise.resolve();
+      const [year, month] = monthKey.split('-');
+      try {
+        const data = JSON.parse(localStorage.getItem(key) || '{}');
+        return api.put(`/expense-calculator/${year}/${month}`, {
+          people: data.people || [],
+          expenses: data.expenses || []
+        });
+      } catch {
+        return Promise.resolve();
+      }
+    })).then(() => {
+      localStorage.setItem(migrationDoneKey, 'true');
+      // Recharger la liste des mois
+      api.get('/expense-calculator/months/list').then(res => setMonthsWithData(res.data)).catch(() => {});
+      console.log('Migration localStorage → API du calculateur terminée');
+    }).catch(() => {});
+  }, []);
 
   // Calculer le revenu total
   const totalIncome = useMemo(() => {
@@ -230,14 +255,17 @@ const ExpenseCalculatorPage = () => {
   // Fonctions pour ajouter/modifier/supprimer des personnes
   const savePerson = () => {
     if (currentPerson.name && currentPerson.income > 0) {
+      let newPeople;
       if (editingPersonId) {
         // Mode édition
-        setPeople(people.map(p => p.id === editingPersonId ? { ...currentPerson, id: editingPersonId } : p));
+        newPeople = people.map(p => p.id === editingPersonId ? { ...currentPerson, id: editingPersonId } : p);
         setEditingPersonId(null);
       } else {
         // Mode ajout
-        setPeople([...people, { ...currentPerson, id: Date.now() }]);
+        newPeople = [...people, { ...currentPerson, id: Date.now() }];
       }
+      setPeople(newPeople);
+      saveToApi(newPeople, expenses, selectedMonth);
       setCurrentPerson({ name: '', income: 0 });
       setPersonDialog(false);
     }
@@ -250,7 +278,9 @@ const ExpenseCalculatorPage = () => {
   };
 
   const removePerson = (id) => {
-    setPeople(people.filter(p => p.id !== id));
+    const newPeople = people.filter(p => p.id !== id);
+    setPeople(newPeople);
+    saveToApi(newPeople, expenses, selectedMonth);
   };
 
   const openPersonDialog = () => {
@@ -262,14 +292,17 @@ const ExpenseCalculatorPage = () => {
   // Fonctions pour ajouter/modifier/supprimer des charges
   const saveExpense = () => {
     if (currentExpense.name && currentExpense.amount > 0) {
+      let newExpenses;
       if (editingExpenseId) {
         // Mode édition
-        setExpenses(expenses.map(e => e.id === editingExpenseId ? { ...currentExpense, id: editingExpenseId } : e));
+        newExpenses = expenses.map(e => e.id === editingExpenseId ? { ...currentExpense, id: editingExpenseId } : e);
         setEditingExpenseId(null);
       } else {
         // Mode ajout
-        setExpenses([...expenses, { ...currentExpense, id: Date.now() }]);
+        newExpenses = [...expenses, { ...currentExpense, id: Date.now() }];
       }
+      setExpenses(newExpenses);
+      saveToApi(people, newExpenses, selectedMonth);
       setCurrentExpense({ name: '', amount: 0 });
       setExpenseDialog(false);
     }
@@ -282,7 +315,9 @@ const ExpenseCalculatorPage = () => {
   };
 
   const removeExpense = (id) => {
-    setExpenses(expenses.filter(e => e.id !== id));
+    const newExpenses = expenses.filter(e => e.id !== id);
+    setExpenses(newExpenses);
+    saveToApi(people, newExpenses, selectedMonth);
   };
 
   const openExpenseDialog = () => {
@@ -307,31 +342,44 @@ const ExpenseCalculatorPage = () => {
   // Fonction pour copier les données du mois précédent
   const copyFromPreviousMonth = () => {
     const previousMonth = getPreviousMonth(selectedMonth);
-    const previousStorageKey = `expenseCalculator_${previousMonth}`;
-    const previousData = localStorage.getItem(previousStorageKey);
-
-    if (previousData) {
-      try {
-        const data = JSON.parse(previousData);
-        setPeople(data.people || []);
-        setExpenses(data.expenses || []);
-      } catch (error) {
-        console.error('Erreur lors de la copie des données du mois précédent:', error);
-      }
-    }
+    const [year, month] = previousMonth.split('-');
+    api.get(`/expense-calculator/${year}/${month}`)
+      .then(res => {
+        const newPeople = res.data.people || [];
+        const newExpenses = res.data.expenses || [];
+        setPeople(newPeople);
+        setExpenses(newExpenses);
+        saveToApi(newPeople, newExpenses, selectedMonth);
+      })
+      .catch(() => {
+        // Fallback localStorage
+        const previousData = localStorage.getItem(`expenseCalculator_${previousMonth}`);
+        if (previousData) {
+          try {
+            const data = JSON.parse(previousData);
+            const newPeople = data.people || [];
+            const newExpenses = data.expenses || [];
+            setPeople(newPeople);
+            setExpenses(newExpenses);
+            saveToApi(newPeople, newExpenses, selectedMonth);
+          } catch (error) {
+            console.error('Erreur lors de la copie des données du mois précédent:', error);
+          }
+        }
+      });
   };
 
   // Vérifier si le mois précédent a des données
   const hasPreviousMonthData = () => {
     const previousMonth = getPreviousMonth(selectedMonth);
-    const previousStorageKey = `expenseCalculator_${previousMonth}`;
-    return localStorage.getItem(previousStorageKey) !== null;
+    return monthsWithData.includes(previousMonth) || localStorage.getItem(`expenseCalculator_${previousMonth}`) !== null;
   };
 
   return (
     <div className="p-3">
       <TourButton onStartTour={startTour} tooltip="Revoir le guide du Calculateur" />
       <h1 className="text-2xl font-bold mb-3" data-tour-id="calculator-title">Calculateur de répartition des charges</h1>
+      {loading && <div className="mb-2 text-color-secondary text-sm"><i className="pi pi-spin pi-spinner mr-1" />Chargement...</div>}
 
       {/* Navigation mensuelle */}
       <Card className="mb-3">
