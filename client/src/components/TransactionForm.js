@@ -222,14 +222,14 @@ const formatDateForAPI = (d) => {
         )}
 
         {transactionType === 'one-time' && (
-          <div className="field col-12 mt-3"><span className="p-float-label"><Calendar id="date" value={date} onChange={(e) => setDate(e.value)} dateFormat="dd/mm/yy" placeholder="Date*" /><label htmlFor="date">Date*</label></span></div>
+          <div className="field col-12 mt-3"><span className="p-float-label"><Calendar id="date" value={date} onChange={(e) => setDate(e.value)} dateFormat="dd/mm/yy" placeholder="Date*" locale="fr" /><label htmlFor="date">Date*</label></span></div>
         )}
 
         {transactionType === 'recurring' && (
           <>
             <div className="field col-12 md:col-4 mt-3"><span className="p-float-label"><Dropdown id="frequency" value={frequency} options={frequencyOptions} onChange={(e) => setFrequency(e.value)} optionLabel="label" optionValue="value" placeholder="Fréquence*" /><label htmlFor="frequency">Fréquence*</label></span></div>
-            <div className="field col-12 md:col-4 mt-3"><span className="p-float-label"><Calendar id="startDate" value={startDate} onChange={(e) => setStartDate(e.value)} dateFormat="dd/mm/yy" placeholder="Date de 1ère application*" /><label htmlFor="startDate">Date de 1ère application*</label></span></div>
-            <div className="field col-12 md:col-4 mt-3"><span className="p-float-label"><Calendar id="endDate" value={endDate} onChange={(e) => setEndDate(e.value)} dateFormat="dd/mm/yy" placeholder="Date de fin (optionnel)" showClear /><label htmlFor="endDate">Date de fin (optionnel)</label></span></div>
+            <div className="field col-12 md:col-4 mt-3"><span className="p-float-label"><Calendar id="startDate" value={startDate} onChange={(e) => setStartDate(e.value)} dateFormat="dd/mm/yy" placeholder="Date de 1ère application*" locale="fr" /><label htmlFor="startDate">Date de 1ère application*</label></span></div>
+            <div className="field col-12 md:col-4 mt-3"><span className="p-float-label"><Calendar id="endDate" value={endDate} onChange={(e) => setEndDate(e.value)} dateFormat="dd/mm/yy" placeholder="Date de fin (optionnel)" showClear locale="fr" /><label htmlFor="endDate">Date de fin (optionnel)</label></span></div>
           </>
         )}
       </div>
