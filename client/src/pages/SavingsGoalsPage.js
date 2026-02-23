@@ -415,6 +415,7 @@ const SavingsGoalsPage = () => {
                             className="w-full"
                             dateFormat="dd/mm/yy"
                             showIcon
+                            locale="fr"
                         />
                         <label htmlFor="startDate">Date de début *</label>
                     </span>
@@ -429,6 +430,7 @@ const SavingsGoalsPage = () => {
                             className="w-full"
                             dateFormat="dd/mm/yy"
                             showIcon
+                            locale="fr"
                         />
                         <label htmlFor="targetDate">Date objectif *</label>
                     </span>
@@ -472,6 +474,7 @@ const SavingsGoalsPage = () => {
                             className="w-full"
                             dateFormat="dd/mm/yy"
                             showIcon
+                            locale="fr"
                         />
                         <label htmlFor="contributionDate">Date *</label>
                     </span>

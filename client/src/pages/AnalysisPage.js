@@ -94,7 +94,7 @@ const AnalysisPage = () => {
             <Card className="mt-4">
                 <div className="flex flex-wrap gap-4 align-items-center">
                     <div className="p-float-label">
-                        <Calendar value={dateRange} onChange={(e) => setDateRange(e.value)} selectionMode="range" readOnlyInput dateFormat="dd/mm/yy"/>
+                        <Calendar value={dateRange} onChange={(e) => setDateRange(e.value)} selectionMode="range" readOnlyInput dateFormat="dd/mm/yy" locale="fr"/>
                         <label>Période d'analyse</label>
                     </div>
                     <Button label="Analyser" icon="pi pi-search" onClick={fetchData} loading={loading} />
