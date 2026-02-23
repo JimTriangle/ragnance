@@ -440,13 +440,8 @@ const MonthlyViewPage = () => {
     <div>
       <TourButton onStartTour={startTour} tooltip="Revoir le guide de la Vue Mensuelle" />
       <div className="p-4">
-        <div className="flex justify-content-between align-items-center mb-4" data-tour-id="month-navigation">
-          <Button icon="pi pi-arrow-left" onClick={() => changeMonth(-1)} />
-          <div className="flex flex-column align-items-center gap-2">
-            <h1 className="text-2xl capitalize m-0" data-tour-id="monthly-title">{`Analyse de ${monthName} ${year}`}</h1>
-            <Button label="Exporter en Excel" icon="pi pi-file-excel" className="p-button-success p-button-sm" onClick={handleExportExcel} />
-          </div>
-          <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} />
+        <div className="flex justify-content-center align-items-center mb-4">
+          <h1 className="text-2xl capitalize m-0" data-tour-id="monthly-title">{`Analyse de ${monthName} ${year}`}</h1>
         </div>
 
         <div className="grid text-center mb-4" data-tour-id="summary-cards">
@@ -487,6 +482,12 @@ const MonthlyViewPage = () => {
               </div>
             </Card>
           </div>
+        </div>
+
+        <div className="flex justify-content-between align-items-center my-4" data-tour-id="month-navigation">
+          <Button icon="pi pi-arrow-left" onClick={() => changeMonth(-1)} />
+          <Button label="Exporter en Excel" icon="pi pi-file-excel" className="p-button-success p-button-sm" onClick={handleExportExcel} />
+          <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} />
         </div>
 
         <div className="card mt-4" data-tour-id="transactions-table">
