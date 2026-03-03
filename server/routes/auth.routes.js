@@ -32,7 +32,7 @@ router.post('/register', async (req, res) => {
 
 // --- Route pour connecter un utilisateur (corrigée) ---
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
   if (!email || !password) {
     return res.status(400).json({ message: 'Email et mot de passe sont requis.' });
   }
@@ -50,12 +50,14 @@ router.post('/login', async (req, res) => {
       email: user.email,
       role: user.role,
       budgetAccess: user.budgetAccess,
-      tradingAccess: user.tradingAccess
+      tradingAccess: user.tradingAccess,
+      rememberMe: !!rememberMe
     };
+    const tokenExpiry = rememberMe ? '30d' : '6h';
     const authToken = jwt.sign(
       payload,
-      process.env.JWT_SECRET, // <-- ON UTILISE LA VARIABLE D'ENVIRONNEMENT
-      { algorithm: 'HS256', expiresIn: '6h' }
+      process.env.JWT_SECRET,
+      { algorithm: 'HS256', expiresIn: tokenExpiry }
     );
     user.lastLogin = new Date();
     await user.save();
@@ -84,15 +86,18 @@ router.post('/refresh', async (req, res) => {
       return res.status(401).json({ message: 'Utilisateur introuvable.' });
     }
 
+    const rememberMe = !!decoded.rememberMe;
     const payload = {
       id: user.id,
       email: user.email,
       role: user.role,
       budgetAccess: user.budgetAccess,
-      tradingAccess: user.tradingAccess
+      tradingAccess: user.tradingAccess,
+      rememberMe
     };
 
-    const authToken = jwt.sign(payload, process.env.JWT_SECRET, { algorithm: 'HS256', expiresIn: '6h' });
+    const tokenExpiry = rememberMe ? '30d' : '6h';
+    const authToken = jwt.sign(payload, process.env.JWT_SECRET, { algorithm: 'HS256', expiresIn: tokenExpiry });
     res.set('Cache-Control', 'no-store');
     return res.status(200).json({ authToken });
   } catch (error) {
