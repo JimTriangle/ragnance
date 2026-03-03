@@ -186,16 +186,45 @@ export const AuthProvider = ({ children }) => {
     };
   }, [logoutUser]);
 
-  // Vérifier périodiquement si le token n'est pas expiré
+  // Rafraîchir le token proactivement avant son expiration
+  const refreshToken = useCallback(async () => {
+    try {
+      const response = await api.post('/auth/refresh');
+      if (response.data.authToken) {
+        storeToken(response.data.authToken);
+        return true;
+      }
+    } catch (error) {
+      console.warn('Échec du rafraîchissement du token:', error);
+    }
+    return false;
+  }, [storeToken]);
+
+  // Vérifier périodiquement si le token n'est pas expiré, et le rafraîchir si nécessaire
   useEffect(() => {
     if (!token || !isLoggedIn) return;
 
-    const checkTokenExpiration = () => {
+    const checkTokenExpiration = async () => {
       try {
         const decoded = jwtDecode(token);
-        if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+        const now = Date.now();
+        const expiresAt = decoded.exp * 1000;
+        const timeLeft = expiresAt - now;
+
+        if (timeLeft <= 0) {
           console.warn("Token expiré détecté, déconnexion.");
           logoutUser({ emitEvent: true });
+          return;
+        }
+
+        // Rafraîchir proactivement : 24h avant expiration pour rememberMe, 30min sinon
+        const refreshThreshold = decoded.rememberMe ? 24 * 60 * 60 * 1000 : 30 * 60 * 1000;
+        if (timeLeft < refreshThreshold) {
+          console.log('🔄 Rafraîchissement proactif du token...');
+          const success = await refreshToken();
+          if (!success && timeLeft <= 0) {
+            logoutUser({ emitEvent: true });
+          }
         }
       } catch (error) {
         console.error("Erreur lors de la vérification du token:", error);
@@ -204,9 +233,9 @@ export const AuthProvider = ({ children }) => {
 
     // Vérifier toutes les 60 secondes
     const interval = setInterval(checkTokenExpiration, 60000);
-    
+
     return () => clearInterval(interval);
-  }, [token, isLoggedIn, logoutUser]);
+  }, [token, isLoggedIn, logoutUser, refreshToken]);
 
   return (
     <AuthContext.Provider value={{ 

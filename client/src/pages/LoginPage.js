@@ -6,6 +6,7 @@ import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
+import { Checkbox } from 'primereact/checkbox';
 import { Message } from 'primereact/message';
 import ThemeToggle from '../components/ThemeToggle';
 import { jwtDecode } from 'jwt-decode';
@@ -14,6 +15,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const { storeToken } = useContext(AuthContext);
@@ -25,7 +27,7 @@ const LoginPage = () => {
 
     try {
       console.log('🔐 Tentative de connexion...');
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/auth/login', { email, password, rememberMe });
       
       console.log('✅ Connexion réussie, stockage du token...');
       
@@ -101,6 +103,17 @@ const LoginPage = () => {
               />
               <label htmlFor="password">Mot de passe</label>
             </span>
+          </div>
+          <div className="field-checkbox mb-3">
+            <Checkbox
+              inputId="rememberMe"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.checked)}
+              disabled={isLoading}
+            />
+            <label htmlFor="rememberMe" className="ml-2" style={{ cursor: 'pointer' }}>
+              Se souvenir de moi pendant 30 jours
+            </label>
           </div>
           {error && <Message severity="error" text={error} />}
           <Button 
