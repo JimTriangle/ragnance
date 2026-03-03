@@ -1,36 +1,29 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../services/api';
 import useTransactionRefresh from '../hooks/useTransactionRefresh';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { ColorPicker } from 'primereact/colorpicker';
 import { InputSwitch } from 'primereact/inputswitch';
-import { Tag } from 'primereact/tag';
 import { confirmDialog } from 'primereact/confirmdialog';
 import useTour from '../hooks/useTour';
 import TourButton from '../components/TourButton';
 import '../styles/tour.css';
+import '../styles/categories.css';
 
 const CategoriesPage = () => {
     const [categories, setCategories] = useState([]);
     const [isDialogVisible, setIsDialogVisible] = useState(false);
-
-    // AJOUT : États pour gérer l'édition
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-
-    // États pour le formulaire
     const [name, setName] = useState('');
     const [color, setColor] = useState('CCCCCC');
     const [isTracked, setIsTracked] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef(null);
 
-    // Configuration du guide utilisateur
     const tourSteps = [
         {
             element: '[data-tour-id="categories-title"]',
@@ -51,16 +44,16 @@ const CategoriesPage = () => {
             }
         },
         {
-            element: '[data-tour-id="categories-table"]',
+            element: '[data-tour-id="categories-grid"]',
             popover: {
-                title: 'Liste des Catégories 📋',
-                description: 'Toutes vos catégories sont affichées ici avec leur couleur distinctive. Les tags colorés vous aideront à identifier rapidement vos catégories dans les transactions.',
+                title: 'Vos Catégories 📋',
+                description: 'Toutes vos catégories sont affichées ici sous forme de cartes. La pastille colorée vous aide à les identifier rapidement.',
                 side: 'top',
                 align: 'start'
             }
         },
         {
-            element: '[data-tour-id="tracked-column"]',
+            element: '[data-tour-id="tracked-toggle"]',
             popover: {
                 title: 'Suivi Mensuel 📊',
                 description: 'Activez cette option pour qu\'une catégorie soit incluse dans les statistiques et analyses mensuelles. Utile pour suivre vos principales sources de dépenses.',
@@ -96,12 +89,11 @@ const CategoriesPage = () => {
         setIsDialogVisible(true);
     };
 
-    // AJOUT : Fonction pour ouvrir le dialogue en mode édition
     const editCategory = (category) => {
         setIsEditMode(true);
         setSelectedCategoryId(category.id);
         setName(category.name);
-        setColor(category.color.substring(1)); // On retire le '#' pour le ColorPicker
+        setColor(category.color.substring(1));
         setIsTracked(category.isTrackedMonthly);
         setIsDialogVisible(true);
     };
@@ -112,7 +104,6 @@ const CategoriesPage = () => {
         setSelectedCategoryId(null);
     };
 
-    // MODIFIÉ : La sauvegarde gère la création ET la modification
     const saveCategory = async () => {
         if (!name) return;
 
@@ -120,11 +111,9 @@ const CategoriesPage = () => {
 
         try {
             if (isEditMode) {
-                // Si on est en mode édition, on fait un PUT
                 await api.put(`/categories/${selectedCategoryId}`, payload);
                 toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Catégorie modifiée' });
             } else {
-                // Sinon, on fait un POST pour créer
                 await api.post('/categories', payload);
                 toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Catégorie créée' });
             }
@@ -167,53 +156,107 @@ const CategoriesPage = () => {
         }
     };
 
-    const trackedBodyTemplate = (rowData) => {
-        return <InputSwitch checked={rowData.isTrackedMonthly} onChange={(e) => onTrackedChange(e, rowData)} />;
-    };
+    const filteredCategories = categories.filter(cat =>
+        cat.name.toLowerCase().includes(globalFilter.toLowerCase())
+    );
 
-    const actionBodyTemplate = (rowData) => {
-        return (
-            <div className="flex gap-2">
-                <Button icon="pi pi-pencil" className="p-button-rounded p-button-success p-button-sm" onClick={() => editCategory(rowData)} aria-label="Modifier la catégorie" />
-                <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-sm" onClick={() => deleteCategory(rowData.id)} aria-label="Supprimer la catégorie" />
-            </div>
-        );
-    };
-
-    const nameBodyTemplate = (rowData) => <Tag value={rowData.name} style={{ background: rowData.color }} />;
-
-    const dialogFooter = (<div><Button label="Annuler" icon="pi pi-times" className="p-button-text" onClick={hideDialog} /><Button label="Sauvegarder" icon="pi pi-check" onClick={saveCategory} /></div>);
-
-    // MODIFIÉ : Le titre du dialogue est maintenant dynamique
-    const dialogTitle = isEditMode ? "Modifier la Catégorie" : "Nouvelle Catégorie";
-
-    const tableHeader = (
-        <div className="flex flex-wrap justify-content-between align-items-center gap-2">
-            <Button label="Nouvelle Catégorie" icon="pi pi-plus" className="p-button-success p-button-sm" onClick={openNew} data-tour-id="add-category-btn" />
-            <span className="p-input-icon-left">
-                <i className="pi pi-search" />
-                <InputText value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder="Rechercher..." className="p-inputtext-sm" />
-            </span>
+    const dialogFooter = (
+        <div>
+            <Button label="Annuler" icon="pi pi-times" className="p-button-text" onClick={hideDialog} />
+            <Button label="Sauvegarder" icon="pi pi-check" onClick={saveCategory} />
         </div>
     );
+
+    const dialogTitle = isEditMode ? "Modifier la Catégorie" : "Nouvelle Catégorie";
 
     return (
         <div className="p-4">
             <TourButton onStartTour={startTour} tooltip="Revoir le guide des Catégories" />
             <Toast ref={toast} />
-            <h1 data-tour-id="categories-title">Gestion des Catégories</h1>
-            <div className="card mt-4" data-tour-id="categories-table">
-                <DataTable value={categories} dataKey="id" size="small" responsiveLayout="scroll" header={tableHeader} globalFilter={globalFilter}>
-                    <Column field="name" header="Nom" body={nameBodyTemplate} sortable />
-                    <Column header="Suivi Mensuel" body={trackedBodyTemplate} style={{ width: '10rem', textAlign: 'center' }} headerStyle={{ textAlign: 'center' }} data-tour-id="tracked-column" />
-                    <Column body={actionBodyTemplate} header="Actions" style={{ width: '8rem', textAlign: 'center' }} />
-                </DataTable>
+
+            <div className="categories-header" data-tour-id="categories-title">
+                <div>
+                    <h1 className="categories-title">Catégories</h1>
+                    <p className="categories-subtitle">{categories.length} catégorie{categories.length !== 1 ? 's' : ''}</p>
+                </div>
+                <Button
+                    label="Nouvelle Catégorie"
+                    icon="pi pi-plus"
+                    className="p-button-sm"
+                    onClick={openNew}
+                    data-tour-id="add-category-btn"
+                />
+            </div>
+
+            <div className="categories-search">
+                <span className="p-input-icon-left" style={{ width: '100%' }}>
+                    <i className="pi pi-search" />
+                    <InputText
+                        value={globalFilter}
+                        onChange={(e) => setGlobalFilter(e.target.value)}
+                        placeholder="Rechercher une catégorie..."
+                        className="p-inputtext-sm"
+                        style={{ width: '100%' }}
+                    />
+                </span>
+            </div>
+
+            <div className="categories-grid" data-tour-id="categories-grid">
+                {filteredCategories.map((category) => (
+                    <div key={category.id} className="category-card">
+                        <div className="category-card-main">
+                            <span
+                                className="category-color-dot"
+                                style={{ backgroundColor: category.color }}
+                            />
+                            <span className="category-name">{category.name}</span>
+                        </div>
+                        <div className="category-card-actions">
+                            <div className="category-tracked" data-tour-id="tracked-toggle">
+                                <InputSwitch
+                                    checked={category.isTrackedMonthly}
+                                    onChange={(e) => onTrackedChange(e, category)}
+                                />
+                                <span className="category-tracked-label">Suivi</span>
+                            </div>
+                            <div className="category-buttons">
+                                <Button
+                                    icon="pi pi-pencil"
+                                    className="p-button-rounded p-button-text p-button-sm"
+                                    onClick={() => editCategory(category)}
+                                    aria-label="Modifier la catégorie"
+                                />
+                                <Button
+                                    icon="pi pi-trash"
+                                    className="p-button-rounded p-button-text p-button-danger p-button-sm"
+                                    onClick={() => deleteCategory(category.id)}
+                                    aria-label="Supprimer la catégorie"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+                {filteredCategories.length === 0 && (
+                    <div className="categories-empty">
+                        <i className="pi pi-inbox" style={{ fontSize: '2rem', opacity: 0.3 }} />
+                        <p>{globalFilter ? 'Aucune catégorie trouvée.' : 'Aucune catégorie pour le moment.'}</p>
+                    </div>
+                )}
             </div>
 
             <Dialog visible={isDialogVisible} style={{ width: '450px' }} breakpoints={{ '641px': '95vw' }} header={dialogTitle} modal onHide={hideDialog} footer={dialogFooter}>
-                <div className="field"><label htmlFor="name">Nom</label><InputText id="name" value={name} onChange={(e) => setName(e.target.value)} required autoFocus /></div>
-                <div className="field mt-4"><label htmlFor="color" className="block mb-2">Couleur</label><ColorPicker id="color" value={color} onChange={(e) => setColor(e.value)} /></div>
-                <div className="field flex align-items-center mt-4"><InputSwitch id="isTracked" checked={isTracked} onChange={(e) => setIsTracked(e.value)} /><label htmlFor="isTracked" className="ml-2">Suivre mensuellement dans les budgets</label></div>
+                <div className="field">
+                    <label htmlFor="name">Nom</label>
+                    <InputText id="name" value={name} onChange={(e) => setName(e.target.value)} required autoFocus />
+                </div>
+                <div className="field mt-4">
+                    <label htmlFor="color" className="block mb-2">Couleur</label>
+                    <ColorPicker id="color" value={color} onChange={(e) => setColor(e.value)} />
+                </div>
+                <div className="field flex align-items-center mt-4">
+                    <InputSwitch id="isTracked" checked={isTracked} onChange={(e) => setIsTracked(e.value)} />
+                    <label htmlFor="isTracked" className="ml-2">Suivre mensuellement dans les budgets</label>
+                </div>
             </Dialog>
         </div>
     );
