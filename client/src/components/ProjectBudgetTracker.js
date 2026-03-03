@@ -28,7 +28,7 @@ const ProjectBudgetTracker = ({ budgets = [] }) => {
             ) : (
                 <div className="text-center text-gray-500">
                     <p>Aucun budget de projet.</p>
-                    <Link to="/project-budgets" className="p-button p-button-sm p-button-text">En créer un</Link>
+                    <Link to="/budget/project-budgets" className="p-button p-button-sm p-button-text">En créer un</Link>
                 </div>
             )}
         </Card>

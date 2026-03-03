@@ -19,6 +19,7 @@ import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import BudgetTracker from '../components/BudgetTracker';
 import useTour from '../hooks/useTour';
 import TourButton from '../components/TourButton';
+import useChartTheme from '../hooks/useChartTheme';
 import '../styles/tour.css';
 
 const COLUMN_CONFIG = [
@@ -159,16 +160,8 @@ const MonthlyViewPage = () => {
 
   const { startTour } = useTour('monthly-view', tourSteps, true);
 
-  const chartOptions = {
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { labels: { color: '#CCC', font: { size: 10 } } }
-    },
-    scales: {
-      x: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-      y: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-    }
-  };
+  // Options des graphiques (adaptées au thème clair/sombre)
+  const { barChartOptions: chartOptions, pieChartOptions } = useChartTheme();
 
   const fetchData = useCallback(async () => {
     if (!isLoggedIn || authLoading) {
@@ -309,6 +302,8 @@ const MonthlyViewPage = () => {
       header: 'Confirmation de suppression',
       icon: 'pi pi-exclamation-triangle',
       acceptClassName: 'p-button-danger',
+      acceptLabel: 'Oui',
+      rejectLabel: 'Non',
       accept: handleDelete,
     });
   };
@@ -471,7 +466,7 @@ const MonthlyViewPage = () => {
           <div className="col-12 lg:col-3" data-tour-id="chart-pie">
             <Card title="Répartition Revenus / Dépenses">
               <div style={{ position: 'relative', height: '300px' }}>
-                <Chart type="pie" data={pieChartData} options={chartOptions} />
+                <Chart type="pie" data={pieChartData} options={pieChartOptions} />
               </div>
             </Card>
           </div>
@@ -501,11 +496,11 @@ const MonthlyViewPage = () => {
           </DataTable>
         </div>
       </div>
-      <Dialog header="Modifier la Transaction" visible={isEditModalVisible} style={{ width: '50vw' }} onHide={() => setIsEditModalVisible(false)}>
+      <Dialog header="Modifier la Transaction" visible={isEditModalVisible} style={{ width: '50vw' }} breakpoints={{ '960px': '75vw', '641px': '95vw' }} onHide={() => setIsEditModalVisible(false)}>
         <TransactionForm transactionToEdit={selectedTransaction} onComplete={handleComplete} />
       </Dialog>
 
-      <Dialog header="Ajouter une Transaction" visible={isNewModalVisible} style={{ width: '50vw' }} onHide={() => setIsNewModalVisible(false)}>
+      <Dialog header="Ajouter une Transaction" visible={isNewModalVisible} style={{ width: '50vw' }} breakpoints={{ '960px': '75vw', '641px': '95vw' }} onHide={() => setIsNewModalVisible(false)}>
         <TransactionForm onComplete={handleComplete} defaultDate={currentDate} />
       </Dialog>
     </div>

@@ -55,7 +55,7 @@ const LandingPage = () => {
                 {/* RÉINTÉGRATION DES SECTIONS DE PRÉSENTATION */}
                 <section className="tips">
                     <h2>Comment ça marche ?</h2>
-                    <p className="text-center" style={{ maxWidth: '800px', margin: '0 auto 2rem auto', color: '#b0b0d0' }}>
+                    <p className="text-center" style={{ maxWidth: '800px', margin: '0 auto 2rem auto', color: 'var(--text-color-secondary)' }}>
                         Ragnance Budget est conçu pour être intuitif. Voici les étapes clés pour bien démarrer :
                     </p>
                     <div className="grid">
@@ -94,7 +94,7 @@ const LandingPage = () => {
 
                 <section className="security-section">
                     <h2>Sécurité et Confidentialité</h2>
-                    <p className="text-center" style={{ maxWidth: '800px', margin: '0 auto 2rem auto', color: '#b0b0d0' }}>
+                    <p className="text-center" style={{ maxWidth: '800px', margin: '0 auto 2rem auto', color: 'var(--text-color-secondary)' }}>
                         Vos données financières sont précieuses. Ragnance met en œuvre les meilleures pratiques de sécurité pour protéger vos informations.
                     </p>
                     <div className="security-badges">

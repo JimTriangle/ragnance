@@ -14,6 +14,7 @@ import PurchaseForecast from '../components/PurchaseForecast';
 import BudgetTracker from '../components/BudgetTracker';
 import ProjectBudgetTracker from '../components/ProjectBudgetTracker';
 import TourButton from '../components/TourButton';
+import useChartTheme from '../hooks/useChartTheme';
 
 // Styles du tour
 import '../styles/tour.css';
@@ -127,19 +128,8 @@ const DashboardPage = () => {
     // Utiliser le hook de tour
     const { startTour } = useTour('dashboard', tourSteps, true);
 
-    // Options des graphiques
-    const lineChartOptions = {
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            x: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-            y: { ticks: { color: '#CCC', callback: (value) => value.toLocaleString('fr-FR') + ' €' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-        }
-    };
-    const pieChartOptions = {
-        maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: '#CCC' } } }
-    };
+    // Options des graphiques (adaptées au thème clair/sombre)
+    const { lineChartOptions, pieChartOptions } = useChartTheme();
 
     // Logique de récupération des données
     const fetchData = useCallback(async () => {

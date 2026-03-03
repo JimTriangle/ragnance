@@ -164,6 +164,8 @@ const SavingsGoalsPage = () => {
             header: 'Confirmation',
             icon: 'pi pi-exclamation-triangle',
             acceptClassName: 'p-button-danger',
+            acceptLabel: 'Oui',
+            rejectLabel: 'Non',
             accept: deleteGoal
         });
     };
@@ -365,6 +367,7 @@ const SavingsGoalsPage = () => {
             <Dialog
                 visible={isDialogVisible}
                 style={{ width: '600px' }}
+                breakpoints={{ '641px': '95vw' }}
                 header="Détails de l'Objectif d'Épargne"
                 modal
                 onHide={hideDialog}
@@ -440,6 +443,7 @@ const SavingsGoalsPage = () => {
             <Dialog
                 visible={isContributionDialogVisible}
                 style={{ width: '500px' }}
+                breakpoints={{ '641px': '95vw' }}
                 header="Ajouter une Contribution"
                 modal
                 onHide={hideContributionDialog}

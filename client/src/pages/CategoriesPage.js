@@ -198,7 +198,7 @@ const CategoriesPage = () => {
                 </DataTable>
             </div>
 
-            <Dialog visible={isDialogVisible} style={{ width: '450px' }} header={dialogTitle} modal onHide={hideDialog} footer={dialogFooter}>
+            <Dialog visible={isDialogVisible} style={{ width: '450px' }} breakpoints={{ '641px': '95vw' }} header={dialogTitle} modal onHide={hideDialog} footer={dialogFooter}>
                 <div className="field"><label htmlFor="name">Nom</label><InputText id="name" value={name} onChange={(e) => setName(e.target.value)} required autoFocus /></div>
                 <div className="field mt-4"><label htmlFor="color" className="block mb-2">Couleur</label><ColorPicker id="color" value={color} onChange={(e) => setColor(e.value)} /></div>
                 <div className="field flex align-items-center mt-4"><InputSwitch id="isTracked" checked={isTracked} onChange={(e) => setIsTracked(e.value)} /><label htmlFor="isTracked" className="ml-2">Suivre mensuellement dans les budgets</label></div>

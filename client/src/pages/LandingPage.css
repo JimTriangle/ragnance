@@ -1,11 +1,12 @@
 .landing-container {
-    color: #e0e0e0;
+    color: var(--text-color, #e0e0e0);
 }
 
 .landing-header {
     background: linear-gradient(135deg, #2a2a3e 0%, #3b3b58 100%);
     text-align: center;
     padding: 4rem 1rem;
+    color: #e0e0e0;
 }
 
 .logo {
@@ -51,7 +52,8 @@
 }
 
 .tips li {
-    background: #2c2c3e;
+    background: var(--surface-card, #2c2c3e);
+    color: var(--text-color, #e0e0e0);
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1rem;
@@ -69,11 +71,11 @@
     text-align: center;
     margin-top: 4rem;
     padding-top: 2rem;
-    border-top: 1px solid #495057;
+    border-top: 1px solid var(--surface-border, #495057);
 }
 
 .new-project-card {
-    background: #2c2c3e;
+    background: var(--surface-card, #2c2c3e);
     border-radius: 12px;
     padding: 2rem;
     display: flex;
@@ -94,7 +96,7 @@
 }
 
 .project-details p {
-    color: #b0b0d0;
+    color: var(--text-color-secondary, #b0b0d0);
     line-height: 1.6;
 }
 
@@ -131,7 +133,7 @@
 
 .security-badge-card {
     background: linear-gradient(135deg, #2c2c3e 0%, #3b3b58 100%);
-    border: 1px solid #495057;
+    border: 1px solid var(--surface-border, #495057);
     transition: all 0.3s ease;
 }
 

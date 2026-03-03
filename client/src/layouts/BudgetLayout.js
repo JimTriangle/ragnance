@@ -206,7 +206,7 @@ const BudgetLayout = () => {
             </main>
             <Footer />
             <Button icon="pi pi-plus" className="fab-button p-button-rounded p-button-primary" onClick={openModal} />
-            <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '50vw' }} onHide={closeModal}>
+            <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '50vw' }} breakpoints={{ '960px': '75vw', '641px': '95vw' }} onHide={closeModal}>
                 <TransactionForm onComplete={handleComplete} />
             </Dialog>
             <AnnouncementDialog visible={isAnnouncementVisible} onHide={closeAnnouncements} />

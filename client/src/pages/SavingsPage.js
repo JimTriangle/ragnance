@@ -107,6 +107,8 @@ const SavingsPage = () => {
             header: 'Confirmation',
             icon: 'pi pi-exclamation-triangle',
             acceptClassName: 'p-button-danger',
+            acceptLabel: 'Oui',
+            rejectLabel: 'Non',
             accept: deleteSavings
         });
     };
@@ -250,6 +252,7 @@ const SavingsPage = () => {
             <Dialog
                 visible={isDialogVisible}
                 style={{ width: '600px' }}
+                breakpoints={{ '641px': '95vw' }}
                 header="Détails de l'Épargne"
                 modal
                 onHide={hideDialog}

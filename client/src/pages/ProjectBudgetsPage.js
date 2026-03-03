@@ -102,6 +102,8 @@ const ProjectBudgetsPage = () => {
             header: 'Confirmation',
             icon: 'pi pi-exclamation-triangle',
             acceptClassName: 'p-button-danger',
+            acceptLabel: 'Oui',
+            rejectLabel: 'Non',
             accept: deleteBudget
         });
     };
@@ -177,7 +179,7 @@ const ProjectBudgetsPage = () => {
                 })}
             </div>
 
-            <Dialog visible={isDialogVisible} style={{ width: '450px' }} header="Détails du Budget Projet" modal onHide={hideDialog} footer={dialogFooter}>
+            <Dialog visible={isDialogVisible} style={{ width: '450px' }} breakpoints={{ '641px': '95vw' }} header="Détails du Budget Projet" modal onHide={hideDialog} footer={dialogFooter}>
                 <div className="field mt-3"><span className="p-float-label"><InputText id="name" value={budgetData.name} onChange={(e) => setBudgetData({ ...budgetData, name: e.target.value })} /><label htmlFor="name">Nom du budget</label></span></div>
                 <div className="field mt-4"><span className="p-float-label"><AmountInput id="totalAmount" value={budgetData.totalAmount} onChange={(value) => setBudgetData({ ...budgetData, totalAmount: value })} /><label htmlFor="totalAmount">Montant Total</label></span></div>
                 <div className="field mt-4"><span className="p-float-label"><Calendar id="range" value={budgetData.dateRange} onChange={(e) => setBudgetData({ ...budgetData, dateRange: e.value })} selectionMode="range" dateFormat="dd/mm/yy" locale="fr" /><label htmlFor="range">Période</label></span></div>
