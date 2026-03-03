@@ -175,7 +175,15 @@ const formatDateForAPI = (d) => {
         <div className="field col-12 md:col-6"><span className="p-float-label"><AutoComplete value={label} suggestions={filteredLabels} completeMethod={searchLabel} onChange={(e) => setLabel(e.value)} id="label" dropdown /><label htmlFor="label">Libellé*</label></span></div>
         <div className="field col-12 md:col-3"><span className="p-float-label"><AmountInput id="amount" value={amount} onChange={(value) => setAmount(value)} /><label htmlFor="amount">Montant*</label></span></div>
         <div className="field col-12 md:col-3 flex align-items-end">
-          <SelectButton value={type} options={transactionTypes} onChange={(e) => setType(e.value)} optionLabel="label" optionValue="value" itemTemplate={typeItemTemplate} />
+          <SelectButton
+            value={type}
+            options={transactionTypes}
+            onChange={(e) => setType(e.value)}
+            optionLabel="label"
+            optionValue="value"
+            itemTemplate={typeItemTemplate}
+            className={type === 'expense' ? 'type-select-expense' : type === 'income' ? 'type-select-income' : ''}
+          />
         </div>
 
         <div className="field col-12">

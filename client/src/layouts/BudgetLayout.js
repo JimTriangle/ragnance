@@ -139,7 +139,7 @@ const BudgetLayout = () => {
     const sidebarActions = (
         <>
             <Button
-                label="Ajouter une transaction"
+                label="Ajouter une transaction (N)"
                 icon="pi pi-plus"
                 className="w-full p-button-primary"
                 onClick={() => {
@@ -215,7 +215,7 @@ const BudgetLayout = () => {
                 <Outlet />
             </main>
             <Footer />
-            <Button icon="pi pi-plus" className="fab-button p-button-rounded p-button-primary" onClick={openModal} aria-label="Ajouter une transaction" />
+            <Button icon="pi pi-plus" className="fab-button p-button-rounded p-button-primary" onClick={openModal} aria-label="Ajouter une transaction" tooltip="Ajouter une transaction (N)" tooltipOptions={{ position: 'top' }} />
             <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '50vw' }} breakpoints={{ '960px': '75vw', '641px': '95vw' }} onHide={closeModal}>
                 <TransactionForm onComplete={handleComplete} />
             </Dialog>

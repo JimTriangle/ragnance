@@ -12,6 +12,39 @@ code {
     monospace;
 }
 
+/* CSS POUR TYPE SELECTBUTTON (Transaction Form) */
+.type-select-expense .p-selectbutton .p-button.p-highlight,
+.type-select-expense.p-selectbutton .p-button.p-highlight {
+  background: #EF4444 !important;
+  border-color: #EF4444 !important;
+  color: #fff !important;
+}
+.type-select-expense .p-selectbutton .p-button.p-highlight:hover,
+.type-select-expense.p-selectbutton .p-button.p-highlight:hover {
+  background: #DC2626 !important;
+  border-color: #DC2626 !important;
+}
+.type-select-expense .p-selectbutton .p-button.p-highlight span,
+.type-select-expense.p-selectbutton .p-button.p-highlight span {
+  color: #fff !important;
+}
+
+.type-select-income .p-selectbutton .p-button.p-highlight,
+.type-select-income.p-selectbutton .p-button.p-highlight {
+  background: #10B981 !important;
+  border-color: #10B981 !important;
+  color: #fff !important;
+}
+.type-select-income .p-selectbutton .p-button.p-highlight:hover,
+.type-select-income.p-selectbutton .p-button.p-highlight:hover {
+  background: #059669 !important;
+  border-color: #059669 !important;
+}
+.type-select-income .p-selectbutton .p-button.p-highlight span,
+.type-select-income.p-selectbutton .p-button.p-highlight span {
+  color: #fff !important;
+}
+
 /* CSS POUR SIDEBAR ET TOPBAR */
 
 /* TopBar */

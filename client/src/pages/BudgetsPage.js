@@ -19,6 +19,8 @@ const BudgetsPage = () => {
     const [hasBudgets, setHasBudgets] = useState(true);
     const [isLoadingCopy, setIsLoadingCopy] = useState(false);
     const [savingCategories, setSavingCategories] = useState({});
+    const [savedCategories, setSavedCategories] = useState({});
+    const savedTimeouts = useRef({});
 
     // Ref pour toujours avoir accès à la date courante dans les closures
     const currentDateRef = useRef(currentDate);
@@ -136,7 +138,12 @@ const BudgetsPage = () => {
                 CategoryId: categoryId
             });
             setSavingCategories(prev => ({ ...prev, [categoryId]: false }));
-            showToast('success', 'Succès', 'Budget sauvegardé');
+            setSavedCategories(prev => ({ ...prev, [categoryId]: true }));
+            if (savedTimeouts.current[categoryId]) clearTimeout(savedTimeouts.current[categoryId]);
+            savedTimeouts.current[categoryId] = setTimeout(() => {
+                setSavedCategories(prev => ({ ...prev, [categoryId]: false }));
+                delete savedTimeouts.current[categoryId];
+            }, 2000);
         } catch (error) {
             setSavingCategories(prev => ({ ...prev, [categoryId]: false }));
             showToast('error', 'Erreur', 'Échec de la sauvegarde');
@@ -197,6 +204,8 @@ const BudgetsPage = () => {
     const monthKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
 
     const budgetEditor = (rowData) => {
+        const isSaving = savingCategories[rowData.id];
+        const isSaved = savedCategories[rowData.id];
         return (
             <div className="flex align-items-center gap-2">
                 <AmountInput
@@ -206,8 +215,17 @@ const BudgetsPage = () => {
                     onChange={(value) => handleBudgetChange(rowData.id, value)}
                     className="p-inputtext-sm"
                 />
-                {savingCategories[rowData.id] && (
-                    <i className="pi pi-spin pi-spinner text-500" title="Sauvegarde en cours..."></i>
+                {isSaving && (
+                    <span className="flex align-items-center gap-1 text-500" style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                        <i className="pi pi-spin pi-spinner"></i>
+                        Sauvegarde...
+                    </span>
+                )}
+                {!isSaving && isSaved && (
+                    <span className="flex align-items-center gap-1 text-green-500" style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                        <i className="pi pi-check"></i>
+                        Sauvegardé
+                    </span>
                 )}
             </div>
         );
