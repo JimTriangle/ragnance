@@ -25,6 +25,10 @@
     max-width: 400px;
 }
 
+.categories-search .p-input-icon-left > .p-inputtext {
+    padding-left: 2.5rem;
+}
+
 /* Card grid */
 .categories-grid {
     display: grid;
@@ -69,9 +73,7 @@
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--text-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    word-break: break-word;
 }
 
 /* Right side: tracked toggle + action buttons */
