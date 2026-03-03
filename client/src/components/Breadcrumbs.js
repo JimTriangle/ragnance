@@ -33,11 +33,12 @@ const Breadcrumbs = () => {
     const path = '/' + pathSegments.slice(0, index + 1).join('/');
     const label = ROUTE_LABELS[segment] || segment;
     const isLast = index === pathSegments.length - 1;
+    const isFirst = index === 0;
 
     return (
       <span key={path}>
         {index > 0 && <span className="mx-1">/</span>}
-        {isLast ? (
+        {isLast || isFirst ? (
           <span>{label}</span>
         ) : (
           <Link to={path}>{label}</Link>
