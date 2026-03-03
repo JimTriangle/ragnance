@@ -53,6 +53,7 @@ function App() {
 
                 {/* --- SECTION BUDGET PROTÉGÉE --- */}
                 <Route path="/budget" element={<BudgetRoute />}>
+                    <Route index element={<Navigate to="/budget/dashboard" />} />
                     <Route element={<BudgetLayout />}>
                         <Route path="dashboard" element={<DashboardPage />} />
                         <Route path="monthly" element={<MonthlyViewPage />} />
