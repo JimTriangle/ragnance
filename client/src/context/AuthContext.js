@@ -25,9 +25,6 @@ export const AuthProvider = ({ children }) => {
 
     const { emitEvent = true } = options;
 
-    console.log('🚪 logoutUser appelé, emitEvent:', emitEvent);
-    console.trace('Stack trace du logout'); // AJOUT : Pour voir qui appelle logout
-
     try {
       localStorage.removeItem('authToken');
     } catch (error) {
@@ -51,7 +48,6 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      console.log('🔐 authenticateUser - Début de l\'authentification');
       const decodedUser = jwtDecode(tokenToAuth);
       
       // Vérifier si le token est expiré
@@ -61,18 +57,10 @@ export const AuthProvider = ({ children }) => {
         return false;
       }
 
-      // CRITIQUE : Configuration du token AVANT tout le reste
-      console.log('🔧 Configuration du token dans axios...');
+      // Configuration du token AVANT tout le reste
       setAuthToken(tokenToAuth);
-      
-      // DOUBLE VÉRIFICATION : Forcer l'assignation directe
       api.defaults.headers.common['Authorization'] = `Bearer ${tokenToAuth}`;
-      
-      console.log('✅ Token configuré:', {
-        inDefaults: !!api.defaults.headers.common['Authorization'],
-        value: api.defaults.headers.common['Authorization']?.substring(0, 20) + '...'
-      });
-      
+
       // Mise à jour des états
       setToken(tokenToAuth);
       setUser(decodedUser);
@@ -150,19 +138,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (storedToken) {
-        console.log('🔍 Token trouvé dans localStorage, authentification directe...');
-        
-        // SIMPLIFIÉ : Authentifier directement sans appel API
-        // La vérification se fera naturellement lors de la première vraie requête
-        const success = authenticateUser(storedToken);
-        
-        if (success) {
-          console.log('✅ Authentification locale réussie');
-        } else {
-          console.warn('⚠️ Token local invalide ou expiré');
-        }
-      } else {
-        console.log('ℹ️ Aucun token dans localStorage');
+        authenticateUser(storedToken);
       }
       
       setIsLoading(false);
@@ -220,7 +196,6 @@ export const AuthProvider = ({ children }) => {
         // Rafraîchir proactivement : 24h avant expiration pour rememberMe, 30min sinon
         const refreshThreshold = decoded.rememberMe ? 24 * 60 * 60 * 1000 : 30 * 60 * 1000;
         if (timeLeft < refreshThreshold) {
-          console.log('🔄 Rafraîchissement proactif du token...');
           const success = await refreshToken();
           if (!success && timeLeft <= 0) {
             logoutUser({ emitEvent: true });

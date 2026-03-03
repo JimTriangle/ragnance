@@ -57,7 +57,6 @@ const ExchangesPage = () => {
       } else {
         await createExchangeKey(form);
       }
-      console.log('Clé API enregistrée');
     } catch (e) {
       const msg = e.response?.data?.message || e.response?.data?.error?.message || e.message;
       console.error('Erreur lors de l\'enregistrement de la clé API:', msg);

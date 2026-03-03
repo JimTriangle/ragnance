@@ -89,7 +89,6 @@ function setupAssociations() {
   ExpenseCalculatorMonth.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
   User.hasMany(ExpenseCalculatorMonth);
 
-  console.log('✓ Associations de modèles configurées avec succès');
 }
 
 module.exports = { setupAssociations };

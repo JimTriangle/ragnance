@@ -21,22 +21,17 @@ function checkRateLimit(userId, exchange) {
 
 async function performTest({ exchange, apiKey, apiSecret, sandbox }) {
   const start = Date.now();
-  console.log(`[performTest] Connecting to ${exchange} (sandbox=${!!sandbox})`);
   try {
     if (process.env.MOCK_MODE === 'true') {
       const duration = Date.now() - start;
-      console.log(`[performTest] Mock success in ${duration}ms`);
       return { ok: true, exchangeTime: Date.now(), duration };
     }
     const ex = createClient({ exchange, apiKey, secret: apiSecret, sandbox });
     await ex.loadMarkets();
     await ex.fetchBalance();
     const duration = Date.now() - start;
-    console.log(`[performTest] ${exchange} test succeeded in ${duration}ms`);
     return { ok: true, exchangeTime: Date.now(), duration };
   } catch (err) {
-    const duration = Date.now() - start;
-    console.log(`[performTest] ${exchange} test failed after ${duration}ms: ${err.message}`);
     throw err;
   }
 }

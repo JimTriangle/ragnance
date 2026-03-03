@@ -121,7 +121,6 @@ const buildCorsOptions = () => ({
 });
 
 sequelize.authenticate()
-  .then(() => console.log('Connexion à la base de données SQLite réussie.'))
   .catch(err => console.error('Impossible de se connecter à la base de données:', err));
 
 // sequelize.sync() est utile pour le développement. Pour la production,
@@ -130,7 +129,6 @@ sequelize.authenticate()
 // de manière contrôlée et sécurisée sans risquer de perdre des données.
 sequelize.sync({ force: false })
   .then(async () => {
-    console.log('Tables de la BDD synchronisées.');
     // seed minimal pour les clés d\'exchange
     try {
       await require('./seed/exchangeKeysSeed')();
@@ -242,6 +240,5 @@ app.use((err, req, res, next) => {
 
 
 server.listen(PORT, () => {
-  console.log(`Serveur Ragnance démarré sur http://localhost:${PORT}`);
 });
 
