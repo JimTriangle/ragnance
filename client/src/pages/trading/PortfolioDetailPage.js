@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
@@ -7,6 +7,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { TabView, TabPanel } from 'primereact/tabview';
 import api from '../../services/api';
+import { ToastContext } from '../../context/ToastContext';
 
 
 const AllocationEditor = ({value, onChange}) => {
@@ -85,6 +86,7 @@ const PairEditor = ({value, onChange, exchange}) => {
 const PortfolioDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useContext(ToastContext);
   const [portfolio, setPortfolio] = useState({name:'', exchangeKeyId:'', baseCurrency:'', budget:0});
   const [allocations,setAllocations]=useState([]);
   const [pairs,setPairs]=useState([]);
@@ -105,13 +107,23 @@ const PortfolioDetailPage = () => {
 
   const saveInfo = () => {
     if(isNew){
-      api.post('/portfolios',portfolio).then(res=>navigate(`/trading/portfolios/${res.data.id}`));
+      api.post('/portfolios',portfolio).then(res=>{
+        showToast('success', 'Succès', 'Portefeuille créé');
+        navigate(`/trading/portfolios/${res.data.id}`);
+      }).catch(()=>showToast('error', 'Erreur', 'Impossible de créer le portefeuille'));
     }else{
-      api.put(`/portfolios/${id}`,portfolio).then(()=>navigate('/trading/portfolios'));
+      api.put(`/portfolios/${id}`,portfolio).then(()=>{
+        showToast('success', 'Succès', 'Portefeuille enregistré');
+        navigate('/trading/portfolios');
+      }).catch(()=>showToast('error', 'Erreur', 'Impossible de sauvegarder le portefeuille'));
     }
   };
-  const saveAlloc = () => api.put(`/portfolios/${id}/allocations`,{allocations}).then(()=>{});
-  const savePairs = () => api.put(`/portfolios/${id}/pairs`,{pairs}).then(()=>{});
+  const saveAlloc = () => api.put(`/portfolios/${id}/allocations`,{allocations}).then(()=>{
+    showToast('success', 'Succès', 'Allocations enregistrées');
+  }).catch(()=>showToast('error', 'Erreur', 'Impossible de sauvegarder les allocations'));
+  const savePairs = () => api.put(`/portfolios/${id}/pairs`,{pairs}).then(()=>{
+    showToast('success', 'Succès', 'Paires enregistrées');
+  }).catch(()=>showToast('error', 'Erreur', 'Impossible de sauvegarder les paires'));
 
   return (
     <div className="p-4 trading-page-container">

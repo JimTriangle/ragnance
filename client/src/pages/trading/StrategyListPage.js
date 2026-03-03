@@ -1,28 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import StrategyList from '../../components/trading/StrategyList';
 import ConfirmDialog from '../../components/trading/ConfirmDialog';
 import { fetchStrategies, getStrategy, createStrategy, deleteStrategy } from '../../services/strategies';
+import { ToastContext } from '../../context/ToastContext';
 
 const StrategyListPage = () => {
   const [items, setItems] = useState([]);
   const [confirmId, setConfirmId] = useState(null);
   const navigate = useNavigate();
+  const { showToast } = useContext(ToastContext);
 
   const load = () => fetchStrategies().then(setItems);
   useEffect(() => { load(); }, []);
 
   const handleDuplicate = async (id) => {
-    const s = await getStrategy(id);
-    await createStrategy({ name: s.name + ' (copy)', kind: s.kind, params: s.params });
-    load();
+    try {
+      const s = await getStrategy(id);
+      await createStrategy({ name: s.name + ' (copy)', kind: s.kind, params: s.params });
+      showToast('success', 'Succès', 'Stratégie dupliquée');
+      load();
+    } catch {
+      showToast('error', 'Erreur', 'Impossible de dupliquer la stratégie');
+    }
   };
 
   const handleDelete = async () => {
     if (confirmId) {
-      await deleteStrategy(confirmId);
+      try {
+        await deleteStrategy(confirmId);
+        showToast('success', 'Succès', 'Stratégie supprimée');
+      } catch {
+        showToast('error', 'Erreur', 'Impossible de supprimer la stratégie');
+      }
       setConfirmId(null);
       load();
     }

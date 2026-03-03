@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { DataView } from 'primereact/dataview';
 import AmountInput from './AmountInput';
+import { ToastContext } from '../context/ToastContext';
 
 const PurchaseForecast = ({ onUpdate }) => {
+    const { showToast } = useContext(ToastContext);
     const [items, setItems] = useState([]);
     const [itemName, setItemName] = useState('');
     const [price, setPrice] = useState(null);
@@ -30,7 +32,11 @@ const PurchaseForecast = ({ onUpdate }) => {
             setPrice(null);
             setUrl('');
             fetchItems();
-        } catch (error) { console.error("Erreur ajout item", error); }
+            showToast('success', 'Succès', 'Article ajouté à la liste');
+        } catch (error) {
+            console.error("Erreur ajout item", error);
+            showToast('error', 'Erreur', "Impossible d'ajouter l'article");
+        }
     };
 
     const handlePurchase = async (id) => {
@@ -38,14 +44,22 @@ const PurchaseForecast = ({ onUpdate }) => {
             await api.put(`/shopping/${id}/purchase`);
             fetchItems();
             onUpdate();
-        } catch (error) { console.error("Erreur achat item", error); }
+            showToast('success', 'Succès', 'Article marqué comme acheté');
+        } catch (error) {
+            console.error("Erreur achat item", error);
+            showToast('error', 'Erreur', "Impossible de marquer l'article comme acheté");
+        }
     };
 
     const handleDelete = async (id) => {
         try {
             await api.delete(`/shopping/${id}`);
             fetchItems();
-        } catch (error) { console.error("Erreur suppression item", error); }
+            showToast('success', 'Succès', 'Article supprimé de la liste');
+        } catch (error) {
+            console.error("Erreur suppression item", error);
+            showToast('error', 'Erreur', "Impossible de supprimer l'article");
+        }
     };
     const totalCost = items.reduce((sum, item) => sum + item.price, 0);
     const itemTemplate = (item) => {

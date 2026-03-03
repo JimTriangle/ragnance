@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Card } from 'primereact/card';
 import ExchangeKeyList from '../../components/trading/ExchangeKeyList';
 import ExchangeKeyForm from '../../components/trading/ExchangeKeyForm';
 import ConfirmDialog from '../../components/trading/ConfirmDialog';
 import { listExchangeKeys, getExchangeKey, createExchangeKey, updateExchangeKey, rotateExchangeSecret, deleteExchangeKey, testExchangeKey } from '../../services/exchangeKeys';
+import { ToastContext } from '../../context/ToastContext';
 
 const ExchangesPage = () => {
   const [items, setItems] = useState([]);
   const [editing, setEditing] = useState(null); // null -> list, object -> form
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const { showToast } = useContext(ToastContext);
 
   const load = async () => {
     try {
@@ -42,7 +44,12 @@ const ExchangesPage = () => {
   const handleDelete = (id) => setConfirmDelete(id);
 
   const confirmDeleteAction = async () => {
-    await deleteExchangeKey(confirmDelete);
+    try {
+      await deleteExchangeKey(confirmDelete);
+      showToast('success', 'Succès', 'Clé API supprimée');
+    } catch {
+      showToast('error', 'Erreur', 'Impossible de supprimer la clé API');
+    }
     setConfirmDelete(null);
     load();
   };
@@ -57,9 +64,11 @@ const ExchangesPage = () => {
       } else {
         await createExchangeKey(form);
       }
+      showToast('success', 'Succès', 'Clé API enregistrée');
     } catch (e) {
       const msg = e.response?.data?.message || e.response?.data?.error?.message || e.message;
       console.error('Erreur lors de l\'enregistrement de la clé API:', msg);
+      showToast('error', 'Erreur', msg || "Impossible d'enregistrer la clé API");
     }
     setEditing(null);
     load();

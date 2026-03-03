@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback, useContext } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
@@ -9,9 +9,12 @@ import AmountInput from '../components/AmountInput';
 import useTour from '../hooks/useTour';
 import TourButton from '../components/TourButton';
 import api from '../services/api';
+import { ToastContext } from '../context/ToastContext';
 import '../styles/tour.css';
 
 const ExpenseCalculatorPage = () => {
+  const { showToast } = useContext(ToastContext);
+
   // Fonction helper pour obtenir le mois courant au format YYYY-MM
   const getCurrentMonth = () => {
     const now = new Date();
@@ -174,9 +177,12 @@ const ExpenseCalculatorPage = () => {
             return prev;
           });
         })
-        .catch(err => console.error('Erreur sauvegarde calculateur:', err));
+        .catch(err => {
+          console.error('Erreur sauvegarde calculateur:', err);
+          showToast('error', 'Erreur', 'Impossible de sauvegarder les données du calculateur');
+        });
     }, 800);
-  }, []);
+  }, [showToast]);
 
   // Migration unique des anciennes données localStorage vers l'API (au premier chargement)
   useEffect(() => {

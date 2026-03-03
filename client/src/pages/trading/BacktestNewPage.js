@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { ToastContext } from '../../context/ToastContext';
 import './TradingStyles.css';
 
 const BacktestNewPage = () => {
   const navigate = useNavigate();
+  const { showToast } = useContext(ToastContext);
   const [form, setForm] = useState({
     strategyId: 'EMA_CROSS',
     exchange: 'BINANCE',
@@ -33,9 +35,11 @@ const BacktestNewPage = () => {
         split: { enabled: false, ratio: 0.8 }
       };
       const res = await api.post('/backtests', body);
+      showToast('success', 'Succès', 'Backtest lancé');
       navigate(`/trading/backtests/${res.data.id}`);
     } catch (err) {
       console.error('Failed to create backtest', err);
+      showToast('error', 'Erreur', 'Impossible de lancer le backtest');
     }
   };
 
