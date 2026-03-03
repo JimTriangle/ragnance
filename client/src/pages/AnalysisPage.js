@@ -121,9 +121,14 @@ const AnalysisPage = () => {
                                                 type={expenseChartType}
                                                 data={expenseChartData}
                                                 options={expenseChartType === 'doughnut' ? doughnutOptions : barOptions}
+                                                aria-label="Graphique de répartition des dépenses par catégorie"
                                             />
                                         ) : (
-                                            <p className="text-center text-gray-500">Aucune donnée à afficher pour cette période.</p>
+                                            <div className="flex flex-column align-items-center justify-content-center h-full text-center">
+                                                <i className="pi pi-chart-bar text-400" style={{ fontSize: '3rem' }}></i>
+                                                <p className="mt-2 mb-0 text-500 font-medium">Aucune dépense sur cette période</p>
+                                                <p className="text-sm text-400 mt-1">Sélectionnez une autre période ou ajoutez des transactions.</p>
+                                            </div>
                                         )}
                                     </div>
                                 </Card>
@@ -156,9 +161,14 @@ const AnalysisPage = () => {
                                                 type={incomeChartType}
                                                 data={incomeChartData}
                                                 options={incomeChartType === 'doughnut' ? doughnutOptions : barOptions}
+                                                aria-label="Graphique de répartition des revenus par catégorie"
                                             />
                                         ) : (
-                                            <p className="text-center text-gray-500">Aucune donnée à afficher pour cette période.</p>
+                                            <div className="flex flex-column align-items-center justify-content-center h-full text-center">
+                                                <i className="pi pi-chart-bar text-400" style={{ fontSize: '3rem' }}></i>
+                                                <p className="mt-2 mb-0 text-500 font-medium">Aucun revenu sur cette période</p>
+                                                <p className="text-sm text-400 mt-1">Sélectionnez une autre période ou ajoutez des transactions.</p>
+                                            </div>
                                         )}
                                     </div>
                                 </Card>

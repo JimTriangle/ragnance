@@ -1,8 +1,8 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Button } from 'primereact/button';
-import { ConfirmDialog } from 'primereact/confirmdialog';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Dialog } from 'primereact/dialog';
 import TransactionForm from '../components/TransactionForm';
 import AnnouncementBadge from '../components/AnnouncementBadge';
@@ -59,9 +59,33 @@ const BudgetLayout = () => {
     const [isReminderVisible, setIsReminderVisible] = useState(false);
     const [isSidebarVisible, setIsSidebarVisible] = useState(false);
     const { notifyTransactionRefresh } = useContext(TransactionRefreshContext);
+    const formDirtyRef = useRef(false);
 
     const openModal = () => setIsModalVisible(true);
     const closeModal = () => setIsModalVisible(false);
+
+    const handleFormDirtyChange = useCallback((dirty) => {
+        formDirtyRef.current = dirty;
+    }, []);
+
+    const handleModalHide = useCallback(() => {
+        if (formDirtyRef.current) {
+            confirmDialog({
+                message: 'Vous avez des modifications non sauvegardées. Voulez-vous vraiment fermer ?',
+                header: 'Modifications non sauvegardées',
+                icon: 'pi pi-exclamation-triangle',
+                acceptClassName: 'p-button-danger',
+                acceptLabel: 'Fermer',
+                rejectLabel: 'Continuer l\'édition',
+                accept: () => {
+                    formDirtyRef.current = false;
+                    closeModal();
+                },
+            });
+        } else {
+            closeModal();
+        }
+    }, []);
 
     const openAnnouncements = () => setIsAnnouncementVisible(true);
     const closeAnnouncements = () => setIsAnnouncementVisible(false);
@@ -216,8 +240,8 @@ const BudgetLayout = () => {
             </main>
             <Footer />
             <Button icon="pi pi-plus" className="fab-button p-button-rounded p-button-primary" onClick={openModal} aria-label="Ajouter une transaction" />
-            <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '50vw' }} breakpoints={{ '960px': '75vw', '641px': '95vw' }} onHide={closeModal}>
-                <TransactionForm onComplete={handleComplete} />
+            <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '50vw' }} breakpoints={{ '960px': '75vw', '641px': '95vw' }} onHide={handleModalHide}>
+                <TransactionForm onComplete={handleComplete} onDirtyChange={handleFormDirtyChange} />
             </Dialog>
             <AnnouncementDialog visible={isAnnouncementVisible} onHide={closeAnnouncements} />
             <ReminderDialog visible={isReminderVisible} onHide={closeReminders} />

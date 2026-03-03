@@ -11,6 +11,7 @@ import { Card } from 'primereact/card';
 import { Dialog } from 'primereact/dialog';
 import { confirmDialog } from 'primereact/confirmdialog';
 import { Chart } from 'primereact/chart';
+import { Skeleton } from 'primereact/skeleton';
 import { InputText } from 'primereact/inputtext';
 import TransactionForm from '../components/TransactionForm';
 import { Dropdown } from 'primereact/dropdown';
@@ -425,8 +426,21 @@ const MonthlyViewPage = () => {
 
   if (authLoading) {
     return (
-      <div className="flex justify-content-center align-items-center" style={{ height: '80vh' }}>
-        <i className="pi pi-spin pi-spinner" style={{ fontSize: '3rem' }}></i>
+      <div className="p-4">
+        <Skeleton width="16rem" height="2rem" className="mb-4 mx-auto" />
+        <div className="grid text-center mb-4">
+          <div className="col-12 md:col-6 lg:col-4"><Skeleton height="6rem" /></div>
+          <div className="col-12 md:col-6 lg:col-4"><Skeleton height="6rem" /></div>
+          <div className="col-12 md:col-6 lg:col-4"><Skeleton height="6rem" /></div>
+          <div className="col-12 md:col-6 lg:col-4"><Skeleton height="6rem" /></div>
+          <div className="col-12 md:col-6 lg:col-4"><Skeleton height="6rem" /></div>
+          <div className="col-12 md:col-6 lg:col-4"><Skeleton height="6rem" /></div>
+        </div>
+        <div className="grid">
+          <div className="col-12 lg:col-6"><Skeleton height="20rem" /></div>
+          <div className="col-12 lg:col-6"><Skeleton height="20rem" /></div>
+        </div>
+        <Skeleton height="15rem" className="mt-4" />
       </div>
     );
   }
@@ -452,21 +466,21 @@ const MonthlyViewPage = () => {
           <div className="col-12 lg:col-6" data-tour-id="chart-daily-flow">
             <Card title="Flux Journalier">
               <div style={{ position: 'relative', height: '300px' }}>
-                <Chart type="line" data={lineChartData} options={chartOptions} />
+                <Chart type="line" data={lineChartData} options={chartOptions} aria-label="Graphique du flux journalier revenus et dépenses" />
               </div>
             </Card>
           </div>
           <div className="col-12 lg:col-6" data-tour-id="chart-cumulative">
             <Card title="Progression Cumulée du Mois">
               <div style={{ position: 'relative', height: '300px' }}>
-                <Chart type="line" data={cumulativeChartData} options={chartOptions} />
+                <Chart type="line" data={cumulativeChartData} options={chartOptions} aria-label="Graphique de la progression cumulée des dépenses" />
               </div>
             </Card>
           </div>
           <div className="col-12 lg:col-6" data-tour-id="chart-pie">
             <Card title="Répartition Revenus / Dépenses">
               <div style={{ position: 'relative', height: '300px' }}>
-                <Chart type="pie" data={pieChartData} options={pieChartOptions} />
+                <Chart type="pie" data={pieChartData} options={pieChartOptions} aria-label="Graphique de répartition revenus et dépenses" />
               </div>
             </Card>
           </div>
@@ -480,9 +494,9 @@ const MonthlyViewPage = () => {
         </div>
 
         <div className="flex justify-content-between align-items-center my-4" data-tour-id="month-navigation">
-          <Button icon="pi pi-arrow-left" onClick={() => changeMonth(-1)} />
+          <Button icon="pi pi-arrow-left" onClick={() => changeMonth(-1)} aria-label="Mois précédent" />
           <Button label="Exporter en Excel" icon="pi pi-file-excel" className="p-button-success p-button-sm" onClick={handleExportExcel} />
-          <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} />
+          <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} aria-label="Mois suivant" />
         </div>
 
         <div className="card mt-4" data-tour-id="transactions-table">

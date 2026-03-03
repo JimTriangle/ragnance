@@ -1,17 +1,24 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Navigate, Outlet } from 'react-router-dom';
-import { ProgressSpinner } from 'primereact/progressspinner'; // On importe un indicateur
+import { Skeleton } from 'primereact/skeleton';
 
 const ProtectedRoute = () => {
-  // On récupère les deux états
   const { isLoggedIn, isLoading } = useContext(AuthContext);
 
-  // 1. Si on est en train de vérifier, on affiche un chargement
   if (isLoading) {
     return (
-      <div className="flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-        <ProgressSpinner />
+      <div className="p-3" style={{ height: '100vh' }}>
+        <Skeleton width="12rem" height="2rem" className="mb-4" />
+        <div className="grid">
+          <div className="col-12 md:col-6 lg:col-4"><Skeleton height="8rem" /></div>
+          <div className="col-12 md:col-6 lg:col-4"><Skeleton height="8rem" /></div>
+          <div className="col-12 md:col-6 lg:col-4"><Skeleton height="8rem" /></div>
+        </div>
+        <div className="grid mt-4">
+          <div className="col-12 lg:col-6"><Skeleton height="20rem" /></div>
+          <div className="col-12 lg:col-6"><Skeleton height="20rem" /></div>
+        </div>
       </div>
     );
   }
