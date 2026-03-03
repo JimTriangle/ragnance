@@ -387,12 +387,12 @@ const MonthlyViewPage = () => {
   const tableHeader = (
     <div className="flex flex-wrap justify-content-between align-items-center gap-2">
       <Button label="Ajouter une transaction" icon="pi pi-plus" className="p-button-success p-button-sm" onClick={() => setIsNewModalVisible(true)} data-tour-id="add-transaction-btn" />
-      <div className="flex align-items-center gap-2">
-        <MultiSelect value={visibleColumns} options={COLUMN_CONFIG.map(c => ({ label: c.header, value: c.key }))} onChange={onColumnVisibilityChange} placeholder="Colonnes" className="p-inputtext-sm" display="chip" style={{ maxWidth: '20rem' }} />
-        <Dropdown value={selectedCategoryId} options={categoryOptions} onChange={(e) => setSelectedCategoryId(e.value)} placeholder="Catégorie" showClear className="p-inputtext-sm" />
-        <span className="p-input-icon-left">
+      <div className="flex flex-wrap align-items-center gap-2" style={{ minWidth: 0 }}>
+        <MultiSelect value={visibleColumns} options={COLUMN_CONFIG.map(c => ({ label: c.header, value: c.key }))} onChange={onColumnVisibilityChange} placeholder="Colonnes" className="p-inputtext-sm" display="chip" style={{ maxWidth: '20rem', minWidth: 0 }} />
+        <Dropdown value={selectedCategoryId} options={categoryOptions} onChange={(e) => setSelectedCategoryId(e.value)} placeholder="Catégorie" showClear className="p-inputtext-sm" style={{ minWidth: 0 }} />
+        <span className="p-input-icon-left" style={{ minWidth: 0, maxWidth: '100%' }}>
           <i className="pi pi-search" />
-          <InputText value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder="Rechercher..." className="p-inputtext-sm" />
+          <InputText value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder="Rechercher..." className="p-inputtext-sm" style={{ width: '100%' }} />
         </span>
       </div>
     </div>
