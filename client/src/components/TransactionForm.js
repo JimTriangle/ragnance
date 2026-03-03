@@ -35,6 +35,13 @@ const TransactionForm = ({ onComplete, transactionToEdit = null, defaultDate = n
   const frequencyOptions = [{ label: 'Annuel', value: 'yearly' }, { label: 'Mensuel', value: 'monthly' }, { label: 'Hebdomadaire', value: 'weekly' }];
   const transactionTypes = [{ label: 'Dépense', value: 'expense' }, { label: 'Revenu', value: 'income' }];
 
+  const typeItemTemplate = (option) => (
+    <span style={{ color: option.value === 'income' ? '#10B981' : '#EF4444', fontWeight: 'bold' }}>
+      <i className={`pi ${option.value === 'income' ? 'pi-arrow-up' : 'pi-arrow-down'} mr-1`}></i>
+      {option.label}
+    </span>
+  );
+
   useEffect(() => {
     api.get('/categories').then(response => setCategories(response.data));
     api.get('/project-budgets').then(response => setProjectBudgets(response.data));
@@ -167,7 +174,9 @@ const formatDateForAPI = (d) => {
       <div className="grid formgrid">
         <div className="field col-12 md:col-6"><span className="p-float-label"><AutoComplete value={label} suggestions={filteredLabels} completeMethod={searchLabel} onChange={(e) => setLabel(e.value)} id="label" dropdown /><label htmlFor="label">Libellé*</label></span></div>
         <div className="field col-12 md:col-3"><span className="p-float-label"><AmountInput id="amount" value={amount} onChange={(value) => setAmount(value)} /><label htmlFor="amount">Montant*</label></span></div>
-        <div className="field col-12 md:col-3"><span className="p-float-label"><Dropdown id="type" value={type} options={transactionTypes} onChange={(e) => setType(e.value)} optionLabel="label" optionValue="value" placeholder="Type*" /><label htmlFor="type">Type*</label></span></div>
+        <div className="field col-12 md:col-3 flex align-items-end">
+          <SelectButton value={type} options={transactionTypes} onChange={(e) => setType(e.value)} optionLabel="label" optionValue="value" itemTemplate={typeItemTemplate} />
+        </div>
 
         <div className="field col-12">
           <span className="p-float-label">

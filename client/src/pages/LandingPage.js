@@ -26,7 +26,7 @@ const LandingPage = () => {
                 <img src="/logo192.png" alt="Ragnance Logo" className="logo" />
                 <h1>Bienvenue sur Ragnance</h1>
                 <p className="subtitle">Vos finances, deux approches, une seule plateforme.</p>
-                {/* Le bouton de connexion direct a été retiré */}
+                <Button label="Commencer maintenant" icon="pi pi-arrow-right" iconPos="right" onClick={() => handleAccessClick('/budget/dashboard')} className="p-button-raised p-button-lg mt-3" />
             </header>
 
             <main className="landing-main">
@@ -34,7 +34,7 @@ const LandingPage = () => {
                 <section className="features">
                     <h2>Gérez votre budget</h2>
                     <div className="grid">
-                        <div className="col-12">
+                        <div className="col-12 md:col-8 md:col-offset-2 lg:col-6 lg:col-offset-3">
                             <Card title="Ragnance Budget">
                                 <i className="pi pi-wallet feature-icon"></i>
                                 <p>Prenez le contrôle de vos finances personnelles avec un suivi simple et efficace de vos dépenses et revenus.</p>
@@ -86,9 +86,9 @@ const LandingPage = () => {
                 <section className="tips">
                     <h2>Astuces d'utilisation</h2>
                     <ul>
-                        <li>💡 **Budgets Projet :** Idéal pour suivre les dépenses d'un événement ponctuel comme des vacances ou des travaux.</li>
-                        <li>🛒 **Prévisionnel d'Achats :** Ajoutez vos articles, et une fois achetés, ils se transforment automatiquement en transaction.</li>
-                        <li>🔄 **Transactions Récurrentes :** Gagnez du temps en configurant vos charges fixes (loyer, abonnements...).</li>
+                        <li>💡 <strong>Budgets Projet :</strong> Idéal pour suivre les dépenses d'un événement ponctuel comme des vacances ou des travaux.</li>
+                        <li>🛒 <strong>Prévisionnel d'Achats :</strong> Ajoutez vos articles, et une fois achetés, ils se transforment automatiquement en transaction.</li>
+                        <li>🔄 <strong>Transactions Récurrentes :</strong> Gagnez du temps en configurant vos charges fixes (loyer, abonnements...).</li>
                     </ul>
                 </section>
 

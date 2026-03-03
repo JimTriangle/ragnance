@@ -166,6 +166,15 @@ const SavingsPage = () => {
                 </div>
             </div>
 
+            {savings.length === 0 && (
+                <div className="flex flex-column align-items-center justify-content-center p-5 text-center">
+                    <i className="pi pi-money-bill text-500" style={{ fontSize: '4rem' }}></i>
+                    <h3 className="mt-3 text-500">Aucune épargne</h3>
+                    <p className="text-500 mb-3">Commencez à épargner en créant votre premier compte.</p>
+                    <Button label="Créer une épargne" icon="pi pi-plus" onClick={openNew} />
+                </div>
+            )}
+
             <div className="grid">
                 {savings.map(saving => {
                     const isArchived = saving.archived;
@@ -184,32 +193,6 @@ const SavingsPage = () => {
                                 }
                                 style={{ opacity: isArchived ? 0.7 : 1 }}
                             >
-                                <div className="flex gap-2 mb-3">
-                                    {!isArchived && (
-                                        <Button
-                                            icon="pi pi-pencil"
-                                            className="p-button-sm p-button-rounded p-button-success"
-                                            onClick={() => editSavings(saving)}
-                                            tooltip="Modifier"
-                                            tooltipOptions={{ position: 'top' }}
-                                        />
-                                    )}
-                                    <Button
-                                        icon={isArchived ? "pi pi-replay" : "pi pi-check"}
-                                        className={`p-button-sm p-button-rounded ${isArchived ? 'p-button-info' : 'p-button-warning'}`}
-                                        onClick={() => toggleArchive(saving.id, isArchived)}
-                                        tooltip={isArchived ? "Désarchiver" : "Archiver"}
-                                        tooltipOptions={{ position: 'top' }}
-                                    />
-                                    <Button
-                                        icon="pi pi-trash"
-                                        className="p-button-sm p-button-rounded p-button-danger"
-                                        onClick={() => confirmDelete(saving.id)}
-                                        tooltip="Supprimer"
-                                        tooltipOptions={{ position: 'top' }}
-                                    />
-                                </div>
-
                                 <p className="font-bold text-xl mb-3">Total: {formatCurrency(saving.totalAmount)}</p>
 
                                 {parts.length > 0 ? (
@@ -243,6 +226,35 @@ const SavingsPage = () => {
                                 ) : (
                                     <p className="text-sm text-500">Aucune part définie</p>
                                 )}
+
+                                <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: '1px solid var(--surface-border)' }}>
+                                    {!isArchived && (
+                                        <Button
+                                            icon="pi pi-pencil"
+                                            className="p-button-sm p-button-rounded p-button-success"
+                                            onClick={() => editSavings(saving)}
+                                            aria-label="Modifier l'épargne"
+                                            tooltip="Modifier"
+                                            tooltipOptions={{ position: 'top' }}
+                                        />
+                                    )}
+                                    <Button
+                                        icon={isArchived ? "pi pi-replay" : "pi pi-check"}
+                                        className={`p-button-sm p-button-rounded ${isArchived ? 'p-button-info' : 'p-button-warning'}`}
+                                        onClick={() => toggleArchive(saving.id, isArchived)}
+                                        aria-label={isArchived ? "Désarchiver l'épargne" : "Archiver l'épargne"}
+                                        tooltip={isArchived ? "Désarchiver" : "Archiver"}
+                                        tooltipOptions={{ position: 'top' }}
+                                    />
+                                    <Button
+                                        icon="pi pi-trash"
+                                        className="p-button-sm p-button-rounded p-button-danger"
+                                        onClick={() => confirmDelete(saving.id)}
+                                        aria-label="Supprimer l'épargne"
+                                        tooltip="Supprimer"
+                                        tooltipOptions={{ position: 'top' }}
+                                    />
+                                </div>
                             </Card>
                         </div>
                     );

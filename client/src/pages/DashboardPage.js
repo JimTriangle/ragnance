@@ -137,7 +137,7 @@ const DashboardPage = () => {
             return false;
         }
 
-        console.log('🔄 Chargement des données du dashboard...');
+
 
         try {
             const today = new Date();
@@ -151,29 +151,18 @@ const DashboardPage = () => {
                 api.get('/project-budgets')
             ]);
 
-            console.log('🔍 Résultats des requêtes API:', {
-                summary: summaryResult.status,
-                categoryStats: categoryStatsResult.status,
-                budgetProgress: budgetProgressResult.status,
-                projectBudgets: projectBudgetsResult.status
-            });
-
             if (!isMountedRef.current) return false;
 
             const encounteredErrors = [];
 
             if (summaryResult.status === 'fulfilled') {
-                console.log('📊 Résumé reçu:', summaryResult.value.data);
                 setSummary(summaryResult.value.data);
             } else {
-                console.log('❌ Échec résumé - Status:', summaryResult.reason?.response?.status, 'Message:', summaryResult.reason?.message);
-                console.log('❌ Détails complets résumé:', summaryResult.reason);
                 encounteredErrors.push('le résumé global');
             }
 
             if (categoryStatsResult.status === 'fulfilled') {
                 const categories = Array.isArray(categoryStatsResult.value.data) ? categoryStatsResult.value.data : [];
-                console.log('📈 Catégories reçues:', categories);
                 if (categories.length > 0) {
                     setCategoryChartData({
                         labels: categories.map(c => c.categoryName),
@@ -183,26 +172,18 @@ const DashboardPage = () => {
                     setCategoryChartData(null);
                 }
             } else {
-                console.log('❌ Échec catégories - Status:', categoryStatsResult.reason?.response?.status, 'Message:', categoryStatsResult.reason?.message);
-                console.log('❌ Détails complets catégories:', categoryStatsResult.reason);
                 encounteredErrors.push('les statistiques par catégorie');
             }
 
             if (budgetProgressResult.status === 'fulfilled') {
-                console.log('💰 Budgets progress reçus:', budgetProgressResult.value.data);
                 setBudgetProgressData(budgetProgressResult.value.data);
             } else {
-                console.log('❌ Échec budgets progress - Status:', budgetProgressResult.reason?.response?.status, 'Message:', budgetProgressResult.reason?.message);
-                console.log('❌ Détails complets budgets progress:', budgetProgressResult.reason);
                 encounteredErrors.push('le suivi des budgets');
             }
 
             if (projectBudgetsResult.status === 'fulfilled') {
-                console.log('🎯 Budgets projets reçus:', projectBudgetsResult.value.data);
                 setProjectBudgets(projectBudgetsResult.value.data);
             } else {
-                console.log('❌ Échec budgets projets - Status:', projectBudgetsResult.reason?.response?.status, 'Message:', projectBudgetsResult.reason?.message);
-                console.log('❌ Détails complets budgets projets:', projectBudgetsResult.reason);
                 encounteredErrors.push('les budgets projet');
             }
 
@@ -213,13 +194,11 @@ const DashboardPage = () => {
 
             if (isMountedRef.current) {
                 setDataLoaded(true);
-                console.log('✅ Données du dashboard chargées avec succès - dataLoaded mis à true');
             }
             
             return encounteredErrors.length === 0;
         } catch (error) {
             if (!isMountedRef.current) return false;
-            console.error('❌ Erreur inattendue lors du chargement du dashboard :', error);
             showToast('error', 'Erreur', "Impossible de charger les données du dashboard.");
             
             // Même en cas d'erreur, on affiche le dashboard (avec données vides)
@@ -237,9 +216,7 @@ const DashboardPage = () => {
         }
 
         try {
-            console.log('🔄 Chargement des soldes mensuels...');
             const response = await api.get('/transactions/stats/monthly-balances');
-            console.log('📉 Soldes mensuels reçus:', response.data);
             if (isMountedRef.current) {
                 const data = response.data;
                 const currentIndex = data.findIndex(m => m.isCurrent);
@@ -270,46 +247,20 @@ const DashboardPage = () => {
                 });
             }
         } catch (error) {
-            console.log("❌ Erreur fetch monthly balances - Status:", error?.response?.status, 'Message:', error?.message);
-            console.log("❌ Détails complets monthly balances:", error);
         }
     }, [isLoggedIn, isLoading]);
 
     // Chargement initial AVEC écoute du changement d'authTimestamp
     useEffect(() => {
-        console.log('📍 useEffect déclenché - isLoading:', isLoading, 'isLoggedIn:', isLoggedIn, 'authTimestamp:', authTimestamp);
-        
         isMountedRef.current = true;
 
-        const loadInitialData = () => {
-            if (!isLoading && isLoggedIn) {
-                console.log('🚀 Chargement initial du dashboard (authTimestamp:', authTimestamp, ')');
-                
-                // Délai pour s'assurer que le token est configuré
-                const timer = setTimeout(() => {
-                    if (isMountedRef.current) {
-                        console.log('⏰ Timer déclenché, appel fetchData...');
-                        fetchData();
-                        fetchMonthlyBalances();
-                    } else {
-                        console.warn('⚠️ Composant démonté, annulation du chargement');
-                    }
-                }, 200);
-                
-                return () => {
-                    console.log('🧹 Cleanup du timer');
-                    clearTimeout(timer);
-                };
-            } else {
-                console.log('⏸️ Conditions non remplies pour charger - isLoading:', isLoading, 'isLoggedIn:', isLoggedIn);
-            }
-        };
-
-        const cleanup = loadInitialData();
+        if (!isLoading && isLoggedIn) {
+            fetchData();
+            fetchMonthlyBalances();
+        }
 
         return () => {
             isMountedRef.current = false;
-            if (cleanup) cleanup();
         };
     }, [isLoggedIn, isLoading, authTimestamp, fetchData, fetchMonthlyBalances]);
 
@@ -354,7 +305,6 @@ const DashboardPage = () => {
 
     // Afficher un loader pendant le chargement initial
     if (isLoading || !dataLoaded) {
-        console.log('🔄 Affichage du loader - isLoading:', isLoading, 'dataLoaded:', dataLoaded);
         return (
             <div className="flex flex-column justify-content-center align-items-center" style={{ height: '80vh' }}>
                 <i className="pi pi-spin pi-spinner" style={{ fontSize: '3rem' }}></i>
@@ -362,15 +312,6 @@ const DashboardPage = () => {
             </div>
         );
     }
-
-    console.log('✨ Affichage du dashboard complet');
-    console.log('🔍 État des données:', {
-        summary,
-        monthlyBalanceData: monthlyBalanceData ? 'présent' : 'null',
-        categoryChartData: categoryChartData ? 'présent' : 'null',
-        budgetProgressData: budgetProgressData?.length || 0,
-        projectBudgets: projectBudgets?.length || 0
-    });
 
     // Formater le mois en cours pour l'affichage
     const currentDate = new Date();
@@ -388,8 +329,11 @@ const DashboardPage = () => {
             <div className="grid mt-2">
                 <div className="col-12 md:col-6 lg:col-4" data-tour-id="card-balance">
                     <Card title="Solde Actuel">
-                        <div className="flex flex-column gap-2 justify-content-center align-items-center" style={{ minHeight: '96px' }}>
-                            <h2 className="m-0" style={{ color: summary.currentBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.currentBalance)}</h2>
+                        <div className="flex flex-column gap-2">
+                            <div>
+                                <p className="m-0 text-sm text-500">Au {new Date().toLocaleDateString('fr-FR')}</p>
+                                <h2 className="m-0" style={{ color: summary.currentBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.currentBalance)}</h2>
+                            </div>
                         </div>
                     </Card>
                 </div>
@@ -428,7 +372,10 @@ const DashboardPage = () => {
                 <div className="col-12 lg:col-6" data-tour-id="chart-daily">
                     <Card>
                         <div className="flex justify-content-between align-items-center mb-3">
-                            <h2 className="text-xl m-0">Solde début de mois</h2>
+                            <div>
+                                <h2 className="text-xl m-0">Solde début de mois</h2>
+                                <p className="m-0 text-sm text-500">3 derniers mois + 6 mois de projection</p>
+                            </div>
                         </div>
                         <div style={{ position: 'relative', height: '300px' }}>
                             {monthlyBalanceData ? (
@@ -442,7 +389,7 @@ const DashboardPage = () => {
                     </Card>
                 </div>
                 <div className="col-12 lg:col-6" data-tour-id="chart-category">
-                    <Card title="Dépenses par Catégorie" className="h-full">
+                    <Card title={`Dépenses par Catégorie — ${formattedMonth}`} className="h-full">
                         {categoryChartData && categoryChartData.labels.length > 0 ? (
                             <div style={{ position: 'relative', height: '300px' }}>
                                 <Chart type="pie" data={categoryChartData} options={pieChartOptions} />
