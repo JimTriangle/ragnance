@@ -163,7 +163,7 @@ const BudgetLayout = () => {
     const sidebarActions = (
         <>
             <Button
-                label="Ajouter une transaction"
+                label="Ajouter une transaction (N)"
                 icon="pi pi-plus"
                 className="w-full p-button-primary"
                 onClick={() => {
