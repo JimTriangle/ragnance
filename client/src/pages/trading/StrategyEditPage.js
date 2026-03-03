@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import StrategyForm from '../../components/trading/StrategyForm';
 import StrategyPreview from '../../components/trading/StrategyPreview';
 import { fetchStrategyKinds, getStrategy, createStrategy, updateStrategy, validateStrategy } from '../../services/strategies';
+import { ToastContext } from '../../context/ToastContext';
 
 const StrategyEditPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useContext(ToastContext);
   const [kinds, setKinds] = useState([]);
   const [strategy, setStrategy] = useState({ name: '', kind: '', params: {} });
   const [errors, setErrors] = useState({});
@@ -32,14 +34,20 @@ const StrategyEditPage = () => {
       setErrors(e.response?.data?.error?.details || {});
       return;
     }
-    if (id) {
-      await updateStrategy(id, { name: strategy.name, params: strategy.params });
-    } else {
-      const res = await createStrategy(strategy);
-      navigate(`/trading/strategies/${res.id}`);
-      return;
+    try {
+      if (id) {
+        await updateStrategy(id, { name: strategy.name, params: strategy.params });
+        showToast('success', 'Succès', 'Stratégie modifiée');
+      } else {
+        const res = await createStrategy(strategy);
+        showToast('success', 'Succès', 'Stratégie créée');
+        navigate(`/trading/strategies/${res.id}`);
+        return;
+      }
+      navigate('/trading/strategies');
+    } catch (e) {
+      showToast('error', 'Erreur', "Impossible d'enregistrer la stratégie");
     }
-    navigate('/trading/strategies');
   };
 
   return (

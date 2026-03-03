@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import api from '../../services/api';
+import ConfirmDialog from '../../components/trading/ConfirmDialog';
+import { ToastContext } from '../../context/ToastContext';
 import './TradingStyles.css';
 
 const PortfolioListPage = () => {
   const [items, setItems] = useState([]);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const navigate = useNavigate();
+  const { showToast } = useContext(ToastContext);
 
   useEffect(() => {
      api.get('/portfolios').then(res => setItems(res.data.items));
@@ -16,10 +20,17 @@ const PortfolioListPage = () => {
 
   const budgetBody = row => row.budget.toFixed(2);
 
-  const deletePortfolio = id => {
-    api.delete(`/portfolios/${id}`).then(() => {
-      setItems(items.filter(i => i.id !== id));
-    });
+  const confirmDelete = async () => {
+    if (confirmDeleteId) {
+      try {
+        await api.delete(`/portfolios/${confirmDeleteId}`);
+        setItems(items.filter(i => i.id !== confirmDeleteId));
+        showToast('success', 'Succès', 'Portefeuille supprimé');
+      } catch {
+        showToast('error', 'Erreur', 'Impossible de supprimer le portefeuille');
+      }
+      setConfirmDeleteId(null);
+    }
   };
 
   return (
@@ -36,10 +47,11 @@ const PortfolioListPage = () => {
         <Column header="Actions" body={(row) => (
           <div className="flex gap-2">
             <Button label="Éditer" onClick={() => navigate(row.id)} size="small" />
-            <Button label="Supprimer" onClick={() => deletePortfolio(row.id)} severity="danger" size="small" />
+            <Button label="Supprimer" onClick={() => setConfirmDeleteId(row.id)} severity="danger" size="small" />
           </div>
         )} />
       </DataTable>
+      <ConfirmDialog visible={!!confirmDeleteId} onHide={() => setConfirmDeleteId(null)} onConfirm={confirmDelete} message="Supprimer ce portefeuille ?" />
     </div>
   );
 };
