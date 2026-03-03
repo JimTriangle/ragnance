@@ -40,7 +40,6 @@ const ExchangeKeyForm = ({ initialData = {}, onSave, onCancel }) => {
       await testExchangeKey({ ...form, id: initialData.id });
       setTestOk(true);
       setInfo('Connexion réussie');
-      console.log('Test de connexion réussi');
     } catch (err) {
       const msg = err.response?.data?.error?.message || 'Test failed';
       setError(msg);

@@ -96,6 +96,7 @@ const TransactionForm = ({ onComplete, transactionToEdit = null, defaultDate = n
     if (!label || !label.trim()) champsManquants.push('Libellé');
     if (amount === null || amount === undefined) champsManquants.push('Montant');
     if (!type) champsManquants.push('Type (Dépense / Revenu)');
+    if (!transactionType) champsManquants.push('Type de transaction (Ponctuel / Récurrent)');
     if (transactionType === 'one-time' && !date) champsManquants.push('Date');
     if (transactionType === 'recurring') {
       if (!frequency) champsManquants.push('Fréquence');
@@ -168,7 +169,7 @@ const formatDateForAPI = (d) => {
   return (
     <form onSubmit={handleSubmit} className="p-fluid">
       <div className="field text-center mb-4">
-        <SelectButton value={transactionType} options={transactionTypeOptions} onChange={(e) => setTransactionType(e.value)} />
+        <SelectButton value={transactionType} options={transactionTypeOptions} onChange={(e) => { if (e.value) setTransactionType(e.value); }} />
       </div>
 
       <div className="grid formgrid">
