@@ -50,7 +50,6 @@ const useTour = (tourId, steps, autoStart = true, options = {}) => {
       // Callbacks
       onDestroyed: () => {
         markTourAsSeen();
-        console.log(`[useTour] Tour "${tourId}" terminé`);
       },
       onDestroyStarted: () => {
         if (!driverRef.current) return;
@@ -86,7 +85,6 @@ const useTour = (tourId, steps, autoStart = true, options = {}) => {
     driverRef.current.setSteps(steps);
     driverRef.current.drive();
 
-    console.log(`[useTour] Tour "${tourId}" démarré`);
   }, [tourId, steps, options, markTourAsSeen]);
 
   // Auto-démarrage si première visite
@@ -94,7 +92,6 @@ const useTour = (tourId, steps, autoStart = true, options = {}) => {
     if (autoStart && !hasSeenTour() && steps && steps.length > 0) {
       // Petit délai pour s'assurer que le DOM est complètement chargé
       const timer = setTimeout(() => {
-        console.log(`[useTour] Auto-démarrage du tour "${tourId}"`);
         startTour();
       }, 500);
 

@@ -90,25 +90,12 @@ const readTokenFromStorage = () => {
 
 // FONCTION CRITIQUE : Configuration du token
 export const setAuthToken = (token) => {
-  console.log('🔧 setAuthToken appelé avec:', token ? 'TOKEN_PRÉSENT' : 'null');
-  
   currentAuthToken = token || null;
-  
+
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    console.log('✅ Token configuré dans axios:', api.defaults.headers.common['Authorization'] ? 'OK' : 'ÉCHEC');
   } else {
     delete api.defaults.headers.common['Authorization'];
-    console.log('🗑️ Token supprimé de axios');
-  }
-
-  // DEBUG : Exposer dans window pour vérifier
-  if (typeof window !== 'undefined') {
-    window.__DEBUG_API__ = {
-      token: currentAuthToken,
-      headers: api.defaults.headers.common,
-      hasAuth: !!api.defaults.headers.common['Authorization']
-    };
   }
 };
 
@@ -116,7 +103,6 @@ export const setAuthToken = (token) => {
 if (typeof window !== 'undefined') {
   const existingToken = readTokenFromStorage();
   if (existingToken) {
-    console.log('🔄 Token trouvé dans localStorage au chargement, configuration...');
     setAuthToken(existingToken);
   }
 }
@@ -137,16 +123,12 @@ api.interceptors.request.use(
       const token = currentAuthToken || readTokenFromStorage();
       if (token) {
         config.headers['Authorization'] = `Bearer ${token}`;
-        console.log('🔐 Token ajouté à la requête:', config.url);
-      } else {
-        console.warn('⚠️ Pas de token disponible pour la requête:', config.url);
       }
     }
 
     return config;
   },
   (error) => {
-    console.error('❌ Erreur dans l\'intercepteur de requête:', error);
     return Promise.reject(error);
   }
 );
@@ -158,8 +140,6 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error?.response?.status === 401) {
-      console.warn('🚫 Erreur 401 détectée, déconnexion...');
-      
       try {
         if (typeof window !== 'undefined') {
           window.localStorage?.removeItem('authToken');

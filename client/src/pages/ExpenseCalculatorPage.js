@@ -207,7 +207,6 @@ const ExpenseCalculatorPage = () => {
       localStorage.setItem(migrationDoneKey, 'true');
       // Recharger la liste des mois
       api.get('/expense-calculator/months/list').then(res => setMonthsWithData(res.data)).catch(() => {});
-      console.log('Migration localStorage → API du calculateur terminée');
     }).catch(() => {});
   }, []);
 
