@@ -9,6 +9,8 @@ import AnnouncementBadge from '../components/AnnouncementBadge';
 import AnnouncementDialog from '../components/AnnouncementDialog';
 import ReminderDialog from '../components/ReminderDialog';
 import AppSidebar from '../components/AppSidebar';
+import DesktopSidebar from '../components/DesktopSidebar';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { TransactionRefreshContext } from '../context/TransactionRefreshContext';
 import Footer from '../components/Footer';
 import api from '../services/api';
@@ -16,11 +18,11 @@ import api from '../services/api';
 // Le Header minimaliste avec bouton hamburger
 const TopBar = ({ onOpenSidebar, onAddTransaction, onShowAnnouncements, onShowReminders }) => {
     return (
-        <div className="top-bar flex justify-content-between align-items-center p-3" style={{ background: '#242931', borderBottom: '1px solid #495057' }}>
+        <div className="top-bar flex justify-content-between align-items-center p-3" style={{ background: 'var(--surface-ground)', borderBottom: '1px solid var(--surface-border)' }}>
             <div className="flex align-items-center gap-2">
                 <Button
                     icon="pi pi-bars"
-                    className="p-button-text p-button-lg"
+                    className="p-button-text p-button-lg hamburger-button"
                     onClick={onOpenSidebar}
                     aria-label="Ouvrir le menu"
                 />
@@ -41,6 +43,8 @@ const TopBar = ({ onOpenSidebar, onAddTransaction, onShowAnnouncements, onShowRe
                     icon="pi pi-plus"
                     className="add-transaction-button p-button-sm p-button-primary"
                     onClick={onAddTransaction}
+                    tooltip="Ajouter une transaction (N)"
+                    tooltipOptions={{ position: 'bottom' }}
                 />
             </div>
         </div>
@@ -146,37 +150,41 @@ const BudgetLayout = () => {
         </>
     );
 
-    // Afficher automatiquement les annonces non lues au chargement
+    // Afficher automatiquement les annonces non lues au chargement (une seule fois par session)
     useEffect(() => {
+        if (sessionStorage.getItem('announcements_shown')) return;
         const timer = setTimeout(() => {
             setIsAnnouncementVisible(true);
-        }, 2000); // 2 secondes après le chargement
+            sessionStorage.setItem('announcements_shown', 'true');
+        }, 2000);
         return () => clearTimeout(timer);
     }, []);
 
-    // Vérifier et afficher les rappels au chargement
+    // Vérifier et afficher les rappels au chargement (une seule fois par session)
     useEffect(() => {
+        if (sessionStorage.getItem('reminders_shown')) return;
         const checkReminders = async () => {
             try {
                 const response = await api.get('/transactions/reminders');
                 if (response.data && response.data.length > 0) {
                     setIsReminderVisible(true);
+                    sessionStorage.setItem('reminders_shown', 'true');
                 }
             } catch (error) {
-                console.error('Erreur lors de la vérification des rappels:', error);
+                // silencieux en production
             }
         };
 
         const timer = setTimeout(() => {
             checkReminders();
-        }, 4000); // 4 secondes après le chargement, pour laisser les annonces s'afficher d'abord
+        }, 4000);
 
         return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
         const handleKeydown = (e) => {
-            if (e.key?.toLowerCase() === 'n' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+            if (e.key?.toLowerCase() === 'n' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) && !e.target.isContentEditable) {
                 e.preventDefault();
                 openModal();
             }
@@ -186,13 +194,15 @@ const BudgetLayout = () => {
     }, []);
 
     return (
-        <div>
+        <div className="layout-with-sidebar">
+            <DesktopSidebar navItems={budgetNavItems} section="budget" />
             <TopBar
                 onOpenSidebar={openSidebar}
                 onAddTransaction={openModal}
                 onShowAnnouncements={openAnnouncements}
                 onShowReminders={openReminders}
             />
+            <Breadcrumbs />
             <AppSidebar
                 visible={isSidebarVisible}
                 onHide={closeSidebar}
@@ -202,11 +212,11 @@ const BudgetLayout = () => {
             />
             <main>
                 <ConfirmDialog />
-                <Outlet /> {/* C'est ici que vos pages (Dashboard, MonthlyView...) s'afficheront */}
+                <Outlet />
             </main>
             <Footer />
-            <Button icon="pi pi-plus" className="fab-button p-button-rounded p-button-primary" onClick={openModal} />
-            <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '50vw' }} onHide={closeModal}>
+            <Button icon="pi pi-plus" className="fab-button p-button-rounded p-button-primary" onClick={openModal} aria-label="Ajouter une transaction" />
+            <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '50vw' }} breakpoints={{ '960px': '75vw', '641px': '95vw' }} onHide={closeModal}>
                 <TransactionForm onComplete={handleComplete} />
             </Dialog>
             <AnnouncementDialog visible={isAnnouncementVisible} onHide={closeAnnouncements} />

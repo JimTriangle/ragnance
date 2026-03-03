@@ -26,10 +26,8 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      console.log('🔐 Tentative de connexion...');
       const response = await api.post('/auth/login', { email, password, rememberMe });
       
-      console.log('✅ Connexion réussie, stockage du token...');
       
       // Stocker le token
       const success = storeToken(response.data.authToken);
@@ -42,14 +40,10 @@ const LoginPage = () => {
 
       const decoded = jwtDecode(response.data.authToken);
       
-      // Attendre un peu pour que l'événement auth:login soit bien dispatché
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
       // Récupérer la destination sauvegardée
       const redirectTo = sessionStorage.getItem('postLoginRedirect');
       sessionStorage.removeItem('postLoginRedirect');
       
-      console.log('🚀 Navigation vers:', redirectTo || 'destination par défaut');
       
       // NOUVELLE APPROCHE : Forcer un refresh de la page après navigation
       // Cela garantit que tous les composants se rechargent avec le nouveau token
@@ -65,7 +59,6 @@ const LoginPage = () => {
         window.location.href = '/';
       }
     } catch (err) {
-      console.error('❌ Erreur de connexion:', err);
       setError(err.response?.data?.message || 'Une erreur est survenue.');
       setIsLoading(false);
     }

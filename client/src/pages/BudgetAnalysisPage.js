@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { ToastContext } from '../context/ToastContext';
 import { Skeleton } from 'primereact/skeleton';
+import useChartTheme from '../hooks/useChartTheme';
 
 const BudgetAnalysisPage = () => {
     const [data, setData] = useState([]);
@@ -18,15 +19,8 @@ const BudgetAnalysisPage = () => {
     const navigate = useNavigate();
     const { showToast } = useContext(ToastContext);
 
-    const chartOptions = {
-        maintainAspectRatio: false,
-        aspectRatio: 1.5,
-        plugins: { legend: { labels: { color: '#CCC' } } },
-        scales: {
-            x: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-            y: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-        }
-    };
+    // Options des graphiques (adaptées au thème clair/sombre)
+    const { barChartOptions: chartOptions } = useChartTheme();
 
     const fetchData = useCallback(async () => {
         setLoading(true);

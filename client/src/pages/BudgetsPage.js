@@ -18,6 +18,7 @@ const BudgetsPage = () => {
     const debounceTimeouts = useRef({});
     const [hasBudgets, setHasBudgets] = useState(true);
     const [isLoadingCopy, setIsLoadingCopy] = useState(false);
+    const [savingCategories, setSavingCategories] = useState({});
 
     // Ref pour toujours avoir accès à la date courante dans les closures
     const currentDateRef = useRef(currentDate);
@@ -108,6 +109,7 @@ const BudgetsPage = () => {
 
     const handleBudgetChange = (categoryId, amount) => {
         setBudgets(prevBudgets => ({ ...prevBudgets, [categoryId]: amount }));
+        setSavingCategories(prev => ({ ...prev, [categoryId]: true }));
 
         // Utiliser le ref pour obtenir la date actuelle (évite les problèmes de closure obsolète)
         const currentDateValue = currentDateRef.current;
@@ -133,8 +135,10 @@ const BudgetsPage = () => {
                 month,
                 CategoryId: categoryId
             });
+            setSavingCategories(prev => ({ ...prev, [categoryId]: false }));
             showToast('success', 'Succès', 'Budget sauvegardé');
         } catch (error) {
+            setSavingCategories(prev => ({ ...prev, [categoryId]: false }));
             showToast('error', 'Erreur', 'Échec de la sauvegarde');
         }
     };
@@ -193,13 +197,20 @@ const BudgetsPage = () => {
     const monthKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
 
     const budgetEditor = (rowData) => {
-        return <AmountInput
-            key={`${monthKey}-${rowData.id}`}
-            value={budgets[rowData.id] || null}
-            placeholder="Définir un budget"
-            onChange={(value) => handleBudgetChange(rowData.id, value)}
-            className="p-inputtext-sm"
-        />;
+        return (
+            <div className="flex align-items-center gap-2">
+                <AmountInput
+                    key={`${monthKey}-${rowData.id}`}
+                    value={budgets[rowData.id] || null}
+                    placeholder="Définir un budget"
+                    onChange={(value) => handleBudgetChange(rowData.id, value)}
+                    className="p-inputtext-sm"
+                />
+                {savingCategories[rowData.id] && (
+                    <i className="pi pi-spin pi-spinner text-500" title="Sauvegarde en cours..."></i>
+                )}
+            </div>
+        );
     };
 
     const monthName = currentDate.toLocaleString('fr-FR', { month: 'long' });

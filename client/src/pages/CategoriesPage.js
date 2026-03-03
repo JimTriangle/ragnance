@@ -10,6 +10,7 @@ import { InputText } from 'primereact/inputtext';
 import { ColorPicker } from 'primereact/colorpicker';
 import { InputSwitch } from 'primereact/inputswitch';
 import { Tag } from 'primereact/tag';
+import { confirmDialog } from 'primereact/confirmdialog';
 import useTour from '../hooks/useTour';
 import TourButton from '../components/TourButton';
 import '../styles/tour.css';
@@ -134,14 +135,25 @@ const CategoriesPage = () => {
         }
     };
 
-    const deleteCategory = async (categoryId) => {
-        try {
-            await api.delete(`/categories/${categoryId}`);
-            fetchCategories();
-            toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Catégorie supprimée' });
-        } catch (error) {
-            toast.current.show({ severity: 'error', summary: 'Erreur', detail: 'La suppression a échoué' });
-        }
+    const deleteCategory = (categoryId) => {
+        const performDelete = async () => {
+            try {
+                await api.delete(`/categories/${categoryId}`);
+                fetchCategories();
+                toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Catégorie supprimée' });
+            } catch (error) {
+                toast.current.show({ severity: 'error', summary: 'Erreur', detail: 'La suppression a échoué' });
+            }
+        };
+        confirmDialog({
+            message: 'Êtes-vous sûr de vouloir supprimer cette catégorie ?',
+            header: 'Confirmation de suppression',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-danger',
+            acceptLabel: 'Oui',
+            rejectLabel: 'Non',
+            accept: performDelete
+        });
     };
 
     const onTrackedChange = async (e, category) => {
@@ -162,8 +174,8 @@ const CategoriesPage = () => {
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="flex gap-2">
-                <Button icon="pi pi-pencil" className="p-button-rounded p-button-success p-button-sm" onClick={() => editCategory(rowData)} />
-                <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-sm" onClick={() => deleteCategory(rowData.id)} />
+                <Button icon="pi pi-pencil" className="p-button-rounded p-button-success p-button-sm" onClick={() => editCategory(rowData)} aria-label="Modifier la catégorie" />
+                <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-sm" onClick={() => deleteCategory(rowData.id)} aria-label="Supprimer la catégorie" />
             </div>
         );
     };
@@ -198,7 +210,7 @@ const CategoriesPage = () => {
                 </DataTable>
             </div>
 
-            <Dialog visible={isDialogVisible} style={{ width: '450px' }} header={dialogTitle} modal onHide={hideDialog} footer={dialogFooter}>
+            <Dialog visible={isDialogVisible} style={{ width: '450px' }} breakpoints={{ '641px': '95vw' }} header={dialogTitle} modal onHide={hideDialog} footer={dialogFooter}>
                 <div className="field"><label htmlFor="name">Nom</label><InputText id="name" value={name} onChange={(e) => setName(e.target.value)} required autoFocus /></div>
                 <div className="field mt-4"><label htmlFor="color" className="block mb-2">Couleur</label><ColorPicker id="color" value={color} onChange={(e) => setColor(e.value)} /></div>
                 <div className="field flex align-items-center mt-4"><InputSwitch id="isTracked" checked={isTracked} onChange={(e) => setIsTracked(e.value)} /><label htmlFor="isTracked" className="ml-2">Suivre mensuellement dans les budgets</label></div>

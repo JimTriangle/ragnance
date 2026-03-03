@@ -4,16 +4,18 @@ import { AuthContext } from '../context/AuthContext';
 import { Button } from 'primereact/button';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import AppSidebar from '../components/AppSidebar';
+import DesktopSidebar from '../components/DesktopSidebar';
+import Breadcrumbs from '../components/Breadcrumbs';
 import Footer from '../components/Footer';
 
 // Le Header minimaliste avec bouton hamburger
 const TopBar = ({ onOpenSidebar }) => {
     return (
-        <div className="top-bar flex justify-content-between align-items-center p-3" style={{ background: '#1a1d24', borderBottom: '1px solid #495057' }}>
+        <div className="top-bar flex justify-content-between align-items-center p-3" style={{ background: 'var(--surface-ground)', borderBottom: '1px solid var(--surface-border)' }}>
             <div className="flex align-items-center gap-2">
                 <Button
                     icon="pi pi-bars"
-                    className="p-button-text p-button-lg"
+                    className="p-button-text p-button-lg hamburger-button"
                     onClick={onOpenSidebar}
                     aria-label="Ouvrir le menu"
                 />
@@ -51,8 +53,10 @@ const TradingLayout = () => {
     }
 
     return (
-        <div>
+        <div className="layout-with-sidebar">
+            <DesktopSidebar navItems={tradingNavItems} section="trading" />
             <TopBar onOpenSidebar={openSidebar} />
+            <Breadcrumbs />
             <AppSidebar
                 visible={isSidebarVisible}
                 onHide={closeSidebar}

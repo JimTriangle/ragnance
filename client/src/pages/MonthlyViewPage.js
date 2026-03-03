@@ -19,6 +19,7 @@ import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import BudgetTracker from '../components/BudgetTracker';
 import useTour from '../hooks/useTour';
 import TourButton from '../components/TourButton';
+import useChartTheme from '../hooks/useChartTheme';
 import '../styles/tour.css';
 
 const COLUMN_CONFIG = [
@@ -159,16 +160,8 @@ const MonthlyViewPage = () => {
 
   const { startTour } = useTour('monthly-view', tourSteps, true);
 
-  const chartOptions = {
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { labels: { color: '#CCC', font: { size: 10 } } }
-    },
-    scales: {
-      x: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-      y: { ticks: { color: '#CCC' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-    }
-  };
+  // Options des graphiques (adaptées au thème clair/sombre)
+  const { barChartOptions: chartOptions, pieChartOptions } = useChartTheme();
 
   const fetchData = useCallback(async () => {
     if (!isLoggedIn || authLoading) {
@@ -309,6 +302,8 @@ const MonthlyViewPage = () => {
       header: 'Confirmation de suppression',
       icon: 'pi pi-exclamation-triangle',
       acceptClassName: 'p-button-danger',
+      acceptLabel: 'Oui',
+      rejectLabel: 'Non',
       accept: handleDelete,
     });
   };
@@ -378,8 +373,8 @@ const MonthlyViewPage = () => {
 
   const actionBodyTemplate = (rowData) => (
     <div className="flex justify-content-center gap-2">
-      <Button icon="pi pi-pencil" className="p-button-rounded p-button-success p-button-sm" onClick={() => handleEditClick(rowData)} />
-      <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-sm" onClick={() => confirmDelete(rowData.id)} />
+      <Button icon="pi pi-pencil" className="p-button-rounded p-button-success p-button-sm" onClick={() => handleEditClick(rowData)} aria-label="Modifier la transaction" />
+      <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-sm" onClick={() => confirmDelete(rowData.id)} aria-label="Supprimer la transaction" />
     </div>
   );
 
@@ -445,37 +440,37 @@ const MonthlyViewPage = () => {
         </div>
 
         <div className="grid text-center mb-4" data-tour-id="summary-cards">
-          <div className="col-12 md:col-3 lg:col-2"><Card title="Solde Début de Mois"><h3 className="m-0">{formatCurrency(summary.startingBalance)}</h3></Card></div>
-          <div className="col-12 md:col-3 lg:col-2"><Card title="Total Revenus du Mois"><h3 className="m-0 text-green-400">{formatCurrency(summary.totalIncome)}</h3></Card></div>
-          <div className="col-12 md:col-3 lg:col-2"><Card title="Total Dépenses du Mois"><h3 className="m-0 text-red-400">{formatCurrency(summary.totalExpense)}</h3></Card></div>
-          <div className="col-12 md:col-3 lg:col-2"><Card title="Solde Fin de Mois"><h3 className="m-0" style={{ color: endOfMonthBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(endOfMonthBalance)}</h3></Card></div>
-          <div className="col-12 md:col-6 lg:col-2"><Card title="Total Budgets"><h3 className="m-0 text-blue-400">{formatCurrency(summary.totalBudgets)}</h3></Card></div>
-          <div className="col-12 md:col-6 lg:col-2"><Card title="Solde Prév. avec Budgets"><h3 className="m-0" style={{ color: (summary.projectedBalanceWithBudgets || 0) >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.projectedBalanceWithBudgets)}</h3></Card></div>
+          <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Début de Mois"><h3 className="m-0">{formatCurrency(summary.startingBalance)}</h3></Card></div>
+          <div className="col-12 md:col-6 lg:col-4"><Card title="Total Revenus du Mois"><h3 className="m-0 text-green-400">{formatCurrency(summary.totalIncome)}</h3></Card></div>
+          <div className="col-12 md:col-6 lg:col-4"><Card title="Total Dépenses du Mois"><h3 className="m-0 text-red-400">{formatCurrency(summary.totalExpense)}</h3></Card></div>
+          <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Fin de Mois"><h3 className="m-0" style={{ color: endOfMonthBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(endOfMonthBalance)}</h3></Card></div>
+          <div className="col-12 md:col-6 lg:col-4"><Card title="Total Budgets"><h3 className="m-0 text-blue-400">{formatCurrency(summary.totalBudgets)}</h3></Card></div>
+          <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Prév. avec Budgets"><h3 className="m-0" style={{ color: (summary.projectedBalanceWithBudgets || 0) >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.projectedBalanceWithBudgets)}</h3></Card></div>
         </div>
 
         <div className="grid">
-          <div className="col-12 lg:col-3" data-tour-id="chart-daily-flow">
+          <div className="col-12 lg:col-6" data-tour-id="chart-daily-flow">
             <Card title="Flux Journalier">
               <div style={{ position: 'relative', height: '300px' }}>
                 <Chart type="line" data={lineChartData} options={chartOptions} />
               </div>
             </Card>
           </div>
-          <div className="col-12 lg:col-3" data-tour-id="chart-cumulative">
+          <div className="col-12 lg:col-6" data-tour-id="chart-cumulative">
             <Card title="Progression Cumulée du Mois">
               <div style={{ position: 'relative', height: '300px' }}>
                 <Chart type="line" data={cumulativeChartData} options={chartOptions} />
               </div>
             </Card>
           </div>
-          <div className="col-12 lg:col-3" data-tour-id="chart-pie">
+          <div className="col-12 lg:col-6" data-tour-id="chart-pie">
             <Card title="Répartition Revenus / Dépenses">
               <div style={{ position: 'relative', height: '300px' }}>
-                <Chart type="pie" data={pieChartData} options={chartOptions} />
+                <Chart type="pie" data={pieChartData} options={pieChartOptions} />
               </div>
             </Card>
           </div>
-          <div className="col-12 lg:col-3" data-tour-id="budget-progress">
+          <div className="col-12 lg:col-6" data-tour-id="budget-progress">
             <Card title="Progression des Budgets">
               <div style={{ height: '300px', overflowY: 'auto', padding: '0.5rem' }}>
                 <BudgetTracker data={budgetProgress} />
@@ -491,7 +486,7 @@ const MonthlyViewPage = () => {
         </div>
 
         <div className="card mt-4" data-tour-id="transactions-table">
-          <DataTable value={selectedCategoryId ? transactions.filter(t => t.Categories && t.Categories.some(c => c.id === selectedCategoryId)) : transactions} loading={loading} size="small" header={tableHeader} globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50, 100]} pt={{ bodyCell: { style: { padding: '0.25rem 0.5rem' } } }}>
+          <DataTable value={selectedCategoryId ? transactions.filter(t => t.Categories && t.Categories.some(c => c.id === selectedCategoryId)) : transactions} loading={loading} size="small" header={tableHeader} globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50, 100]} responsiveLayout="scroll" pt={{ bodyCell: { style: { padding: '0.25rem 0.5rem' } } }}>
             {COLUMN_CONFIG
               .filter(col => visibleColumns.includes(col.key))
               .map(col => (
@@ -501,11 +496,11 @@ const MonthlyViewPage = () => {
           </DataTable>
         </div>
       </div>
-      <Dialog header="Modifier la Transaction" visible={isEditModalVisible} style={{ width: '50vw' }} onHide={() => setIsEditModalVisible(false)}>
+      <Dialog header="Modifier la Transaction" visible={isEditModalVisible} style={{ width: '50vw' }} breakpoints={{ '960px': '75vw', '641px': '95vw' }} onHide={() => setIsEditModalVisible(false)}>
         <TransactionForm transactionToEdit={selectedTransaction} onComplete={handleComplete} />
       </Dialog>
 
-      <Dialog header="Ajouter une Transaction" visible={isNewModalVisible} style={{ width: '50vw' }} onHide={() => setIsNewModalVisible(false)}>
+      <Dialog header="Ajouter une Transaction" visible={isNewModalVisible} style={{ width: '50vw' }} breakpoints={{ '960px': '75vw', '641px': '95vw' }} onHide={() => setIsNewModalVisible(false)}>
         <TransactionForm onComplete={handleComplete} defaultDate={currentDate} />
       </Dialog>
     </div>

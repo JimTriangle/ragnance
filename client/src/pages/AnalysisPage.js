@@ -8,6 +8,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Chart } from 'primereact/chart';
 import { SelectButton } from 'primereact/selectbutton';
+import useChartTheme from '../hooks/useChartTheme';
 
 const AnalysisPage = () => {
     const [expenseData, setExpenseData] = useState([]);
@@ -22,6 +23,9 @@ const AnalysisPage = () => {
     const [expenseChartType, setExpenseChartType] = useState('doughnut');
     const [incomeChartType, setIncomeChartType] = useState('doughnut');
 
+    // Options des graphiques (adaptées au thème clair/sombre)
+    const { colors } = useChartTheme();
+
     const chartTypeOptions = [
         { label: 'Camembert', value: 'doughnut' },
         { label: 'Barres', value: 'bar' }
@@ -29,7 +33,7 @@ const AnalysisPage = () => {
 
     const doughnutOptions = {
         maintainAspectRatio: false,
-        plugins: { legend: { position: 'right' } }
+        plugins: { legend: { position: 'right', labels: { color: colors.legendColor } } }
     };
 
     const barOptions = {
@@ -37,7 +41,8 @@ const AnalysisPage = () => {
         indexAxis: 'y',
         plugins: { legend: { display: false } },
         scales: {
-            x: { beginAtZero: true }
+            x: { beginAtZero: true, ticks: { color: colors.textColor }, grid: { color: colors.gridColor } },
+            y: { ticks: { color: colors.textColor }, grid: { color: colors.gridColor } }
         }
     };
 

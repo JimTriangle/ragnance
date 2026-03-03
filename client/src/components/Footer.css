@@ -1,9 +1,9 @@
 .app-footer {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--surface-ground, rgba(255, 255, 255, 0.1));
     backdrop-filter: blur(10px);
     padding: 1.5rem 2rem;
     margin-top: 3rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 1px solid var(--surface-border, rgba(255, 255, 255, 0.2));
 }
 
 .footer-content {
@@ -17,7 +17,7 @@
 }
 
 .footer-copyright {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color-secondary, rgba(255, 255, 255, 0.9));
     margin: 0;
     font-size: 0.9rem;
 }
@@ -28,21 +28,15 @@
 }
 
 .footer-link {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color-secondary, rgba(255, 255, 255, 0.9));
     text-decoration: none;
     font-size: 0.9rem;
     transition: color 0.3s ease;
 }
 
 .footer-link:hover {
-    color: white;
+    color: var(--primary-color, white);
     text-decoration: underline;
-}
-
-/* Dark mode support */
-:root[data-theme="dark"] .app-footer {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Responsive design */
