@@ -8,6 +8,7 @@ import useTour from '../hooks/useTour';
 // Imports PrimeReact
 import { Card } from 'primereact/card';
 import { Chart } from 'primereact/chart';
+import { Skeleton } from 'primereact/skeleton';
 
 // Composants
 import PurchaseForecast from '../components/PurchaseForecast';
@@ -303,12 +304,25 @@ const DashboardPage = () => {
 
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
-    // Afficher un loader pendant le chargement initial
+    // Afficher un skeleton pendant le chargement initial
     if (isLoading || !dataLoaded) {
         return (
-            <div className="flex flex-column justify-content-center align-items-center" style={{ height: '80vh' }}>
-                <i className="pi pi-spin pi-spinner" style={{ fontSize: '3rem' }}></i>
-                <p className="mt-3 text-500">Chargement du dashboard...</p>
+            <div className="p-3">
+                <Skeleton width="18rem" height="2rem" className="mb-4" />
+                <div className="grid mt-2">
+                    <div className="col-12 md:col-6 lg:col-4"><Skeleton height="8rem" /></div>
+                    <div className="col-12 md:col-6 lg:col-4"><Skeleton height="8rem" /></div>
+                    <div className="col-12 md:col-6 lg:col-4"><Skeleton height="8rem" /></div>
+                </div>
+                <div className="grid mt-4">
+                    <div className="col-12 lg:col-6"><Skeleton height="20rem" /></div>
+                    <div className="col-12 lg:col-6"><Skeleton height="20rem" /></div>
+                </div>
+                <div className="grid mt-4">
+                    <div className="col-12 lg:col-4"><Skeleton height="12rem" /></div>
+                    <div className="col-12 lg:col-4"><Skeleton height="12rem" /></div>
+                    <div className="col-12 lg:col-4"><Skeleton height="12rem" /></div>
+                </div>
             </div>
         );
     }
@@ -379,11 +393,9 @@ const DashboardPage = () => {
                         </div>
                         <div style={{ position: 'relative', height: '300px' }}>
                             {monthlyBalanceData ? (
-                                <Chart type="line" data={monthlyBalanceData} options={lineChartOptions} />
+                                <Chart type="line" data={monthlyBalanceData} options={lineChartOptions} aria-label="Graphique d'évolution du solde début de mois" />
                             ) : (
-                                <div className="flex justify-content-center align-items-center h-full">
-                                    <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
-                                </div>
+                                <Skeleton height="100%" />
                             )}
                         </div>
                     </Card>
@@ -392,9 +404,15 @@ const DashboardPage = () => {
                     <Card title={`Dépenses par Catégorie — ${formattedMonth}`} className="h-full">
                         {categoryChartData && categoryChartData.labels.length > 0 ? (
                             <div style={{ position: 'relative', height: '300px' }}>
-                                <Chart type="pie" data={categoryChartData} options={pieChartOptions} />
+                                <Chart type="pie" data={categoryChartData} options={pieChartOptions} aria-label="Graphique des dépenses par catégorie" />
                             </div>
-                        ) : (<p className="text-center text-gray-500 mt-5">Aucune dépense catégorisée.</p>)}
+                        ) : (
+                            <div className="flex flex-column align-items-center justify-content-center p-5 text-center" style={{ height: '300px' }}>
+                                <i className="pi pi-chart-pie text-400" style={{ fontSize: '3rem' }}></i>
+                                <p className="mt-2 mb-0 text-500 font-medium">Aucune dépense catégorisée</p>
+                                <p className="text-sm text-400 mt-1">Ajoutez des transactions avec des catégories pour visualiser la répartition.</p>
+                            </div>
+                        )}
                     </Card>
                 </div>
             </div>

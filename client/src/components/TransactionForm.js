@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../services/api';
 import { SelectButton } from 'primereact/selectbutton';
 import { Calendar } from 'primereact/calendar';
@@ -11,7 +11,7 @@ import { Checkbox } from 'primereact/checkbox';
 import { InputNumber } from 'primereact/inputnumber';
 import AmountInput from './AmountInput';
 
-const TransactionForm = ({ onComplete, transactionToEdit = null, defaultDate = null }) => {
+const TransactionForm = ({ onComplete, transactionToEdit = null, defaultDate = null, onDirtyChange = null }) => {
   const [label, setLabel] = useState('');
   const [amount, setAmount] = useState(null);
   const [type, setType] = useState(null);
@@ -25,6 +25,20 @@ const TransactionForm = ({ onComplete, transactionToEdit = null, defaultDate = n
   const [reminderEnabled, setReminderEnabled] = useState(false);
   const [reminderDaysBefore, setReminderDaysBefore] = useState(3);
   const [error, setError] = useState('');
+
+  // Suivi des modifications non sauvegardées
+  const initializedRef = useRef(false);
+  const isDirty = useCallback(() => {
+    if (!initializedRef.current) return false;
+    if (transactionToEdit) {
+      return label !== transactionToEdit.label || amount !== transactionToEdit.amount || type !== transactionToEdit.type;
+    }
+    return label !== '' || amount !== null || type !== null;
+  }, [label, amount, type, transactionToEdit]);
+
+  useEffect(() => {
+    if (onDirtyChange) onDirtyChange(isDirty());
+  }, [isDirty, onDirtyChange]);
 
   const [categories, setCategories] = useState([]);
   const [projectBudgets, setProjectBudgets] = useState([]);
@@ -71,6 +85,9 @@ const TransactionForm = ({ onComplete, transactionToEdit = null, defaultDate = n
       setSelectedCategories([]); setSelectedProjectBudget(null);
       setReminderEnabled(false); setReminderDaysBefore(3);
     }
+    // Marquer comme initialisé après le prochain rendu
+    setTimeout(() => { initializedRef.current = true; }, 0);
+    return () => { initializedRef.current = false; };
   }, [transactionToEdit, defaultDate]);
 
   const searchLabel = (event) => {

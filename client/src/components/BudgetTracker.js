@@ -31,7 +31,11 @@ const BudgetTracker = ({ data = [] }) => {
                     );
                 })
             ) : (
-                <p className="text-center text-gray-500">Aucun budget à suivre pour ce mois-ci.</p>
+                <div className="flex flex-column align-items-center justify-content-center p-4 text-center">
+                    <i className="pi pi-wallet text-400" style={{ fontSize: '3rem' }}></i>
+                    <p className="mt-2 mb-0 text-500 font-medium">Aucun budget à suivre</p>
+                    <p className="text-sm text-400 mt-1">Définissez des budgets mensuels pour suivre vos dépenses par catégorie.</p>
+                </div>
             )}
         </div>
     );

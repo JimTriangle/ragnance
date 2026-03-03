@@ -29,12 +29,14 @@ const StrategyList = ({ items, onEdit, onDuplicate, onDelete }) => (
             rounded
             text
             onClick={() => onEdit(row.id)}
+            aria-label="Modifier la stratégie"
           />
           <Button
             icon="pi pi-copy"
             rounded
             text
             onClick={() => onDuplicate(row.id)}
+            aria-label="Dupliquer la stratégie"
           />
           <Button
             icon="pi pi-trash"
@@ -42,6 +44,7 @@ const StrategyList = ({ items, onEdit, onDuplicate, onDelete }) => (
             text
             severity="danger"
             onClick={() => onDelete(row.id)}
+            aria-label="Supprimer la stratégie"
           />
         </div>
       )}

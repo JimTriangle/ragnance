@@ -43,12 +43,14 @@ const ExchangeKeyList = ({ items, onNew, onEdit, onTest, onDelete }) => (
               rounded
               text
               onClick={() => onEdit(row.id)}
+              aria-label="Modifier la clé API"
             />
             <Button
               icon="pi pi-refresh"
               rounded
               text
               onClick={() => onTest(row.id)}
+              aria-label="Tester la clé API"
             />
             <Button
               icon="pi pi-trash"
@@ -56,6 +58,7 @@ const ExchangeKeyList = ({ items, onNew, onEdit, onTest, onDelete }) => (
               text
               severity="danger"
               onClick={() => onDelete(row.id)}
+              aria-label="Supprimer la clé API"
             />
           </div>
         )}
