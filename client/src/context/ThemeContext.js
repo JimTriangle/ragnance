@@ -10,6 +10,7 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     PrimeReact.changeTheme(previousTheme.current, theme, 'theme-link');
     previousTheme.current = theme;
+    document.documentElement.setAttribute('data-theme', theme === 'saga-blue' ? 'light' : 'dark');
   }, [theme]);
 
   useEffect(() => {

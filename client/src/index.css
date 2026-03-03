@@ -12,6 +12,47 @@ code {
     monospace;
 }
 
+/* Mode clair adouci — réduit la luminosité des blancs purs */
+html[data-theme="light"] {
+  --surface-ground: #e9ecf0;
+  --surface-section: #f0f2f5;
+  --surface-card: #f0f2f5;
+  --surface-overlay: #f0f2f5;
+  --surface-border: #d5d9e0;
+  --surface-hover: #e3e6eb;
+  --surface-0: #f4f5f7;
+  --surface-50: #eff0f3;
+  --surface-100: #e9eaee;
+  --surface-200: #d5d7dc;
+  --surface-300: #c1c4cb;
+  --surface-400: #a8abb4;
+  --surface-500: #8e929d;
+  --surface-600: #6e727d;
+  --surface-700: #555961;
+  --surface-800: #3b3e45;
+  --surface-900: #22242a;
+}
+
+html[data-theme="light"] .p-inputtext,
+html[data-theme="light"] .p-dropdown,
+html[data-theme="light"] .p-multiselect,
+html[data-theme="light"] .p-calendar .p-inputtext,
+html[data-theme="light"] .p-inputnumber .p-inputtext {
+  background: #f4f5f7;
+}
+
+html[data-theme="light"] .p-datatable .p-datatable-thead > tr > th {
+  background: #e9ecf0;
+}
+
+html[data-theme="light"] .p-datatable .p-datatable-tbody > tr {
+  background: #f0f2f5;
+}
+
+html[data-theme="light"] .p-datatable .p-datatable-tbody > tr:nth-child(even) {
+  background: #eaecf0;
+}
+
 /* CSS POUR TYPE SELECTBUTTON (Transaction Form) */
 .type-select-expense .p-selectbutton .p-button.p-highlight,
 .type-select-expense.p-selectbutton .p-button.p-highlight {
