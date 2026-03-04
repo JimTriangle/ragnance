@@ -18,9 +18,11 @@ import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
 import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import BudgetTracker from '../components/BudgetTracker';
+import DisplaySettings from '../components/DisplaySettings';
 import useTour from '../hooks/useTour';
 import TourButton from '../components/TourButton';
 import useChartTheme from '../hooks/useChartTheme';
+import useDisplayPreferences from '../hooks/useDisplayPreferences';
 import '../styles/tour.css';
 
 const COLUMN_CONFIG = [
@@ -163,6 +165,25 @@ const MonthlyViewPage = () => {
 
   // Options des graphiques (adaptées au thème clair/sombre)
   const { barChartOptions: chartOptions, pieChartOptions } = useChartTheme();
+
+  // Préférences d'affichage des sections
+  const MONTHLY_SECTIONS = [
+    { key: 'soldeDebut', label: 'Solde Début de Mois' },
+    { key: 'revenus', label: 'Total Revenus' },
+    { key: 'depenses', label: 'Total Dépenses' },
+    { key: 'soldeFinMois', label: 'Solde Fin de Mois' },
+    { key: 'totalBudgets', label: 'Total Budgets' },
+    { key: 'soldePrev', label: 'Solde Prév. avec Budgets' },
+    { key: 'chartFlux', label: 'Flux Journalier' },
+    { key: 'chartCumul', label: 'Progression Cumulée' },
+    { key: 'chartPie', label: 'Répartition Revenus / Dépenses' },
+    { key: 'chartBudgetProgress', label: 'Progression des Budgets' },
+  ];
+  const { visibility, toggleSection, isVisible } = useDisplayPreferences('monthlyView', {
+    soldeDebut: true, revenus: true, depenses: true,
+    soldeFinMois: true, totalBudgets: true, soldePrev: true,
+    chartFlux: true, chartCumul: true, chartPie: true, chartBudgetProgress: true,
+  });
 
   const fetchData = useCallback(async () => {
     if (!isLoggedIn || authLoading) {
@@ -451,18 +472,23 @@ const MonthlyViewPage = () => {
       <div className="p-4">
         <div className="flex justify-content-center align-items-center mb-4">
           <h1 className="text-2xl capitalize m-0" data-tour-id="monthly-title">{`Analyse de ${monthName} ${year}`}</h1>
+          <DisplaySettings sections={MONTHLY_SECTIONS} visibility={visibility} onToggle={toggleSection} />
         </div>
 
+        {(isVisible('soldeDebut') || isVisible('revenus') || isVisible('depenses') || isVisible('soldeFinMois') || isVisible('totalBudgets') || isVisible('soldePrev')) && (
         <div className="grid text-center mb-4" data-tour-id="summary-cards">
-          <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Début de Mois"><h3 className="m-0">{formatCurrency(summary.startingBalance)}</h3></Card></div>
-          <div className="col-12 md:col-6 lg:col-4"><Card title="Total Revenus du Mois"><h3 className="m-0 text-green-400">{formatCurrency(summary.totalIncome)}</h3></Card></div>
-          <div className="col-12 md:col-6 lg:col-4"><Card title="Total Dépenses du Mois"><h3 className="m-0 text-red-400">{formatCurrency(summary.totalExpense)}</h3></Card></div>
-          <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Fin de Mois"><h3 className="m-0" style={{ color: endOfMonthBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(endOfMonthBalance)}</h3></Card></div>
-          <div className="col-12 md:col-6 lg:col-4"><Card title="Total Budgets"><h3 className="m-0 text-blue-400">{formatCurrency(summary.totalBudgets)}</h3></Card></div>
-          <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Prév. avec Budgets"><h3 className="m-0" style={{ color: (summary.projectedBalanceWithBudgets || 0) >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.projectedBalanceWithBudgets)}</h3></Card></div>
+          {isVisible('soldeDebut') && <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Début de Mois"><h3 className="m-0">{formatCurrency(summary.startingBalance)}</h3></Card></div>}
+          {isVisible('revenus') && <div className="col-12 md:col-6 lg:col-4"><Card title="Total Revenus du Mois"><h3 className="m-0 text-green-400">{formatCurrency(summary.totalIncome)}</h3></Card></div>}
+          {isVisible('depenses') && <div className="col-12 md:col-6 lg:col-4"><Card title="Total Dépenses du Mois"><h3 className="m-0 text-red-400">{formatCurrency(summary.totalExpense)}</h3></Card></div>}
+          {isVisible('soldeFinMois') && <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Fin de Mois"><h3 className="m-0" style={{ color: endOfMonthBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(endOfMonthBalance)}</h3></Card></div>}
+          {isVisible('totalBudgets') && <div className="col-12 md:col-6 lg:col-4"><Card title="Total Budgets"><h3 className="m-0 text-blue-400">{formatCurrency(summary.totalBudgets)}</h3></Card></div>}
+          {isVisible('soldePrev') && <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Prév. avec Budgets"><h3 className="m-0" style={{ color: (summary.projectedBalanceWithBudgets || 0) >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.projectedBalanceWithBudgets)}</h3></Card></div>}
         </div>
+        )}
 
+        {(isVisible('chartFlux') || isVisible('chartCumul') || isVisible('chartPie') || isVisible('chartBudgetProgress')) && (
         <div className="grid">
+          {isVisible('chartFlux') && (
           <div className="col-12 lg:col-6" data-tour-id="chart-daily-flow">
             <Card title="Flux Journalier">
               <div style={{ position: 'relative', height: '300px' }}>
@@ -470,6 +496,8 @@ const MonthlyViewPage = () => {
               </div>
             </Card>
           </div>
+          )}
+          {isVisible('chartCumul') && (
           <div className="col-12 lg:col-6" data-tour-id="chart-cumulative">
             <Card title="Progression Cumulée du Mois">
               <div style={{ position: 'relative', height: '300px' }}>
@@ -477,6 +505,8 @@ const MonthlyViewPage = () => {
               </div>
             </Card>
           </div>
+          )}
+          {isVisible('chartPie') && (
           <div className="col-12 lg:col-6" data-tour-id="chart-pie">
             <Card title="Répartition Revenus / Dépenses">
               <div style={{ position: 'relative', height: '300px' }}>
@@ -484,6 +514,8 @@ const MonthlyViewPage = () => {
               </div>
             </Card>
           </div>
+          )}
+          {isVisible('chartBudgetProgress') && (
           <div className="col-12 lg:col-6" data-tour-id="budget-progress">
             <Card title="Progression des Budgets">
               <div style={{ height: '300px', overflowY: 'auto', padding: '0.5rem' }}>
@@ -491,7 +523,9 @@ const MonthlyViewPage = () => {
               </div>
             </Card>
           </div>
+          )}
         </div>
+        )}
 
         <div className="flex justify-content-between align-items-center my-4" data-tour-id="month-navigation">
           <Button icon="pi pi-arrow-left" onClick={() => changeMonth(-1)} aria-label="Mois précédent" />
