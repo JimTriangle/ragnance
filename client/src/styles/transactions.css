@@ -1,0 +1,337 @@
+/* ===== Modern Transaction List ===== */
+/* Flat design matching the modernised card aesthetic */
+
+/* ── Container ────────────────────────────────────────────────── */
+.txn-section {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.txn-section:hover {
+    border-color: color-mix(in srgb, var(--primary-color) 50%, transparent);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Header ───────────────────────────────────────────────────── */
+.txn-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.25rem 0;
+}
+
+.txn-header__left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.txn-header__title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.txn-header__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.45rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+    color: var(--primary-color);
+}
+
+/* ── Toolbar ──────────────────────────────────────────────────── */
+.txn-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+}
+
+.txn-toolbar__search {
+    position: relative;
+    flex: 1;
+    min-width: 160px;
+    max-width: 260px;
+}
+
+.txn-toolbar__search .p-inputtext {
+    width: 100%;
+    padding-left: 2.25rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.txn-toolbar__search > .pi-search {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-color-secondary);
+    font-size: 0.85rem;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.txn-toolbar .p-dropdown,
+.txn-toolbar .p-multiselect {
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+/* ── DataTable overrides inside txn-section ───────────────────── */
+.txn-section .p-datatable {
+    border: none;
+}
+
+.txn-section .p-datatable .p-datatable-header {
+    display: none; /* we use our own header */
+}
+
+.txn-section .p-datatable .p-datatable-thead > tr > th {
+    background: transparent;
+    border-bottom: 1px solid var(--surface-border);
+    color: var(--text-color-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.6rem 0.75rem;
+}
+
+.txn-section .p-datatable .p-datatable-tbody > tr {
+    background: transparent;
+    transition: background 0.15s ease;
+}
+
+.txn-section .p-datatable .p-datatable-tbody > tr:nth-child(even) {
+    background: transparent;
+}
+
+.txn-section .p-datatable .p-datatable-tbody > tr:hover {
+    background: var(--surface-hover);
+}
+
+.txn-section .p-datatable .p-datatable-tbody > tr > td {
+    border-bottom: 1px solid color-mix(in srgb, var(--surface-border) 50%, transparent);
+    padding: 0.6rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-color);
+}
+
+.txn-section .p-datatable .p-datatable-tbody > tr:last-child > td {
+    border-bottom: none;
+}
+
+/* ── Paginator overrides ──────────────────────────────────────── */
+.txn-section .p-paginator {
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--surface-border);
+    padding: 0.5rem 0.75rem;
+}
+
+.txn-section .p-paginator .p-paginator-pages .p-paginator-page {
+    border-radius: 8px;
+    min-width: 2rem;
+    height: 2rem;
+    font-size: 0.8rem;
+}
+
+.txn-section .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+    background: var(--primary-color);
+    color: var(--primary-color-text);
+}
+
+/* ── Amount cell ──────────────────────────────────────────────── */
+.txn-amount {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.875rem;
+}
+
+.txn-amount--income {
+    color: var(--green-400);
+}
+
+.txn-amount--expense {
+    color: var(--red-400);
+}
+
+/* ── Type indicator (pill) ────────────────────────────────────── */
+.txn-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.txn-type--income {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--green-400);
+}
+
+.txn-type--expense {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--red-400);
+}
+
+.txn-type__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.txn-type--income .txn-type__dot {
+    background: var(--green-400);
+}
+
+.txn-type--expense .txn-type__dot {
+    background: var(--red-400);
+}
+
+/* ── Label cell ───────────────────────────────────────────────── */
+.txn-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.txn-label__recurring {
+    color: var(--text-color-secondary);
+    font-size: 0.85rem;
+}
+
+/* ── Category tags ────────────────────────────────────────────── */
+.txn-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.txn-category-tag {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #fff;
+    line-height: 1.4;
+}
+
+/* ── Date cell ────────────────────────────────────────────────── */
+.txn-date {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+}
+
+/* ── Action buttons ───────────────────────────────────────────── */
+.txn-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.txn-actions .p-button {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    color: var(--text-color-secondary);
+    background: transparent;
+    border: none;
+    transition: all 0.15s ease;
+}
+
+.txn-actions .p-button:hover {
+    background: var(--surface-hover);
+    color: var(--text-color);
+}
+
+.txn-actions .p-button.p-button-danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--red-400);
+}
+
+/* ── Add button ───────────────────────────────────────────────── */
+.txn-add-btn.p-button {
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.4rem 0.85rem;
+}
+
+/* ── Empty state ──────────────────────────────────────────────── */
+.txn-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--text-color-secondary);
+}
+
+.txn-empty__icon {
+    font-size: 2.5rem;
+    opacity: 0.2;
+    margin-bottom: 0.75rem;
+}
+
+.txn-empty__text {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.txn-empty__sub {
+    font-size: 0.8rem;
+    margin: 0.25rem 0 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .txn-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .txn-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .txn-toolbar__search {
+        max-width: 100%;
+    }
+
+    .txn-toolbar .p-dropdown,
+    .txn-toolbar .p-multiselect {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .txn-header {
+        padding: 1rem 1rem 0;
+    }
+
+    .txn-toolbar {
+        padding: 0.5rem 1rem;
+    }
+}
