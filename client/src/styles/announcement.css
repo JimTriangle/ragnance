@@ -1,0 +1,56 @@
+/* Announcement Dialog */
+
+.announcement-content {
+    line-height: 1.6;
+}
+
+.announcement-content h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.announcement-content h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.announcement-content p {
+    margin-bottom: 0.75rem;
+}
+
+.announcement-content ul,
+.announcement-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.announcement-content li {
+    margin-bottom: 0.25rem;
+}
+
+.announcement-content code {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-family: monospace;
+}
+
+.announcement-header__icon {
+    font-size: 1.5rem;
+}
+
+.announcement-header__icon--feature {
+    color: var(--green-400);
+}
+
+.announcement-header__icon--info {
+    color: #3B82F6;
+}
+
+.announcement-header__icon--warning {
+    color: #F59E0B;
+}
+
+.announcement-header__icon--update {
+    color: #8B5CF6;
+}

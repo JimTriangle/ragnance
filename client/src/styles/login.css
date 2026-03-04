@@ -1,0 +1,20 @@
+/* Login Page */
+
+.login-page {
+    height: 100vh;
+    position: relative;
+}
+
+.login-theme-toggle {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+.login-card {
+    width: 25rem;
+}
+
+.login-remember-label {
+    cursor: pointer;
+}

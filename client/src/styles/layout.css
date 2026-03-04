@@ -1,0 +1,58 @@
+/* Layout & Navigation */
+
+/* TopBar */
+.top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+/* Add transaction button - hidden on mobile, visible on desktop */
+.add-transaction-button {
+    display: none;
+}
+
+/* FAB (Floating Action Button) - visible on mobile, hidden on desktop */
+.fab-button {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 1000;
+}
+
+@media (min-width: 768px) {
+    .add-transaction-button {
+        display: inline-flex;
+    }
+    .fab-button {
+        display: none;
+    }
+}
+
+/* Hamburger menu - hidden on large desktop when sidebar is persistent */
+.hamburger-button {
+    display: inline-flex;
+}
+
+@media (min-width: 1200px) {
+    .hamburger-button {
+        display: none !important;
+    }
+}
+
+/* Breadcrumbs */
+.breadcrumb-bar {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    border-bottom: 1px solid var(--surface-border);
+}
+
+.breadcrumb-bar a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.breadcrumb-bar a:hover {
+    text-decoration: underline;
+}

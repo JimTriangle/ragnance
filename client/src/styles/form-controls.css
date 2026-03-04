@@ -1,0 +1,37 @@
+/* Form Controls - Transaction type SelectButton */
+
+.type-select-expense .p-selectbutton .p-button.p-highlight,
+.type-select-expense.p-selectbutton .p-button.p-highlight {
+    background: var(--red-400) !important;
+    border-color: var(--red-400) !important;
+    color: #fff !important;
+}
+
+.type-select-expense .p-selectbutton .p-button.p-highlight:hover,
+.type-select-expense.p-selectbutton .p-button.p-highlight:hover {
+    background: var(--red-500) !important;
+    border-color: var(--red-500) !important;
+}
+
+.type-select-expense .p-selectbutton .p-button.p-highlight span,
+.type-select-expense.p-selectbutton .p-button.p-highlight span {
+    color: #fff !important;
+}
+
+.type-select-income .p-selectbutton .p-button.p-highlight,
+.type-select-income.p-selectbutton .p-button.p-highlight {
+    background: var(--green-400) !important;
+    border-color: var(--green-400) !important;
+    color: #fff !important;
+}
+
+.type-select-income .p-selectbutton .p-button.p-highlight:hover,
+.type-select-income.p-selectbutton .p-button.p-highlight:hover {
+    background: var(--green-500) !important;
+    border-color: var(--green-500) !important;
+}
+
+.type-select-income .p-selectbutton .p-button.p-highlight span,
+.type-select-income.p-selectbutton .p-button.p-highlight span {
+    color: #fff !important;
+}

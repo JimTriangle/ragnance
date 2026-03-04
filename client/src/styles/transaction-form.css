@@ -1,0 +1,11 @@
+/* Transaction Form */
+
+.type-template--income {
+    color: var(--green-400);
+    font-weight: bold;
+}
+
+.type-template--expense {
+    color: var(--red-400);
+    font-weight: bold;
+}
