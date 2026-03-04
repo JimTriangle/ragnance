@@ -6,6 +6,8 @@ import EquityChart from '../../components/trading/EquityChart';
 import PnlDailyChart from '../../components/trading/PnlDailyChart';
 import SummaryTable from '../../components/trading/SummaryTable';
 import api from '../../services/api';
+import DisplaySettings from '../../components/DisplaySettings';
+import useDisplayPreferences from '../../hooks/useDisplayPreferences';
 import './TradingStyles.css';
 import useTour from '../../hooks/useTour';
 import TourButton from '../../components/TourButton';
@@ -109,6 +111,20 @@ const TradingDashboardPage = () => {
 
   const { startTour } = useTour('trading-dashboard', tourSteps, true);
 
+  // Préférences d'affichage des sections
+  const TRADING_SECTIONS = [
+    { key: 'kpiEquity', label: 'Equity' },
+    { key: 'kpiPnl', label: 'PnL Jour' },
+    { key: 'kpiTrades', label: 'Trades' },
+    { key: 'chartEquity', label: "Courbe d'Equity" },
+    { key: 'chartPnl', label: 'PnL Journalier' },
+    { key: 'summaryTable', label: 'Résumé Robots & Backtests' },
+  ];
+  const { visibility, toggleSection, isVisible } = useDisplayPreferences('tradingDashboard', {
+    kpiEquity: true, kpiPnl: true, kpiTrades: true,
+    chartEquity: true, chartPnl: true, summaryTable: true,
+  });
+
   const fetchData = useCallback(async () => {
     const params = {
       from: new Date(filters.from).toISOString(),
@@ -169,7 +185,10 @@ const TradingDashboardPage = () => {
       <TourButton onStartTour={startTour} tooltip="Revoir le guide du Trading Dashboard" />
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold" data-tour-id="trading-title">Dashboard Trading</h1>
-        <Button icon="pi pi-refresh" onClick={fetchData} size="small" rounded text aria-label="Actualiser" />
+        <div className="flex align-items-center gap-2">
+          <DisplaySettings sections={TRADING_SECTIONS} visibility={visibility} onToggle={toggleSection} />
+          <Button icon="pi pi-refresh" onClick={fetchData} size="small" rounded text aria-label="Actualiser" />
+        </div>
       </div>
       {lastUpdated && (
         <p className="text-sm text-gray-500 mb-4">Dernière mise à jour : {lastUpdated.toLocaleString()}</p>
@@ -177,7 +196,9 @@ const TradingDashboardPage = () => {
       <div data-tour-id="filters-bar">
         <FiltersBar filters={filters} onChange={setFilters} />
       </div>
+      {(isVisible('kpiEquity') || isVisible('kpiPnl') || isVisible('kpiTrades')) && (
       <div className="grid">
+        {isVisible('kpiEquity') && (
         <div className="col-12 md:col-4" data-tour-id="kpi-equity">
           <KpiCard
             label="Equity"
@@ -188,27 +209,41 @@ const TradingDashboardPage = () => {
             }
           />
         </div>
+        )}
+        {isVisible('kpiPnl') && (
         <div className="col-12 md:col-4" data-tour-id="kpi-pnl">
           <KpiCard
             label="PnL Jour"
             value={summary?.pnl?.day != null ? summary.pnl.day.toFixed(2) : '-'}
           />
         </div>
+        )}
+        {isVisible('kpiTrades') && (
         <div className="col-12 md:col-4" data-tour-id="kpi-trades">
           <KpiCard label="Trades" value={summary?.tradesCount ?? '-'} />
         </div>
+        )}
       </div>
+      )}
+      {(isVisible('chartEquity') || isVisible('chartPnl')) && (
       <div className="grid mt-4">
+        {isVisible('chartEquity') && (
         <div className="col-12 lg:col-6" data-tour-id="equity-chart">
           <EquityChart points={equity} />
         </div>
+        )}
+        {isVisible('chartPnl') && (
         <div className="col-12 lg:col-6" data-tour-id="pnl-chart">
           <PnlDailyChart days={pnlDaily} />
         </div>
+        )}
       </div>
+      )}
+      {isVisible('summaryTable') && (
       <div className="mt-4" data-tour-id="summary-table">
         <SummaryTable robots={summary?.robots || []} backtests={summary?.backtests || []} />
       </div>
+      )}
     </div>
   );
 };

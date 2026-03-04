@@ -15,7 +15,9 @@ import PurchaseForecast from '../components/PurchaseForecast';
 import BudgetTracker from '../components/BudgetTracker';
 import ProjectBudgetTracker from '../components/ProjectBudgetTracker';
 import TourButton from '../components/TourButton';
+import DisplaySettings from '../components/DisplaySettings';
 import useChartTheme from '../hooks/useChartTheme';
+import useDisplayPreferences from '../hooks/useDisplayPreferences';
 
 // Styles du tour
 import '../styles/tour.css';
@@ -131,6 +133,23 @@ const DashboardPage = () => {
 
     // Options des graphiques (adaptées au thème clair/sombre)
     const { lineChartOptions, pieChartOptions } = useChartTheme();
+
+    // Préférences d'affichage des sections
+    const DASHBOARD_SECTIONS = [
+        { key: 'soldeActuel', label: 'Solde Actuel' },
+        { key: 'soldeFinMois', label: 'Solde Fin de Mois' },
+        { key: 'revenusDepenses', label: 'Revenus & Dépenses' },
+        { key: 'chartSolde', label: 'Solde début de mois' },
+        { key: 'chartCategories', label: 'Dépenses par Catégorie' },
+        { key: 'budgetTracker', label: 'Suivi des Budgets' },
+        { key: 'projectBudgets', label: 'Budgets de Projets' },
+        { key: 'purchaseForecast', label: 'Prévision d\'Achats' },
+    ];
+    const { visibility, toggleSection, isVisible } = useDisplayPreferences('dashboard', {
+        soldeActuel: true, soldeFinMois: true, revenusDepenses: true,
+        chartSolde: true, chartCategories: true,
+        budgetTracker: true, projectBudgets: true, purchaseForecast: true,
+    });
 
     // Logique de récupération des données
     const fetchData = useCallback(async () => {
@@ -336,11 +355,14 @@ const DashboardPage = () => {
         <div className="p-3">
             <div className="flex justify-content-between align-items-center">
                 <h1 className="text-2xl font-bold" data-tour-id="dashboard-title">Dashboard Budget - {formattedMonth}</h1>
+                <DisplaySettings sections={DASHBOARD_SECTIONS} visibility={visibility} onToggle={toggleSection} />
             </div>
 
             {/* Bouton pour relancer le guide */}
             <TourButton onStartTour={startTour} tooltip="Revoir le guide du Dashboard" />
+            {(isVisible('soldeActuel') || isVisible('soldeFinMois') || isVisible('revenusDepenses')) && (
             <div className="grid mt-2">
+                {isVisible('soldeActuel') && (
                 <div className="col-12 md:col-6 lg:col-4" data-tour-id="card-balance">
                     <Card title="Solde Actuel">
                         <div className="flex flex-column gap-2">
@@ -351,6 +373,8 @@ const DashboardPage = () => {
                         </div>
                     </Card>
                 </div>
+                )}
+                {isVisible('soldeFinMois') && (
                 <div className="col-12 md:col-6 lg:col-4" data-tour-id="card-projected">
                     <Card title="Solde Fin de Mois (Prév.)">
                         <div className="flex flex-column gap-2">
@@ -367,6 +391,8 @@ const DashboardPage = () => {
                         </div>
                     </Card>
                 </div>
+                )}
+                {isVisible('revenusDepenses') && (
                 <div className="col-12 md:col-6 lg:col-4" data-tour-id="card-income-expense">
                     <Card title="Revenus & Dépenses (Prév.)">
                         <div className="flex flex-column gap-2">
@@ -381,8 +407,12 @@ const DashboardPage = () => {
                         </div>
                     </Card>
                 </div>
+                )}
             </div>
+            )}
+            {(isVisible('chartSolde') || isVisible('chartCategories')) && (
             <div className="grid mt-4">
+                {isVisible('chartSolde') && (
                 <div className="col-12 lg:col-6" data-tour-id="chart-daily">
                     <Card>
                         <div className="flex justify-content-between align-items-center mb-3">
@@ -400,6 +430,8 @@ const DashboardPage = () => {
                         </div>
                     </Card>
                 </div>
+                )}
+                {isVisible('chartCategories') && (
                 <div className="col-12 lg:col-6" data-tour-id="chart-category">
                     <Card title={`Dépenses par Catégorie — ${formattedMonth}`} className="h-full">
                         {categoryChartData && categoryChartData.labels.length > 0 ? (
@@ -415,20 +447,30 @@ const DashboardPage = () => {
                         )}
                     </Card>
                 </div>
+                )}
             </div>
+            )}
+            {(isVisible('budgetTracker') || isVisible('projectBudgets') || isVisible('purchaseForecast')) && (
             <div className="grid mt-4">
+                {isVisible('budgetTracker') && (
                 <div className="col-12 lg:col-4" data-tour-id="budget-tracker">
                     <Card title="Suivi des Budgets Mensuels" className="h-full">
                         <BudgetTracker data={budgetProgressData} />
                     </Card>
                 </div>
+                )}
+                {isVisible('projectBudgets') && (
                 <div className="col-12 lg:col-4" data-tour-id="project-budgets">
                     <ProjectBudgetTracker budgets={projectBudgets} />
                 </div>
+                )}
+                {isVisible('purchaseForecast') && (
                 <div className="col-12 lg:col-4" data-tour-id="purchase-forecast">
                     <PurchaseForecast onUpdate={fetchData} />
                 </div>
+                )}
             </div>
+            )}
         </div>
     );
 };
