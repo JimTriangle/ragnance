@@ -6,7 +6,6 @@ import { AuthContext } from '../context/AuthContext';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { Tag } from 'primereact/tag';
 import { Card } from 'primereact/card';
 import { Dialog } from 'primereact/dialog';
 import { confirmDialog } from 'primereact/confirmdialog';
@@ -24,6 +23,7 @@ import TourButton from '../components/TourButton';
 import useChartTheme from '../hooks/useChartTheme';
 import useDisplayPreferences from '../hooks/useDisplayPreferences';
 import '../styles/tour.css';
+import '../styles/transactions.css';
 
 const COLUMN_CONFIG = [
   { key: 'label',      header: 'Libellé',    field: 'label',     sortable: true,  bodyRef: 'labelBodyTemplate' },
@@ -333,13 +333,13 @@ const MonthlyViewPage = () => {
   const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
   const formatDate = (rowData) => {
+    let text = '-';
     if (rowData.date) {
-      return new Date(rowData.date).toLocaleDateString('fr-FR');
+      text = new Date(rowData.date).toLocaleDateString('fr-FR');
+    } else if (rowData.transactionType === 'recurring') {
+      text = `Le ${rowData.dayOfMonth || '1er'} du mois`;
     }
-    if (rowData.transactionType === 'recurring') {
-      return `Le ${rowData.dayOfMonth || '1er'} du mois`;
-    }
-    return '-';
+    return <span className="txn-date">{text}</span>;
   };
 
   const handleExportExcel = async () => {
@@ -370,16 +370,20 @@ const MonthlyViewPage = () => {
   };
 
   const typeTemplate = (rowData) => {
-    const severity = rowData.type === 'income' ? 'success' : 'danger';
-    const text = rowData.type === 'income' ? 'Revenu' : 'Dépense';
-    return <Tag severity={severity} value={text}></Tag>;
+    const isIncome = rowData.type === 'income';
+    return (
+      <span className={`txn-type ${isIncome ? 'txn-type--income' : 'txn-type--expense'}`}>
+        <span className="txn-type__dot" />
+        {isIncome ? 'Revenu' : 'Dépense'}
+      </span>
+    );
   };
 
   const labelBodyTemplate = (rowData) => (
-    <div className="flex align-items-center">
-      {rowData.transactionType === 'recurring' && <i className="pi pi-sync mr-2" title="Transaction récurrente"></i>}
+    <span className="txn-label">
+      {rowData.transactionType === 'recurring' && <i className="pi pi-sync txn-label__recurring" title="Transaction récurrente"></i>}
       {rowData.label}
-    </div>
+    </span>
   );
 
   const onColumnVisibilityChange = (e) => {
@@ -388,15 +392,15 @@ const MonthlyViewPage = () => {
   };
 
   const amountBodyTemplate = (rowData) => (
-    <span style={{ color: rowData.type === 'income' ? 'var(--green-400)' : 'var(--red-400)' }}>
+    <span className={`txn-amount ${rowData.type === 'income' ? 'txn-amount--income' : 'txn-amount--expense'}`}>
       {formatCurrency(rowData.amount)}
     </span>
   );
 
   const actionBodyTemplate = (rowData) => (
-    <div className="flex justify-content-center gap-2">
-      <Button icon="pi pi-pencil" className="p-button-rounded p-button-success p-button-sm" onClick={() => handleEditClick(rowData)} aria-label="Modifier la transaction" />
-      <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-sm" onClick={() => confirmDelete(rowData.id)} aria-label="Supprimer la transaction" />
+    <div className="txn-actions">
+      <Button icon="pi pi-pencil" className="p-button-text p-button-sm" onClick={() => handleEditClick(rowData)} aria-label="Modifier la transaction" />
+      <Button icon="pi pi-trash" className="p-button-text p-button-danger p-button-sm" onClick={() => confirmDelete(rowData.id)} aria-label="Supprimer la transaction" />
     </div>
   );
 
@@ -405,22 +409,12 @@ const MonthlyViewPage = () => {
   const endOfMonthBalance = (summary.startingBalance || 0) + (summary.totalIncome || 0) - (summary.totalExpense || 0);
   const categoryOptions = allCategories.map(c => ({ label: c.name, value: c.id }));
 
-  const tableHeader = (
-    <div className="flex flex-wrap justify-content-between align-items-center gap-2">
-      <Button label="Ajouter une transaction" icon="pi pi-plus" className="p-button-success p-button-sm" onClick={() => setIsNewModalVisible(true)} data-tour-id="add-transaction-btn" />
-      <div className="flex flex-wrap align-items-center gap-2" style={{ minWidth: 0 }}>
-        <MultiSelect value={visibleColumns} options={COLUMN_CONFIG.map(c => ({ label: c.header, value: c.key }))} onChange={onColumnVisibilityChange} placeholder="Colonnes" className="p-inputtext-sm" display="chip" style={{ maxWidth: '20rem', minWidth: 0 }} />
-        <Dropdown value={selectedCategoryId} options={categoryOptions} onChange={(e) => setSelectedCategoryId(e.value)} placeholder="Catégorie" showClear className="p-inputtext-sm" style={{ minWidth: 0 }} />
-        <span className="p-input-icon-left" style={{ minWidth: 0, maxWidth: '100%' }}>
-          <i className="pi pi-search" />
-          <InputText value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder="Rechercher..." className="p-inputtext-sm" style={{ width: '100%' }} />
-        </span>
-      </div>
-    </div>
-  );
+  const filteredTransactions = selectedCategoryId
+    ? transactions.filter(t => t.Categories && t.Categories.some(c => c.id === selectedCategoryId))
+    : transactions;
 
   const createdAtDate = (rowData) => {
-    return new Date(rowData.createdAt).toLocaleDateString('fr-FR');
+    return <span className="txn-date">{new Date(rowData.createdAt).toLocaleDateString('fr-FR')}</span>;
   };
 
   const categoryBodyTemplate = (rowData) => {
@@ -428,9 +422,9 @@ const MonthlyViewPage = () => {
       return null;
     }
     return (
-      <div className="flex flex-wrap gap-1">
+      <div className="txn-categories">
         {rowData.Categories.map(category => (
-          <Tag key={category.id} value={category.name} style={{ background: category.color }}></Tag>
+          <span key={category.id} className="txn-category-tag" style={{ background: category.color }}>{category.name}</span>
         ))}
       </div>
     );
@@ -461,7 +455,15 @@ const MonthlyViewPage = () => {
           <div className="col-12 lg:col-6"><Skeleton height="20rem" /></div>
           <div className="col-12 lg:col-6"><Skeleton height="20rem" /></div>
         </div>
-        <Skeleton height="15rem" className="mt-4" />
+        <div className="txn-section mt-4">
+          <div className="txn-header">
+            <Skeleton width="8rem" height="1.25rem" />
+            <Skeleton width="6rem" height="2rem" borderRadius="8px" />
+          </div>
+          <div style={{ padding: '0.75rem 1.25rem' }}>
+            <Skeleton height="12rem" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -533,14 +535,37 @@ const MonthlyViewPage = () => {
           <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} aria-label="Mois suivant" />
         </div>
 
-        <div className="card mt-4" data-tour-id="transactions-table">
-          <DataTable value={selectedCategoryId ? transactions.filter(t => t.Categories && t.Categories.some(c => c.id === selectedCategoryId)) : transactions} loading={loading} size="small" header={tableHeader} globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50, 100]} responsiveLayout="scroll" pt={{ bodyCell: { style: { padding: '0.25rem 0.5rem' } } }}>
+        <div className="txn-section mt-4" data-tour-id="transactions-table">
+          <div className="txn-header">
+            <div className="txn-header__left">
+              <h2 className="txn-header__title">Transactions</h2>
+              <span className="txn-header__count">{filteredTransactions.length}</span>
+            </div>
+            <Button label="Ajouter" icon="pi pi-plus" className="p-button-success p-button-sm txn-add-btn" onClick={() => setIsNewModalVisible(true)} data-tour-id="add-transaction-btn" />
+          </div>
+
+          <div className="txn-toolbar">
+            <MultiSelect value={visibleColumns} options={COLUMN_CONFIG.map(c => ({ label: c.header, value: c.key }))} onChange={onColumnVisibilityChange} placeholder="Colonnes" className="p-inputtext-sm" display="chip" style={{ maxWidth: '14rem' }} />
+            <Dropdown value={selectedCategoryId} options={categoryOptions} onChange={(e) => setSelectedCategoryId(e.value)} placeholder="Catégorie" showClear className="p-inputtext-sm" />
+            <div className="txn-toolbar__search">
+              <i className="pi pi-search" />
+              <InputText value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder="Rechercher..." className="p-inputtext-sm" />
+            </div>
+          </div>
+
+          <DataTable value={filteredTransactions} loading={loading} size="small" globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50, 100]} responsiveLayout="scroll" emptyMessage={
+            <div className="txn-empty">
+              <i className="pi pi-inbox txn-empty__icon"></i>
+              <p className="txn-empty__text">Aucune transaction ce mois</p>
+              <p className="txn-empty__sub">Ajoutez votre première transaction pour commencer le suivi.</p>
+            </div>
+          }>
             {COLUMN_CONFIG
               .filter(col => visibleColumns.includes(col.key))
               .map(col => (
                 <Column key={col.key} field={col.field} header={col.header} body={bodyTemplates[col.bodyRef]} sortable={col.sortable} />
               ))}
-            <Column body={actionBodyTemplate} header="Actions" style={{ width: '7rem', textAlign: 'center' }} />
+            <Column body={actionBodyTemplate} header="Actions" style={{ width: '6rem', textAlign: 'center' }} />
           </DataTable>
         </div>
       </div>
