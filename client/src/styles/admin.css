@@ -1,0 +1,9 @@
+/* Admin Page */
+
+.admin-section {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+}

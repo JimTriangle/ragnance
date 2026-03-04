@@ -1,0 +1,49 @@
+/* Expense Calculator Page */
+
+.calculator-month-label {
+    min-width: 200px;
+    text-align: center;
+}
+
+/* Distribution card */
+.calculator-dist-card {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.calculator-dist-card:hover {
+    border-color: color-mix(in srgb, var(--primary-color) 50%, transparent);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.calculator-dist-card__title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+.calculator-dist-card__amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+}
+
+.calculator-dist-card__share {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background: var(--surface-0);
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.calculator-dist-card__share:last-child {
+    margin-bottom: 0;
+}
