@@ -1,0 +1,224 @@
+/* Budgets Page */
+
+.budgets-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.budgets-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.budgets-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+}
+
+/* Month navigation */
+.budgets-month-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.budgets-month-nav .p-button {
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--text-color-secondary);
+    border: 1px solid var(--surface-border);
+    background: var(--surface-card);
+    border-radius: 10px;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.budgets-month-nav .p-button:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: var(--surface-card);
+}
+
+.budgets-month-label {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-color);
+    text-transform: capitalize;
+}
+
+/* Copy banner */
+.budgets-copy-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1.15rem;
+    margin-bottom: 1rem;
+    background: var(--surface-card);
+    border: 1px solid color-mix(in srgb, var(--primary-color) 30%, var(--surface-border));
+    border-radius: 10px;
+}
+
+.budgets-copy-banner__text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+}
+
+.budgets-copy-banner__text i {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+/* Budget card grid */
+.budgets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 0.75rem;
+}
+
+.budget-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    gap: 1rem;
+}
+
+.budget-card:hover {
+    border-color: color-mix(in srgb, var(--primary-color) 50%, transparent);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Left side: color dot + category name */
+.budget-card__info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    flex-shrink: 0;
+}
+
+.budget-card__color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.06);
+}
+
+.budget-card__name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Right side: input + status */
+.budget-card__input {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 0;
+}
+
+.budget-card__input .p-inputnumber,
+.budget-card__input .p-inputtext {
+    max-width: 160px;
+}
+
+.budget-card__status {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    min-width: 90px;
+}
+
+.budget-card__status--saving {
+    color: var(--text-color-secondary);
+}
+
+.budget-card__status--saved {
+    color: var(--green-400);
+}
+
+/* Empty state */
+.budgets-empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    color: var(--text-color-secondary);
+    text-align: center;
+}
+
+.budgets-empty i {
+    font-size: 2rem;
+    opacity: 0.3;
+}
+
+.budgets-empty p {
+    margin: 0.75rem 0 0;
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .budgets-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .budgets-copy-banner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .budgets-copy-banner .p-button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .budget-card {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .budget-card__input {
+        width: 100%;
+        justify-content: flex-start;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--surface-border);
+    }
+
+    .budget-card__input .p-inputnumber,
+    .budget-card__input .p-inputtext {
+        max-width: none;
+        flex: 1;
+    }
+
+    .budgets-header {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}

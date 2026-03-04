@@ -3,12 +3,11 @@ import api from '../services/api';
 import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import { ToastContext } from '../context/ToastContext';
 import { Button } from 'primereact/button';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import AmountInput from '../components/AmountInput';
 import useTour from '../hooks/useTour';
 import TourButton from '../components/TourButton';
 import '../styles/tour.css';
+import '../styles/budgets.css';
 
 const BudgetsPage = () => {
     const [trackedCategories, setTrackedCategories] = useState([]);
@@ -55,7 +54,7 @@ const BudgetsPage = () => {
             }
         },
         {
-            element: '[data-tour-id="budgets-table"]',
+            element: '[data-tour-id="budgets-grid"]',
             popover: {
                 title: 'Définir les Budgets 🎯',
                 description: 'Entrez un montant de budget pour chaque catégorie. Les changements sont automatiquement sauvegardés après 1 seconde d\'inactivité.',
@@ -202,70 +201,97 @@ const BudgetsPage = () => {
 
     // Clé unique pour forcer le re-render des inputs quand le mois change
     const monthKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
-
-    const budgetEditor = (rowData) => {
-        const isSaving = savingCategories[rowData.id];
-        const isSaved = savedCategories[rowData.id];
-        return (
-            <div className="flex align-items-center gap-2">
-                <AmountInput
-                    key={`${monthKey}-${rowData.id}`}
-                    value={budgets[rowData.id] || null}
-                    placeholder="Définir un budget"
-                    onChange={(value) => handleBudgetChange(rowData.id, value)}
-                    className="p-inputtext-sm"
-                />
-                {isSaving && (
-                    <span className="flex align-items-center gap-1 text-500" style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
-                        <i className="pi pi-spin pi-spinner"></i>
-                        Sauvegarde...
-                    </span>
-                )}
-                {!isSaving && isSaved && (
-                    <span className="flex align-items-center gap-1 text-green-500" style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
-                        <i className="pi pi-check"></i>
-                        Sauvegardé
-                    </span>
-                )}
-            </div>
-        );
-    };
-
     const monthName = currentDate.toLocaleString('fr-FR', { month: 'long' });
     const year = currentDate.getFullYear();
 
     return (
         <div className="p-4">
             <TourButton onStartTour={startTour} tooltip="Revoir le guide des Budgets" />
-            <div className="flex justify-content-between align-items-center mb-4" data-tour-id="month-navigation">
-                <Button icon="pi pi-arrow-left" onClick={() => changeMonth(-1)} />
-                <h1 className="text-2xl capitalize" data-tour-id="budgets-title">{`Budgets Mensuels pour ${monthName} ${year}`}</h1>
-                <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} />
+
+            <div className="budgets-header" data-tour-id="budgets-title">
+                <div>
+                    <h1 className="budgets-title">Budgets Mensuels</h1>
+                    <p className="budgets-subtitle">
+                        {trackedCategories.length} catégorie{trackedCategories.length !== 1 ? 's' : ''} suivie{trackedCategories.length !== 1 ? 's' : ''}
+                    </p>
+                </div>
+            </div>
+
+            <div className="budgets-month-nav" data-tour-id="month-navigation">
+                <Button
+                    icon="pi pi-chevron-left"
+                    className="p-button-text"
+                    onClick={() => changeMonth(-1)}
+                    aria-label="Mois précédent"
+                />
+                <span className="budgets-month-label">{monthName} {year}</span>
+                <Button
+                    icon="pi pi-chevron-right"
+                    className="p-button-text"
+                    onClick={() => changeMonth(1)}
+                    aria-label="Mois suivant"
+                />
             </div>
 
             {!hasBudgets && trackedCategories.length > 0 && (
-                <div className="card mb-4 p-3 bg-blue-50 border-blue-200" data-tour-id="copy-budgets">
-                    <div className="flex align-items-center justify-content-between">
-                        <div>
-                            <i className="pi pi-info-circle mr-2 text-blue-500"></i>
-                            <span className="text-blue-800">Aucun budget défini pour ce mois. Voulez-vous copier les budgets du mois précédent ?</span>
-                        </div>
-                        <Button
-                            label="Copier les budgets"
-                            icon="pi pi-copy"
-                            className="p-button-sm"
-                            onClick={copyFromPreviousMonth}
-                            loading={isLoadingCopy}
-                        />
+                <div className="budgets-copy-banner" data-tour-id="copy-budgets">
+                    <div className="budgets-copy-banner__text">
+                        <i className="pi pi-info-circle" />
+                        <span>Aucun budget défini pour ce mois. Voulez-vous copier les budgets du mois précédent ?</span>
                     </div>
+                    <Button
+                        label="Copier"
+                        icon="pi pi-copy"
+                        className="p-button-sm"
+                        onClick={copyFromPreviousMonth}
+                        loading={isLoadingCopy}
+                    />
                 </div>
             )}
 
-            <div className="card" data-tour-id="budgets-table">
-                <DataTable value={trackedCategories} size="small">
-                    <Column field="name" header="Catégorie" />
-                    <Column header="Budget" body={budgetEditor} />
-                </DataTable>
+            <div className="budgets-grid" data-tour-id="budgets-grid">
+                {trackedCategories.map((category) => {
+                    const isSaving = savingCategories[category.id];
+                    const isSaved = savedCategories[category.id];
+                    return (
+                        <div key={category.id} className="budget-card">
+                            <div className="budget-card__info">
+                                <span
+                                    className="budget-card__color"
+                                    style={{ backgroundColor: category.color }}
+                                />
+                                <span className="budget-card__name">{category.name}</span>
+                            </div>
+                            <div className="budget-card__input">
+                                <AmountInput
+                                    key={`${monthKey}-${category.id}`}
+                                    value={budgets[category.id] || null}
+                                    placeholder="Définir un budget"
+                                    onChange={(value) => handleBudgetChange(category.id, value)}
+                                    className="p-inputtext-sm"
+                                />
+                                {isSaving && (
+                                    <span className="budget-card__status budget-card__status--saving">
+                                        <i className="pi pi-spin pi-spinner" />
+                                        Sauvegarde...
+                                    </span>
+                                )}
+                                {!isSaving && isSaved && (
+                                    <span className="budget-card__status budget-card__status--saved">
+                                        <i className="pi pi-check" />
+                                        Sauvegardé
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+                {trackedCategories.length === 0 && (
+                    <div className="budgets-empty">
+                        <i className="pi pi-wallet" />
+                        <p>Aucune catégorie suivie. Activez le suivi mensuel dans la page Catégories.</p>
+                    </div>
+                )}
             </div>
         </div>
     );
