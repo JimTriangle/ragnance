@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import api from '../services/api';
-import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
@@ -9,6 +8,7 @@ import { InputSwitch } from 'primereact/inputswitch';
 import { Badge } from 'primereact/badge';
 import { ToastContext } from '../context/ToastContext';
 import AmountInput from '../components/AmountInput';
+import '../styles/cards.css';
 
 const SavingsPage = () => {
     const [savings, setSavings] = useState([]);
@@ -167,11 +167,11 @@ const SavingsPage = () => {
             </div>
 
             {savings.length === 0 && (
-                <div className="flex flex-column align-items-center justify-content-center p-5 text-center">
-                    <i className="pi pi-money-bill text-500" style={{ fontSize: '4rem' }}></i>
-                    <h3 className="mt-3 text-500">Aucune épargne</h3>
-                    <p className="text-500 mb-3">Commencez à épargner en créant votre premier compte.</p>
-                    <Button label="Créer une épargne" icon="pi pi-plus" onClick={openNew} />
+                <div className="card-empty">
+                    <i className="pi pi-money-bill card-empty__icon" style={{ fontSize: '3rem' }}></i>
+                    <p className="card-empty__text" style={{ fontSize: '1.1rem', fontWeight: 500 }}>Aucune épargne</p>
+                    <p className="card-empty__text" style={{ marginTop: '0.25rem', marginBottom: '1rem' }}>Commencez à épargner en créant votre premier compte.</p>
+                    <Button label="Créer une épargne" icon="pi pi-plus" className="p-button-sm" onClick={openNew} />
                 </div>
             )}
 
@@ -184,78 +184,78 @@ const SavingsPage = () => {
 
                     return (
                         <div key={saving.id} className="col-12 md:col-6 lg:col-4">
-                            <Card
-                                title={
-                                    <div className="flex align-items-center gap-2">
+                            <div className="goal-card" style={{ opacity: isArchived ? 0.7 : 1 }}>
+                                <div className="goal-card__header">
+                                    <div className="goal-card__title">
                                         <span>{saving.name}</span>
                                         {isArchived && <Badge value="Archivée" severity="secondary" />}
                                     </div>
-                                }
-                                style={{ opacity: isArchived ? 0.7 : 1 }}
-                            >
-                                <p className="font-bold text-xl mb-3">Total: {formatCurrency(saving.totalAmount)}</p>
-
-                                {parts.length > 0 ? (
-                                    <div className="mb-3">
-                                        <p className="font-semibold mb-2">Répartition:</p>
-                                        {parts.map((part, idx) => (
-                                            <div key={idx} className="flex justify-content-between align-items-center mb-2 p-2 border-round surface-100">
-                                                <div className="flex-1">
-                                                    <div className="text-sm font-medium">{part.description}</div>
-                                                    <div className="text-xs text-500">{formatCurrency(part.amount)}</div>
-                                                </div>
-                                                <Badge
-                                                    value={`${calculatePercentage(part.amount, saving.totalAmount)}%`}
-                                                    severity="info"
-                                                />
-                                            </div>
-                                        ))}
-                                        {unallocatedAmount > 0 && (
-                                            <div className="flex justify-content-between align-items-center p-2 border-round surface-200">
-                                                <div className="flex-1">
-                                                    <div className="text-sm font-medium">Non affecté</div>
-                                                    <div className="text-xs text-500">{formatCurrency(unallocatedAmount)}</div>
-                                                </div>
-                                                <Badge
-                                                    value={`${calculatePercentage(unallocatedAmount, saving.totalAmount)}%`}
-                                                    severity="warning"
-                                                />
-                                            </div>
+                                    <div className="goal-card__actions">
+                                        {!isArchived && (
+                                            <Button
+                                                icon="pi pi-pencil"
+                                                className="p-button-rounded p-button-text p-button-sm"
+                                                onClick={() => editSavings(saving)}
+                                                aria-label="Modifier l'épargne"
+                                                tooltip="Modifier"
+                                                tooltipOptions={{ position: 'top' }}
+                                            />
                                         )}
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-500">Aucune part définie</p>
-                                )}
-
-                                <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: '1px solid var(--surface-border)' }}>
-                                    {!isArchived && (
                                         <Button
-                                            icon="pi pi-pencil"
-                                            className="p-button-sm p-button-rounded p-button-success"
-                                            onClick={() => editSavings(saving)}
-                                            aria-label="Modifier l'épargne"
-                                            tooltip="Modifier"
+                                            icon={isArchived ? "pi pi-replay" : "pi pi-check"}
+                                            className="p-button-rounded p-button-text p-button-sm"
+                                            onClick={() => toggleArchive(saving.id, isArchived)}
+                                            aria-label={isArchived ? "Désarchiver l'épargne" : "Archiver l'épargne"}
+                                            tooltip={isArchived ? "Désarchiver" : "Archiver"}
                                             tooltipOptions={{ position: 'top' }}
                                         />
-                                    )}
-                                    <Button
-                                        icon={isArchived ? "pi pi-replay" : "pi pi-check"}
-                                        className={`p-button-sm p-button-rounded ${isArchived ? 'p-button-info' : 'p-button-warning'}`}
-                                        onClick={() => toggleArchive(saving.id, isArchived)}
-                                        aria-label={isArchived ? "Désarchiver l'épargne" : "Archiver l'épargne"}
-                                        tooltip={isArchived ? "Désarchiver" : "Archiver"}
-                                        tooltipOptions={{ position: 'top' }}
-                                    />
-                                    <Button
-                                        icon="pi pi-trash"
-                                        className="p-button-sm p-button-rounded p-button-danger"
-                                        onClick={() => confirmDelete(saving.id)}
-                                        aria-label="Supprimer l'épargne"
-                                        tooltip="Supprimer"
-                                        tooltipOptions={{ position: 'top' }}
-                                    />
+                                        <Button
+                                            icon="pi pi-trash"
+                                            className="p-button-rounded p-button-text p-button-danger p-button-sm"
+                                            onClick={() => confirmDelete(saving.id)}
+                                            aria-label="Supprimer l'épargne"
+                                            tooltip="Supprimer"
+                                            tooltipOptions={{ position: 'top' }}
+                                        />
+                                    </div>
                                 </div>
-                            </Card>
+
+                                <div className="goal-card__body">
+                                    <p className="font-bold text-xl mb-3">{formatCurrency(saving.totalAmount)}</p>
+
+                                    {parts.length > 0 ? (
+                                        <div className="mb-3">
+                                            <p className="font-semibold mb-2 text-sm">Répartition</p>
+                                            {parts.map((part, idx) => (
+                                                <div key={idx} className="flex justify-content-between align-items-center mb-2 p-2 border-round surface-100">
+                                                    <div className="flex-1">
+                                                        <div className="text-sm font-medium">{part.description}</div>
+                                                        <div className="text-xs text-500">{formatCurrency(part.amount)}</div>
+                                                    </div>
+                                                    <Badge
+                                                        value={`${calculatePercentage(part.amount, saving.totalAmount)}%`}
+                                                        severity="info"
+                                                    />
+                                                </div>
+                                            ))}
+                                            {unallocatedAmount > 0 && (
+                                                <div className="flex justify-content-between align-items-center p-2 border-round surface-200">
+                                                    <div className="flex-1">
+                                                        <div className="text-sm font-medium">Non affecté</div>
+                                                        <div className="text-xs text-500">{formatCurrency(unallocatedAmount)}</div>
+                                                    </div>
+                                                    <Badge
+                                                        value={`${calculatePercentage(unallocatedAmount, saving.totalAmount)}%`}
+                                                        severity="warning"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-500">Aucune part définie</p>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     );
                 })}

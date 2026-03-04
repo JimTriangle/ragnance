@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import api from '../services/api';
-import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
@@ -12,6 +11,7 @@ import { InputSwitch } from 'primereact/inputswitch';
 import { Badge } from 'primereact/badge';
 import { ToastContext } from '../context/ToastContext';
 import AmountInput from '../components/AmountInput';
+import '../styles/cards.css';
 
 const SavingsGoalsPage = () => {
     const [goals, setGoals] = useState([]);
@@ -232,135 +232,136 @@ const SavingsGoalsPage = () => {
 
                     return (
                         <div key={goal.id} className="col-12 md:col-6 lg:col-4">
-                            <Card
-                                title={
-                                    <div className="flex align-items-center gap-2">
+                            <div className="goal-card" style={{ opacity: isArchived ? 0.7 : 1 }}>
+                                <div className="goal-card__header">
+                                    <div className="goal-card__title">
                                         <span>{goal.name}</span>
                                         {isArchived && <Badge value="Archivé" severity="secondary" />}
                                         {isCompleted && !isArchived && <Badge value="Atteint" severity="success" />}
                                         {isOverdue && !isArchived && <Badge value="En retard" severity="danger" />}
                                     </div>
-                                }
-                                style={{ opacity: isArchived ? 0.7 : 1 }}
-                            >
-                                <div className="flex gap-2 mb-3">
-                                    {!isArchived && (
-                                        <>
-                                            <Button
-                                                icon="pi pi-pencil"
-                                                className="p-button-sm p-button-rounded p-button-success"
-                                                onClick={() => editGoal(goal)}
-                                                tooltip="Modifier"
-                                                tooltipOptions={{ position: 'top' }}
-                                            />
-                                            <Button
-                                                icon="pi pi-plus"
-                                                className="p-button-sm p-button-rounded p-button-primary"
-                                                onClick={() => openContributionDialog(goal)}
-                                                tooltip="Ajouter une contribution"
-                                                tooltipOptions={{ position: 'top' }}
-                                            />
-                                        </>
+                                    <div className="goal-card__actions">
+                                        {!isArchived && (
+                                            <>
+                                                <Button
+                                                    icon="pi pi-pencil"
+                                                    className="p-button-rounded p-button-text p-button-sm"
+                                                    onClick={() => editGoal(goal)}
+                                                    tooltip="Modifier"
+                                                    tooltipOptions={{ position: 'top' }}
+                                                />
+                                                <Button
+                                                    icon="pi pi-plus"
+                                                    className="p-button-rounded p-button-text p-button-sm"
+                                                    onClick={() => openContributionDialog(goal)}
+                                                    tooltip="Ajouter une contribution"
+                                                    tooltipOptions={{ position: 'top' }}
+                                                />
+                                            </>
+                                        )}
+                                        <Button
+                                            icon={isArchived ? "pi pi-replay" : "pi pi-check"}
+                                            className="p-button-rounded p-button-text p-button-sm"
+                                            onClick={() => toggleArchive(goal.id, isArchived)}
+                                            tooltip={isArchived ? "Désarchiver" : "Archiver"}
+                                            tooltipOptions={{ position: 'top' }}
+                                        />
+                                        <Button
+                                            icon="pi pi-trash"
+                                            className="p-button-rounded p-button-text p-button-danger p-button-sm"
+                                            onClick={() => confirmDelete(goal.id)}
+                                            tooltip="Supprimer"
+                                            tooltipOptions={{ position: 'top' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="goal-card__body">
+                                    {goal.description && (
+                                        <p className="text-sm text-500 mb-3">{goal.description}</p>
                                     )}
-                                    <Button
-                                        icon={isArchived ? "pi pi-replay" : "pi pi-check"}
-                                        className={`p-button-sm p-button-rounded ${isArchived ? 'p-button-info' : 'p-button-warning'}`}
-                                        onClick={() => toggleArchive(goal.id, isArchived)}
-                                        tooltip={isArchived ? "Désarchiver" : "Archiver"}
-                                        tooltipOptions={{ position: 'top' }}
-                                    />
-                                    <Button
-                                        icon="pi pi-trash"
-                                        className="p-button-sm p-button-rounded p-button-danger"
-                                        onClick={() => confirmDelete(goal.id)}
-                                        tooltip="Supprimer"
-                                        tooltipOptions={{ position: 'top' }}
-                                    />
-                                </div>
 
-                                {goal.description && (
-                                    <p className="text-sm text-500 mb-3">{goal.description}</p>
-                                )}
-
-                                <div className="mb-3">
-                                    <div className="flex justify-content-between mb-2">
-                                        <span className="font-semibold">Progression</span>
-                                        <span className="font-semibold">{progress.toFixed(1)}%</span>
-                                    </div>
-                                    <ProgressBar
-                                        value={progress}
-                                        showValue={false}
-                                        color={isCompleted ? '#22c55e' : isOverdue ? '#ef4444' : '#3b82f6'}
-                                    />
-                                    <div className="flex justify-content-between mt-2 text-sm">
-                                        <span>{formatCurrency(goal.currentAmount)}</span>
-                                        <span className="text-500">sur {formatCurrency(goal.targetAmount)}</span>
-                                    </div>
-                                </div>
-
-                                <div className="mb-3">
-                                    <div className="flex justify-content-between text-sm">
-                                        <span className="text-500">Début:</span>
-                                        <span>{formatDate(goal.startDate)}</span>
-                                    </div>
-                                    <div className="flex justify-content-between text-sm">
-                                        <span className="text-500">Objectif:</span>
-                                        <span>{formatDate(goal.targetDate)}</span>
-                                    </div>
-                                    {daysRemaining >= 0 && !isCompleted && (
-                                        <div className="flex justify-content-between text-sm mt-1">
-                                            <span className="text-500">Temps restant:</span>
-                                            <span className={daysRemaining < 30 ? 'text-orange-500 font-semibold' : ''}>
-                                                {daysRemaining} jour{daysRemaining > 1 ? 's' : ''}
-                                            </span>
+                                    <div className="mb-3">
+                                        <div className="info-row mb-1">
+                                            <span className="info-row__label">Progression</span>
+                                            <span className="info-row__value">{progress.toFixed(1)}%</span>
                                         </div>
-                                    )}
-                                </div>
+                                        <ProgressBar
+                                            value={progress}
+                                            showValue={false}
+                                            style={{ height: '0.5rem' }}
+                                            color={isCompleted ? '#22c55e' : isOverdue ? '#ef4444' : '#3b82f6'}
+                                        />
+                                        <div className="info-row mt-1">
+                                            <span className="info-row__label">{formatCurrency(goal.currentAmount)}</span>
+                                            <span className="info-row__label">sur {formatCurrency(goal.targetAmount)}</span>
+                                        </div>
+                                    </div>
 
-                                {contributions.length > 0 && (
-                                    <div className="mt-3">
-                                        <p className="font-semibold mb-2 text-sm">Contributions récentes:</p>
-                                        <div className="max-h-10rem overflow-y-auto">
-                                            {contributions.slice(0, 3).map((contribution) => (
-                                                <div key={contribution.id} className="flex justify-content-between align-items-center mb-2 p-2 border-round surface-100">
-                                                    <div className="flex-1">
-                                                        <div className="text-sm font-medium">{formatCurrency(contribution.amount)}</div>
-                                                        <div className="text-xs text-500">{formatDate(contribution.contributionDate)}</div>
-                                                        {contribution.note && <div className="text-xs text-500 mt-1">{contribution.note}</div>}
+                                    <div className="mb-3">
+                                        <div className="info-row">
+                                            <span className="info-row__label">Début</span>
+                                            <span className="info-row__value">{formatDate(goal.startDate)}</span>
+                                        </div>
+                                        <div className="info-row">
+                                            <span className="info-row__label">Objectif</span>
+                                            <span className="info-row__value">{formatDate(goal.targetDate)}</span>
+                                        </div>
+                                        {daysRemaining >= 0 && !isCompleted && (
+                                            <div className="info-row">
+                                                <span className="info-row__label">Temps restant</span>
+                                                <span className={`info-row__value ${daysRemaining < 30 ? 'text-orange-500' : ''}`}>
+                                                    {daysRemaining} jour{daysRemaining > 1 ? 's' : ''}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {contributions.length > 0 && (
+                                        <div>
+                                            <p className="font-semibold mb-2 text-sm">Contributions récentes</p>
+                                            <div className="max-h-10rem overflow-y-auto">
+                                                {contributions.slice(0, 3).map((contribution) => (
+                                                    <div key={contribution.id} className="flex justify-content-between align-items-center mb-2 p-2 border-round surface-100">
+                                                        <div className="flex-1">
+                                                            <div className="text-sm font-medium">{formatCurrency(contribution.amount)}</div>
+                                                            <div className="text-xs text-500">{formatDate(contribution.contributionDate)}</div>
+                                                            {contribution.note && <div className="text-xs text-500 mt-1">{contribution.note}</div>}
+                                                        </div>
+                                                        {!isArchived && (
+                                                            <Button
+                                                                icon="pi pi-trash"
+                                                                className="p-button-text p-button-rounded p-button-sm p-button-danger"
+                                                                onClick={() => deleteContribution(goal.id, contribution.id)}
+                                                            />
+                                                        )}
                                                     </div>
-                                                    {!isArchived && (
-                                                        <Button
-                                                            icon="pi pi-trash"
-                                                            className="p-button-text p-button-rounded p-button-sm p-button-danger"
-                                                            onClick={() => deleteContribution(goal.id, contribution.id)}
-                                                        />
-                                                    )}
-                                                </div>
-                                            ))}
-                                            {contributions.length > 3 && (
-                                                <p className="text-xs text-500 text-center mt-2">
-                                                    +{contributions.length - 3} autre{contributions.length - 3 > 1 ? 's' : ''}
-                                                </p>
-                                            )}
+                                                ))}
+                                                {contributions.length > 3 && (
+                                                    <p className="text-xs text-500 text-center mt-2">
+                                                        +{contributions.length - 3} autre{contributions.length - 3 > 1 ? 's' : ''}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
 
-                                {contributions.length === 0 && (
-                                    <p className="text-sm text-500 text-center mt-3">Aucune contribution</p>
-                                )}
-                            </Card>
+                                    {contributions.length === 0 && (
+                                        <p className="text-sm text-500 text-center">Aucune contribution</p>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     );
                 })}
             </div>
 
             {goals.length === 0 && (
-                <div className="text-center p-5">
-                    <i className="pi pi-inbox text-6xl text-400 mb-3"></i>
-                    <p className="text-xl text-500">Aucun objectif d'épargne</p>
-                    <p className="text-sm text-500 mb-3">Créez votre premier objectif pour commencer à épargner</p>
-                    <Button label="Créer un objectif" icon="pi pi-plus" onClick={openNew} />
+                <div className="card-empty">
+                    <i className="pi pi-inbox card-empty__icon" style={{ fontSize: '3rem' }}></i>
+                    <p className="card-empty__text" style={{ fontSize: '1.1rem', fontWeight: 500 }}>Aucun objectif d'épargne</p>
+                    <p className="card-empty__text" style={{ marginTop: '0.25rem', marginBottom: '1rem' }}>Créez votre premier objectif pour commencer à épargner</p>
+                    <Button label="Créer un objectif" icon="pi pi-plus" className="p-button-sm" onClick={openNew} />
                 </div>
             )}
 

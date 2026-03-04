@@ -18,6 +18,8 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 // 4. NOTRE fichier de styles personnalisés, EN DERNIER
 import './index.css';
+// 5. Modernisation globale des Cards
+import './styles/cards.css';
 
 // Configuration de la locale française pour PrimeReact (calendriers, etc.)
 addLocale('fr', {

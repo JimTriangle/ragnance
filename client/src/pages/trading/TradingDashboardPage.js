@@ -202,6 +202,9 @@ const TradingDashboardPage = () => {
         <div className="col-12 md:col-4" data-tour-id="kpi-equity">
           <KpiCard
             label="Equity"
+            icon="pi-wallet"
+            iconBg="rgba(46, 204, 113, 0.12)"
+            iconColor="#2ECC71"
             value={
               summary?.equity?.current != null
                 ? `${summary.equity.current.toFixed(2)} ${summary.currency}`
@@ -214,13 +217,22 @@ const TradingDashboardPage = () => {
         <div className="col-12 md:col-4" data-tour-id="kpi-pnl">
           <KpiCard
             label="PnL Jour"
+            icon="pi-chart-line"
+            iconBg="rgba(52, 152, 219, 0.12)"
+            iconColor="#3498DB"
             value={summary?.pnl?.day != null ? summary.pnl.day.toFixed(2) : '-'}
           />
         </div>
         )}
         {isVisible('kpiTrades') && (
         <div className="col-12 md:col-4" data-tour-id="kpi-trades">
-          <KpiCard label="Trades" value={summary?.tradesCount ?? '-'} />
+          <KpiCard
+            label="Trades"
+            icon="pi-sort-alt"
+            iconBg="rgba(155, 89, 182, 0.12)"
+            iconColor="#9B59B6"
+            value={summary?.tradesCount ?? '-'}
+          />
         </div>
         )}
       </div>
