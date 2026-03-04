@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Sidebar } from 'primereact/sidebar';
 import { Button } from 'primereact/button';
-import { Divider } from 'primereact/divider';
 import { AuthContext } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 
@@ -18,7 +17,7 @@ const AppSidebar = ({
 
     const handleNavigation = (path) => {
         navigate(path);
-        onHide(); // Fermer le sidebar après navigation
+        onHide();
     };
 
     const handleSectionSwitch = (targetSection) => {
@@ -30,138 +29,138 @@ const AppSidebar = ({
         onHide();
     };
 
+    const initials = user?.email
+        ? user.email.substring(0, 2)
+        : '??';
+
     return (
         <Sidebar
             visible={visible}
             onHide={onHide}
             position="left"
             className="app-sidebar"
-            style={{ width: '280px' }}
+            style={{ width: '300px' }}
         >
-            <div className="flex flex-column h-full">
-                {/* En-tête du Sidebar */}
-                <div className="sidebar-header mb-3">
-                    <h3 className="m-0 text-primary">
-                        <i className="pi pi-bars mr-2"></i>
+            <div className="sidebar-mobile-content">
+                {/* Close button */}
+                <div className="sidebar-mobile-close">
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-text p-button-rounded p-button-sm"
+                        onClick={onHide}
+                        aria-label="Fermer le menu"
+                    />
+                </div>
+
+                {/* Brand */}
+                <div className="sidebar-brand">
+                    <div className="sidebar-brand__icon">
+                        <i className={`pi ${section === 'budget' ? 'pi-wallet' : 'pi-chart-line'}`}></i>
+                    </div>
+                    <h3 className="sidebar-brand__title">
                         {section === 'budget' ? 'Budget' : 'Trading'}
                     </h3>
                 </div>
 
-                <Divider className="my-2" />
+                <hr className="sidebar-divider" />
 
-                {/* Navigation principale */}
-                <nav className="flex-grow-1 overflow-y-auto">
-                    <div className="flex flex-column gap-1">
-                        {navItems.map((item, index) => {
-                            // Si c'est une section avec des sous-éléments
-                            if (item.section && item.items) {
-                                return (
-                                    <div key={index} className="mb-2">
-                                        <div className="sidebar-section-title px-3 py-2 text-sm font-semibold text-500">
-                                            {item.section}
-                                        </div>
-                                        <div className="flex flex-column gap-1">
-                                            {item.items.map((subItem, subIndex) => (
-                                                <NavLink
-                                                    key={`${index}-${subIndex}`}
-                                                    to={subItem.to}
-                                                    end={subItem.end}
-                                                    className={({ isActive }) =>
-                                                        `sidebar-nav-item p-button p-button-text ${isActive ? 'active' : ''} ${subItem.danger ? 'p-button-danger' : ''}`
-                                                    }
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        handleNavigation(subItem.to);
-                                                    }}
-                                                >
-                                                    {subItem.icon && <i className={`${subItem.icon} mr-2`}></i>}
-                                                    {subItem.label}
-                                                </NavLink>
-                                            ))}
-                                        </div>
-                                    </div>
-                                );
-                            }
-
-                            // Sinon, c'est un élément simple
+                {/* Navigation */}
+                <nav className="sidebar-nav">
+                    {navItems.map((item, index) => {
+                        if (item.section && item.items) {
                             return (
-                                <NavLink
-                                    key={index}
-                                    to={item.to}
-                                    end={item.end}
-                                    className={({ isActive }) =>
-                                        `sidebar-nav-item p-button p-button-text ${isActive ? 'active' : ''} ${item.danger ? 'p-button-danger' : ''}`
-                                    }
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        handleNavigation(item.to);
-                                    }}
-                                >
-                                    {item.icon && <i className={`${item.icon} mr-2`}></i>}
-                                    {item.label}
-                                </NavLink>
+                                <div key={index} className="sidebar-nav__section">
+                                    <div className="sidebar-nav__section-title">{item.section}</div>
+                                    {item.items.map((subItem, subIndex) => (
+                                        <NavLink
+                                            key={`${index}-${subIndex}`}
+                                            to={subItem.to}
+                                            end={subItem.end}
+                                            className={({ isActive }) =>
+                                                `sidebar-nav__item ${isActive ? 'active' : ''} ${subItem.danger ? 'sidebar-nav__item--danger' : ''}`
+                                            }
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handleNavigation(subItem.to);
+                                            }}
+                                        >
+                                            {subItem.icon && <i className={subItem.icon}></i>}
+                                            {subItem.label}
+                                        </NavLink>
+                                    ))}
+                                </div>
                             );
-                        })}
-                    </div>
+                        }
+
+                        return (
+                            <NavLink
+                                key={index}
+                                to={item.to}
+                                end={item.end}
+                                className={({ isActive }) =>
+                                    `sidebar-nav__item ${isActive ? 'active' : ''} ${item.danger ? 'sidebar-nav__item--danger' : ''}`
+                                }
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleNavigation(item.to);
+                                }}
+                            >
+                                {item.icon && <i className={item.icon}></i>}
+                                {item.label}
+                            </NavLink>
+                        );
+                    })}
                 </nav>
 
-                <Divider className="my-2" />
+                <hr className="sidebar-divider" />
 
-                {/* Actions additionnelles (ex: Annonces, Ajouter Transaction) */}
+                {/* Additional actions */}
                 {additionalActions && (
                     <>
-                        <div className="sidebar-actions mb-2">
+                        <div className="sidebar-extra-actions">
                             {additionalActions}
                         </div>
-                        <Divider className="my-2" />
+                        <hr className="sidebar-divider" />
                     </>
                 )}
 
-                {/* Section Utilisateur et Actions */}
-                <div className="sidebar-footer">
-                    {/* Bouton de changement de section */}
-                    {/* MASQUÉ: Accès au trading désactivé */}
-                    {/* {section === 'budget' && user?.tradingAccess && (
-                        <Button
-                            label="Passer au Trading"
-                            icon="pi pi-chart-line"
-                            className="w-full mb-2 p-button-secondary p-button-sm"
-                            onClick={() => handleSectionSwitch('trading')}
-                        />
-                    )} */}
-                    {section === 'trading' && user?.budgetAccess && (
+                {/* Section switch */}
+                {section === 'trading' && user?.budgetAccess && (
+                    <div className="sidebar-switch-section">
                         <Button
                             label="Passer au Budget"
                             icon="pi pi-wallet"
-                            className="w-full mb-2 p-button-secondary p-button-sm"
+                            className="w-full mb-2 p-button-secondary p-button-outlined p-button-sm"
                             onClick={() => handleSectionSwitch('budget')}
                         />
-                    )}
+                    </div>
+                )}
 
-                    {/* Toggle du thème */}
-                    <div className="flex align-items-center justify-content-center mb-2">
-                        <span className="mr-2">Thème :</span>
+                {/* Footer */}
+                <div className="sidebar-footer-section">
+                    <div className="sidebar-theme-row">
+                        <span className="sidebar-theme-row__label">Thème</span>
                         <ThemeToggle />
                     </div>
 
-                    <Divider className="my-2" />
-
-                    {/* Info utilisateur */}
-                    <div className="text-center mb-2">
-                        <div className="text-sm mb-2">
-                            <i className="pi pi-user mr-2"></i>
-                            <strong>{user?.email}</strong>
+                    <div className="sidebar-user">
+                        <div className="sidebar-user__avatar">{initials}</div>
+                        <div className="sidebar-user__info">
+                            <div className="sidebar-user__email">{user?.email}</div>
                         </div>
+                    </div>
+
+                    <div className="sidebar-footer__actions">
                         <Button
                             label="Profil"
                             icon="pi pi-user-edit"
-                            className="w-full mb-2 p-button-outlined p-button-sm"
+                            className="p-button-outlined p-button-sm"
                             onClick={() => handleNavigation(section === 'budget' ? '/budget/profile' : '/trading/profile')}
                         />
                         <Button
                             label="Déconnexion"
                             icon="pi pi-sign-out"
-                            className="w-full p-button-danger p-button-outlined p-button-sm"
+                            className="p-button-danger p-button-outlined p-button-sm"
                             onClick={logoutUser}
                         />
                     </div>
