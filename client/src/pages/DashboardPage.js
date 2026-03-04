@@ -6,7 +6,6 @@ import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import useTour from '../hooks/useTour';
 
 // Imports PrimeReact
-import { Card } from 'primereact/card';
 import { Chart } from 'primereact/chart';
 import { Skeleton } from 'primereact/skeleton';
 
@@ -17,8 +16,9 @@ import ProjectBudgetTracker from '../components/ProjectBudgetTracker';
 import TourButton from '../components/TourButton';
 import useChartTheme from '../hooks/useChartTheme';
 
-// Styles du tour
+// Styles
 import '../styles/tour.css';
+import '../styles/cards.css';
 
 const DashboardPage = () => {
     // États du Dashboard
@@ -342,53 +342,50 @@ const DashboardPage = () => {
             <TourButton onStartTour={startTour} tooltip="Revoir le guide du Dashboard" />
             <div className="grid mt-2">
                 <div className="col-12 md:col-6 lg:col-4" data-tour-id="card-balance">
-                    <Card title="Solde Actuel">
-                        <div className="flex flex-column gap-2">
-                            <div>
-                                <p className="m-0 text-sm text-500">Au {new Date().toLocaleDateString('fr-FR')}</p>
-                                <h2 className="m-0" style={{ color: summary.currentBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.currentBalance)}</h2>
-                            </div>
+                    <div className="kpi-modern">
+                        <div className="kpi-modern__icon" style={{ background: 'rgba(46, 204, 113, 0.12)', color: '#2ECC71' }}>
+                            <i className="pi pi-wallet"></i>
                         </div>
-                    </Card>
+                        <span className="kpi-modern__label">Solde Actuel</span>
+                        <span className="kpi-modern__value" style={{ color: summary.currentBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>
+                            {formatCurrency(summary.currentBalance)}
+                        </span>
+                        <span className="kpi-modern__sub">Au {new Date().toLocaleDateString('fr-FR')}</span>
+                    </div>
                 </div>
                 <div className="col-12 md:col-6 lg:col-4" data-tour-id="card-projected">
-                    <Card title="Solde Fin de Mois (Prév.)">
-                        <div className="flex flex-column gap-2">
-                            <div>
-                                <p className="m-0 text-sm text-500">Basé sur transactions</p>
-                                <h2 className="m-0">{formatCurrency(summary.projectedBalance)}</h2>
-                            </div>
-                            {summary.totalBudgets > 0 && (
-                                <div>
-                                    <p className="m-0 text-sm text-500">Si budgets remplis</p>
-                                    <h2 className="m-0" style={{ color: summary.projectedBalanceWithBudgets >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.projectedBalanceWithBudgets)}</h2>
-                                </div>
-                            )}
+                    <div className="kpi-modern">
+                        <div className="kpi-modern__icon" style={{ background: 'rgba(52, 152, 219, 0.12)', color: '#3498DB' }}>
+                            <i className="pi pi-chart-line"></i>
                         </div>
-                    </Card>
+                        <span className="kpi-modern__label">Solde Fin de Mois</span>
+                        <span className="kpi-modern__value">{formatCurrency(summary.projectedBalance)}</span>
+                        {summary.totalBudgets > 0 && (
+                            <span className={`kpi-modern__sub ${summary.projectedBalanceWithBudgets >= 0 ? 'kpi-modern__sub--positive' : 'kpi-modern__sub--negative'}`}>
+                                Si budgets remplis : {formatCurrency(summary.projectedBalanceWithBudgets)}
+                            </span>
+                        )}
+                        {!summary.totalBudgets && <span className="kpi-modern__sub">Basé sur transactions</span>}
+                    </div>
                 </div>
                 <div className="col-12 md:col-6 lg:col-4" data-tour-id="card-income-expense">
-                    <Card title="Revenus & Dépenses (Prév.)">
-                        <div className="flex flex-column gap-2">
-                            <div>
-                                <p className="m-0 text-sm text-500">Revenus</p>
-                                <h2 className="m-0 text-green-400">{formatCurrency(summary.totalProjectedIncome)}</h2>
-                            </div>
-                            <div>
-                                <p className="m-0 text-sm text-500">Dépenses</p>
-                                <h2 className="m-0 text-red-400">{formatCurrency(summary.totalProjectedExpense)}</h2>
-                            </div>
+                    <div className="kpi-modern">
+                        <div className="kpi-modern__icon" style={{ background: 'rgba(155, 89, 182, 0.12)', color: '#9B59B6' }}>
+                            <i className="pi pi-sort-alt"></i>
                         </div>
-                    </Card>
+                        <span className="kpi-modern__label">Revenus & Dépenses</span>
+                        <span className="kpi-modern__value kpi-modern__sub--positive">{formatCurrency(summary.totalProjectedIncome)}</span>
+                        <span className="kpi-modern__sub kpi-modern__sub--negative">Dépenses : {formatCurrency(summary.totalProjectedExpense)}</span>
+                    </div>
                 </div>
             </div>
             <div className="grid mt-4">
                 <div className="col-12 lg:col-6" data-tour-id="chart-daily">
-                    <Card>
-                        <div className="flex justify-content-between align-items-center mb-3">
+                    <div className="chart-card h-full">
+                        <div className="chart-card__header">
                             <div>
-                                <h2 className="text-xl m-0">Solde début de mois</h2>
-                                <p className="m-0 text-sm text-500">3 derniers mois + 6 mois de projection</p>
+                                <h2 className="chart-card__title">Solde début de mois</h2>
+                                <p className="chart-card__subtitle">3 derniers mois + 6 mois de projection</p>
                             </div>
                         </div>
                         <div style={{ position: 'relative', height: '300px' }}>
@@ -398,29 +395,35 @@ const DashboardPage = () => {
                                 <Skeleton height="100%" />
                             )}
                         </div>
-                    </Card>
+                    </div>
                 </div>
                 <div className="col-12 lg:col-6" data-tour-id="chart-category">
-                    <Card title={`Dépenses par Catégorie — ${formattedMonth}`} className="h-full">
+                    <div className="chart-card h-full">
+                        <div className="chart-card__header">
+                            <h2 className="chart-card__title">Dépenses par Catégorie — {formattedMonth}</h2>
+                        </div>
                         {categoryChartData && categoryChartData.labels.length > 0 ? (
                             <div style={{ position: 'relative', height: '300px' }}>
                                 <Chart type="pie" data={categoryChartData} options={pieChartOptions} aria-label="Graphique des dépenses par catégorie" />
                             </div>
                         ) : (
-                            <div className="flex flex-column align-items-center justify-content-center p-5 text-center" style={{ height: '300px' }}>
-                                <i className="pi pi-chart-pie text-400" style={{ fontSize: '3rem' }}></i>
-                                <p className="mt-2 mb-0 text-500 font-medium">Aucune dépense catégorisée</p>
-                                <p className="text-sm text-400 mt-1">Ajoutez des transactions avec des catégories pour visualiser la répartition.</p>
+                            <div className="card-empty" style={{ height: '300px' }}>
+                                <i className="pi pi-chart-pie card-empty__icon"></i>
+                                <p className="card-empty__text">Aucune dépense catégorisée</p>
+                                <p className="card-empty__text" style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>Ajoutez des transactions avec des catégories pour visualiser la répartition.</p>
                             </div>
                         )}
-                    </Card>
+                    </div>
                 </div>
             </div>
             <div className="grid mt-4">
                 <div className="col-12 lg:col-4" data-tour-id="budget-tracker">
-                    <Card title="Suivi des Budgets Mensuels" className="h-full">
+                    <div className="chart-card h-full">
+                        <div className="chart-card__header">
+                            <h2 className="chart-card__title">Suivi des Budgets Mensuels</h2>
+                        </div>
                         <BudgetTracker data={budgetProgressData} />
-                    </Card>
+                    </div>
                 </div>
                 <div className="col-12 lg:col-4" data-tour-id="project-budgets">
                     <ProjectBudgetTracker budgets={projectBudgets} />

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
-import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { DataView } from 'primereact/dataview';
 import AmountInput from './AmountInput';
 import { ToastContext } from '../context/ToastContext';
+import '../styles/cards.css';
 
 const PurchaseForecast = ({ onUpdate }) => {
     const { showToast } = useContext(ToastContext);
@@ -91,9 +91,12 @@ const PurchaseForecast = ({ onUpdate }) => {
     };
 
     return (
-        <Card title="Prévisionnel d'achats" pt={{ content: { className: 'p-2' } }}>
-            <div className="text-sm mb-2">
-                {items.length} article{items.length > 1 ? 's' : ''} – Total : {totalCost.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+        <div className="chart-card h-full">
+            <div className="chart-card__header">
+                <h2 className="chart-card__title">Prévisionnel d'achats</h2>
+                <span className="chart-card__subtitle">
+                    {items.length} article{items.length > 1 ? 's' : ''} — {totalCost.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                </span>
             </div>
             <DataView value={items} itemTemplate={itemTemplate} emptyMessage="Aucun achat prévu pour le moment." />
             <form onSubmit={handleAddItem} className="grid grid-nogutter mt-2 align-items-center">
@@ -110,7 +113,7 @@ const PurchaseForecast = ({ onUpdate }) => {
                     <Button type="submit" icon="pi pi-plus" className="p-button-sm w-full" />
                 </div>
             </form>
-        </Card>
+        </div>
     );
 };
 

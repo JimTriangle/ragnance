@@ -1,0 +1,239 @@
+/* ===== Modern Card Overrides ===== */
+/* Brings all PrimeReact Card components in line with the modern,
+   flat aesthetic used on the Categories page.                     */
+
+/* ── Base card ─────────────────────────────────────────────────── */
+.p-card {
+    border-radius: 12px;
+    border: 1px solid var(--surface-border);
+    box-shadow: none;
+    background: var(--surface-card);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.p-card:hover {
+    border-color: color-mix(in srgb, var(--primary-color) 50%, transparent);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.p-card .p-card-body {
+    padding: 1.25rem;
+}
+
+.p-card .p-card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.75rem;
+}
+
+.p-card .p-card-content {
+    padding: 0;
+}
+
+/* ── Dashboard KPI cards ───────────────────────────────────────── */
+.kpi-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1.25rem;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.kpi-modern:hover {
+    border-color: color-mix(in srgb, var(--primary-color) 50%, transparent);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.kpi-modern__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    flex-shrink: 0;
+}
+
+.kpi-modern__label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.kpi-modern__value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    line-height: 1.2;
+}
+
+.kpi-modern__sub {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    margin-top: 0.25rem;
+}
+
+.kpi-modern__sub--positive {
+    color: var(--green-400);
+}
+
+.kpi-modern__sub--negative {
+    color: var(--red-400);
+}
+
+/* ── Chart section cards ───────────────────────────────────────── */
+.chart-card {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.chart-card:hover {
+    border-color: color-mix(in srgb, var(--primary-color) 50%, transparent);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.chart-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.chart-card__title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.chart-card__subtitle {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    margin: 0.15rem 0 0;
+}
+
+/* ── Savings / Goal cards ──────────────────────────────────────── */
+.goal-card {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.goal-card:hover {
+    border-color: color-mix(in srgb, var(--primary-color) 50%, transparent);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.goal-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.goal-card__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.goal-card__actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.goal-card__actions .p-button {
+    width: 2rem;
+    height: 2rem;
+    color: var(--text-color-secondary);
+}
+
+.goal-card__actions .p-button:hover {
+    color: var(--text-color);
+}
+
+.goal-card__body {
+    flex: 1;
+}
+
+.goal-card__footer {
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+    border-top: 1px solid var(--surface-border);
+    display: flex;
+    gap: 0.25rem;
+}
+
+/* ── Info row helper (used inside cards) ───────────────────────── */
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    padding: 0.25rem 0;
+}
+
+.info-row__label {
+    color: var(--text-color-secondary);
+}
+
+.info-row__value {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+/* ── Empty state ───────────────────────────────────────────────── */
+.card-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--text-color-secondary);
+}
+
+.card-empty__icon {
+    font-size: 2.5rem;
+    opacity: 0.25;
+    margin-bottom: 0.75rem;
+}
+
+.card-empty__text {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* ── Responsive tweaks ─────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .kpi-modern__value {
+        font-size: 1.25rem;
+    }
+
+    .p-card .p-card-body {
+        padding: 1rem;
+    }
+
+    .goal-card {
+        padding: 1rem;
+    }
+}
