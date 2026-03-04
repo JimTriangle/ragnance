@@ -2,7 +2,6 @@ import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
-import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
@@ -10,6 +9,7 @@ import { Checkbox } from 'primereact/checkbox';
 import { Message } from 'primereact/message';
 import ThemeToggle from '../components/ThemeToggle';
 import { jwtDecode } from 'jwt-decode';
+import '../styles/login.css';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -27,11 +27,9 @@ const LoginPage = () => {
 
     try {
       const response = await api.post('/auth/login', { email, password, rememberMe });
-      
-      
-      // Stocker le token
+
       const success = storeToken(response.data.authToken);
-      
+
       if (!success) {
         setError('Erreur lors de la configuration de la session');
         setIsLoading(false);
@@ -39,23 +37,15 @@ const LoginPage = () => {
       }
 
       const decoded = jwtDecode(response.data.authToken);
-      
-      // Récupérer la destination sauvegardée
+
       const redirectTo = sessionStorage.getItem('postLoginRedirect');
       sessionStorage.removeItem('postLoginRedirect');
-      
-      
-      // NOUVELLE APPROCHE : Forcer un refresh de la page après navigation
-      // Cela garantit que tous les composants se rechargent avec le nouveau token
+
       if (redirectTo && redirectTo !== '/trading') {
-        // Bloquer la redirection vers /trading (accès désactivé)
         window.location.href = redirectTo;
       } else if (decoded.budgetAccess) {
         window.location.href = '/budget/dashboard';
-      } /* MASQUÉ: Accès au trading désactivé
-      else if (decoded.tradingAccess) {
-        window.location.href = '/trading';
-      } */ else {
+      } else {
         window.location.href = '/';
       }
     } catch (err) {
@@ -65,62 +55,91 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex justify-content-center align-items-center" style={{ height: '100vh', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
-        <ThemeToggle />
+    <div className="login-page">
+      {/* Panneau décoratif gauche */}
+      <div className="login-side">
+        <div className="login-side-bg" aria-hidden="true">
+          <div className="login-side-orb login-side-orb--1"></div>
+          <div className="login-side-orb login-side-orb--2"></div>
+        </div>
+        <div className="login-side-content">
+          <img src="/logo192.png" alt="Ragnance Logo" className="login-side-logo" />
+          <h2 className="login-side-title">Ragnance</h2>
+          <p className="login-side-subtitle">Vos finances, simplifiées et maîtrisées.</p>
+        </div>
       </div>
-      <Card title="Connexion" style={{ width: '25rem' }}>
-        <form onSubmit={handleLogin} className="p-fluid">
-          <div className="field">
-            <span className="p-float-label">
-               <InputText 
-                 id="email" 
-                 value={email} 
-                 onChange={(e) => setEmail(e.target.value)} 
-                 autoComplete="username"
-                 disabled={isLoading}
-               />
-              <label htmlFor="email">Email</label>
-            </span>
+
+      {/* Panneau formulaire */}
+      <div className="login-form-panel">
+        <div className="login-form-toggle">
+          <ThemeToggle />
+        </div>
+        <div className="login-form-wrapper">
+          <div className="login-form-header">
+            {/* Logo visible uniquement en mobile (quand le side panel est masqué) */}
+            <img src="/logo192.png" alt="Ragnance" className="login-form-logo-mobile" />
+            <h1 className="login-form-title">Connexion</h1>
+            <p className="login-form-desc">Connectez-vous pour accéder à votre espace</p>
           </div>
-          <div className="field">
-            <span className="p-float-label">
-              <Password 
-                id="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                feedback={false} 
-                toggleMask 
+
+          <form onSubmit={handleLogin} className="login-form">
+            <div className="login-field">
+              <label htmlFor="email" className="login-label">Email</label>
+              <InputText
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="username"
+                disabled={isLoading}
+                placeholder="votre@email.com"
+                className="login-input"
+              />
+            </div>
+            <div className="login-field">
+              <label htmlFor="password" className="login-label">Mot de passe</label>
+              <Password
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                feedback={false}
+                toggleMask
                 autoComplete="current-password"
                 disabled={isLoading}
+                placeholder="Votre mot de passe"
+                className="login-input"
               />
-              <label htmlFor="password">Mot de passe</label>
-            </span>
-          </div>
-          <div className="field-checkbox mb-3">
-            <Checkbox
-              inputId="rememberMe"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.checked)}
+            </div>
+            <div className="login-remember">
+              <Checkbox
+                inputId="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.checked)}
+                disabled={isLoading}
+              />
+              <label htmlFor="rememberMe" className="login-remember-label">
+                Se souvenir de moi pendant 30 jours
+              </label>
+            </div>
+            {error && (
+              <div className="login-error">
+                <Message severity="error" text={error} className="w-full" />
+              </div>
+            )}
+            <Button
+              type="submit"
+              label={isLoading ? "Connexion en cours..." : "Se connecter"}
               disabled={isLoading}
+              icon={isLoading ? "pi pi-spin pi-spinner" : "pi pi-sign-in"}
+              className="login-submit"
             />
-            <label htmlFor="rememberMe" className="ml-2" style={{ cursor: 'pointer' }}>
-              Se souvenir de moi pendant 30 jours
-            </label>
+          </form>
+          <div className="login-footer-link">
+            <Link to="/">
+              <i className="pi pi-arrow-left"></i> Retour à l'accueil
+            </Link>
           </div>
-          {error && <Message severity="error" text={error} />}
-          <Button 
-            type="submit" 
-            label={isLoading ? "Connexion en cours..." : "Se connecter"} 
-            className="mt-2"
-            disabled={isLoading}
-            icon={isLoading ? "pi pi-spin pi-spinner" : undefined}
-          />
-        </form>
-        <div className="mt-3 text-center">
-          <Link to="/">Retour à l'accueil</Link>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
