@@ -20,6 +20,8 @@ import 'primeflex/primeflex.css';
 import './index.css';
 // 5. Modernisation globale des Cards
 import './styles/cards.css';
+// 6. Modernisation du sidebar
+import './styles/sidebar.css';
 
 // Configuration de la locale française pour PrimeReact (calendriers, etc.)
 addLocale('fr', {
