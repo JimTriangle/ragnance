@@ -211,8 +211,6 @@ const BudgetsPage = () => {
 
     // Clé unique pour forcer le re-render des inputs quand le mois change
     const monthKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
-    const monthName = currentDate.toLocaleString('fr-FR', { month: 'long' });
-    const year = currentDate.getFullYear();
 
     return (
         <div className="p-4">
