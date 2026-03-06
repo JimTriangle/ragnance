@@ -553,7 +553,7 @@ const MonthlyViewPage = () => {
             </div>
           </div>
 
-          <DataTable value={filteredTransactions} loading={loading} size="small" globalFilter={globalFilter} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50, 100]} responsiveLayout="scroll" emptyMessage={
+          <DataTable value={filteredTransactions} loading={loading} size="small" globalFilter={globalFilter} globalFilterFields={['label', 'amount', 'type', 'date']} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50, 100]} responsiveLayout="scroll" emptyMessage={
             <div className="txn-empty">
               <i className="pi pi-inbox txn-empty__icon"></i>
               <p className="txn-empty__text">Aucune transaction ce mois</p>
