@@ -24,6 +24,7 @@ import useChartTheme from '../hooks/useChartTheme';
 import useDisplayPreferences from '../hooks/useDisplayPreferences';
 import '../styles/tour.css';
 import '../styles/transactions.css';
+import '../styles/month-navigation.css';
 
 const COLUMN_CONFIG = [
   { key: 'label',      header: 'Libellé',    field: 'label',     sortable: true,  bodyRef: 'labelBodyTemplate' },
@@ -68,6 +69,7 @@ const MonthlyViewPage = () => {
     return DEFAULT_VISIBLE_COLUMNS;
   });
 
+  const [slideDirection, setSlideDirection] = useState(null);
   const isMountedRef = useRef(true);
 
   // Configuration du guide utilisateur
@@ -285,12 +287,48 @@ const MonthlyViewPage = () => {
     };
   }, []);
 
-  const changeMonth = (amount) => {
+  const changeMonth = useCallback((amount) => {
+    setSlideDirection(amount > 0 ? 'left' : 'right');
     setCurrentDate(prevDate => {
       const newDate = new Date(prevDate);
       newDate.setMonth(newDate.getMonth() + amount);
       return newDate;
     });
+  }, []);
+
+  // Clear slide animation class after it plays
+  useEffect(() => {
+    if (slideDirection) {
+      const timer = setTimeout(() => setSlideDirection(null), 250);
+      return () => clearTimeout(timer);
+    }
+  }, [slideDirection]);
+
+  // Keyboard navigation: ArrowLeft / ArrowRight
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || document.activeElement?.isContentEditable) {
+        return;
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        changeMonth(-1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        changeMonth(1);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [changeMonth]);
+
+  // Compute target month labels for tooltips
+  const getTargetMonthLabel = (offset) => {
+    const d = new Date(currentDate);
+    d.setMonth(d.getMonth() + offset);
+    const m = d.toLocaleString('fr-FR', { month: 'short' });
+    return `${m.charAt(0).toUpperCase() + m.slice(1)} ${d.getFullYear()}`;
   };
 
   const handleEditClick = (transaction) => {
@@ -564,11 +602,26 @@ const MonthlyViewPage = () => {
         </div>
         )}
 
-        <div className="flex justify-content-between align-items-center my-4" data-tour-id="month-navigation">
-          <Button icon="pi pi-arrow-left" onClick={() => changeMonth(-1)} aria-label="Mois précédent" />
+        <div className="flex justify-content-center my-4" data-tour-id="month-navigation">
           <Button label="Exporter en Excel" icon="pi pi-file-excel" className="p-button-success p-button-sm" onClick={handleExportExcel} />
-          <Button icon="pi pi-arrow-right" onClick={() => changeMonth(1)} aria-label="Mois suivant" />
         </div>
+
+        <div className="month-nav-wrapper">
+          {/* Left arrow */}
+          <div className="month-nav-btn-container month-nav-btn-container--left">
+            <button
+              type="button"
+              className="month-nav-btn month-nav-btn--left"
+              onClick={() => changeMonth(-1)}
+              aria-label="Aller au mois précédent"
+            >
+              <i className="pi pi-chevron-left month-nav-btn__icon" />
+            </button>
+            <span className="month-nav-tooltip" aria-hidden="true">{getTargetMonthLabel(-1)}</span>
+          </div>
+
+          {/* Main content */}
+          <div className={`month-nav-content ${slideDirection ? `month-nav-transition--slide-${slideDirection}` : ''}`}>
 
         <div className="txn-section mt-4" data-tour-id="transactions-table">
           <div className="txn-header">
@@ -603,6 +656,22 @@ const MonthlyViewPage = () => {
             <Column body={actionBodyTemplate} header="Actions" style={{ width: '6rem', textAlign: 'center' }} />
           </DataTable>
         </div>
+
+          </div>{/* end month-nav-content */}
+
+          {/* Right arrow */}
+          <div className="month-nav-btn-container month-nav-btn-container--right">
+            <button
+              type="button"
+              className="month-nav-btn month-nav-btn--right"
+              onClick={() => changeMonth(1)}
+              aria-label="Aller au mois suivant"
+            >
+              <i className="pi pi-chevron-right month-nav-btn__icon" />
+            </button>
+            <span className="month-nav-tooltip" aria-hidden="true">{getTargetMonthLabel(1)}</span>
+          </div>
+        </div>{/* end month-nav-wrapper */}
       </div>
       <Dialog header="Modifier la Transaction" visible={isEditModalVisible} style={{ width: '50vw' }} breakpoints={{ '960px': '75vw', '641px': '95vw' }} onHide={() => setIsEditModalVisible(false)}>
         <TransactionForm transactionToEdit={selectedTransaction} onComplete={handleComplete} />

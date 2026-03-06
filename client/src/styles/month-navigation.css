@@ -1,0 +1,253 @@
+/* ===== Month Navigation – Lateral Arrows ===== */
+
+/* ── Wrapper that holds left-arrow + content + right-arrow ──── */
+.month-nav-wrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* ── Arrow buttons ───────────────────────────────────────────── */
+.month-nav-btn {
+  /* Reset */
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+
+  /* Sizing – visible area 46px, hitbox 60px */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  min-width: 60px;   /* hitbox */
+  min-height: 60px;  /* hitbox */
+  flex-shrink: 0;
+
+  /* Visual */
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  color: var(--text-color);
+
+  /* Sticky behaviour */
+  position: sticky;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+
+  /* Transitions */
+  transition: background 0.18s ease,
+              box-shadow 0.18s ease,
+              border-color 0.18s ease,
+              transform 0.18s ease,
+              opacity 0.18s ease;
+}
+
+.month-nav-btn--left {
+  margin-right: 0.75rem;
+}
+
+.month-nav-btn--right {
+  margin-left: 0.75rem;
+}
+
+/* Icon inside the button */
+.month-nav-btn__icon {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* ── Hover ───────────────────────────────────────────────────── */
+.month-nav-btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: color-mix(in srgb, var(--primary-color) 40%, transparent);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.10),
+              0 0 0 3px color-mix(in srgb, var(--primary-color) 10%, transparent);
+  transform: translateY(-50%) scale(1.06);
+}
+
+/* ── Active / pressed ────────────────────────────────────────── */
+.month-nav-btn:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.95);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition-duration: 0.08s;
+}
+
+/* ── Focus-visible ───────────────────────────────────────────── */
+.month-nav-btn:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Remove default outline for mouse users */
+.month-nav-btn:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── Disabled ────────────────────────────────────────────────── */
+.month-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────── */
+.month-nav-btn-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+
+  /* Sticky like the button */
+  position: sticky;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.month-nav-btn-container .month-nav-btn {
+  position: static;
+  transform: none;
+}
+
+.month-nav-tooltip {
+  position: absolute;
+  top: -8px;
+  transform: translateY(-100%);
+  white-space: nowrap;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--surface-900, #1e1e2e);
+  color: var(--surface-0, #fff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform: translateY(-100%) translateX(0) scale(0.95);
+  z-index: 20;
+}
+
+/* Position tooltip: left btn → tooltip aligned left, right btn → aligned right */
+.month-nav-btn-container--left .month-nav-tooltip {
+  left: 50%;
+  transform: translateY(-100%) translateX(-50%) scale(0.95);
+}
+
+.month-nav-btn-container--right .month-nav-tooltip {
+  right: 50%;
+  transform: translateY(-100%) translateX(50%) scale(0.95);
+}
+
+/* Show tooltip on hover / focus */
+.month-nav-btn-container:hover .month-nav-tooltip,
+.month-nav-btn-container:focus-within .month-nav-tooltip {
+  opacity: 1;
+}
+
+.month-nav-btn-container--left:hover .month-nav-tooltip,
+.month-nav-btn-container--left:focus-within .month-nav-tooltip {
+  transform: translateY(-100%) translateX(-50%) scale(1);
+}
+
+.month-nav-btn-container--right:hover .month-nav-tooltip,
+.month-nav-btn-container--right:focus-within .month-nav-tooltip {
+  transform: translateY(-100%) translateX(50%) scale(1);
+}
+
+/* Tooltip arrow */
+.month-nav-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: var(--surface-900, #1e1e2e);
+}
+
+/* ── Content area between arrows ─────────────────────────────── */
+.month-nav-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Month transition animation ──────────────────────────────── */
+.month-nav-transition {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.month-nav-transition--slide-left {
+  animation: monthSlideLeft 0.22s ease-out;
+}
+
+.month-nav-transition--slide-right {
+  animation: monthSlideRight 0.22s ease-out;
+}
+
+@keyframes monthSlideLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes monthSlideRight {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .month-nav-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 10px;
+  }
+
+  .month-nav-btn--left {
+    margin-right: 0.35rem;
+  }
+
+  .month-nav-btn--right {
+    margin-left: 0.35rem;
+  }
+
+  .month-nav-btn__icon {
+    font-size: 20px;
+  }
+
+  /* Hide tooltip on touch devices – rely on aria-label */
+  .month-nav-tooltip {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .month-nav-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
