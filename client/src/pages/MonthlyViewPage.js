@@ -57,6 +57,7 @@ const MonthlyViewPage = () => {
   const [allCategories, setAllCategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [budgetProgress, setBudgetProgress] = useState([]);
+  const [exporting, setExporting] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState(() => {
     try {
       const stored = localStorage.getItem(COLUMN_VISIBILITY_STORAGE_KEY);
@@ -388,6 +389,8 @@ const MonthlyViewPage = () => {
   };
 
   const handleExportExcel = async () => {
+    if (exporting) return;
+    setExporting(true);
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
     try {
@@ -411,6 +414,8 @@ const MonthlyViewPage = () => {
     } catch (error) {
       console.error('Erreur export Excel:', error);
       showToast('error', 'Erreur', 'Impossible d\'exporter les transactions');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -616,7 +621,20 @@ const MonthlyViewPage = () => {
         )}
 
         <div className="flex justify-content-center my-4" data-tour-id="month-navigation">
-          <Button label="Exporter en Excel" icon="pi pi-file-excel" className="p-button-success p-button-sm" onClick={handleExportExcel} />
+          <button
+            type="button"
+            className={`export-excel-btn${exporting ? ' export-excel-btn--loading' : ''}`}
+            onClick={handleExportExcel}
+            disabled={exporting}
+          >
+            <span className="export-excel-btn__icon-wrapper">
+              <i className={exporting ? 'pi pi-spin pi-spinner' : 'pi pi-file-excel'} />
+            </span>
+            <span className="export-excel-btn__label">
+              {exporting ? 'Export en cours…' : 'Exporter en Excel'}
+            </span>
+            <i className="pi pi-download export-excel-btn__arrow" />
+          </button>
         </div>
 
         <div className="month-nav-wrapper">
