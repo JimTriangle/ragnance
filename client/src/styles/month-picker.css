@@ -1,0 +1,201 @@
+/* ===== Month Picker Dropdown ===== */
+
+.month-picker {
+  position: relative;
+  display: inline-flex;
+}
+
+/* ── Trigger button ─────────────────────────────────────────── */
+.month-picker__trigger {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0.35rem 0.65rem;
+  font: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 8px;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+  color: inherit;
+}
+
+.month-picker__trigger:hover {
+  background: var(--surface-hover, rgba(0, 0, 0, 0.04));
+}
+
+.month-picker__trigger--open {
+  background: var(--surface-hover, rgba(0, 0, 0, 0.04));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 20%, transparent);
+}
+
+.month-picker__trigger:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.month-picker__trigger:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.month-picker__label {
+  font-weight: inherit;
+  font-size: inherit;
+  white-space: nowrap;
+}
+
+.month-picker__chevron {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+  opacity: 0.6;
+}
+
+.month-picker__chevron--open {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown panel ─────────────────────────────────────────── */
+.month-picker__dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  min-width: 200px;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-overlay, var(--surface-card, #fff));
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12),
+              0 1px 4px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  animation: monthPickerFadeIn 0.15s ease-out;
+}
+
+@keyframes monthPickerFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ── "Mois actuel" button ───────────────────────────────────── */
+.month-picker__today-btn {
+  appearance: none;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--primary-color);
+  border-bottom: 1px solid var(--surface-border);
+  transition: background 0.12s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.month-picker__today-btn:hover {
+  background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+}
+
+.month-picker__today-btn i {
+  font-size: 0.9rem;
+}
+
+/* ── Month list ─────────────────────────────────────────────── */
+.month-picker__list {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.month-picker__list li {
+  padding: 0 0.35rem;
+}
+
+/* ── Month item ─────────────────────────────────────────────── */
+.month-picker__item {
+  appearance: none;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  border-radius: 6px;
+  transition: background 0.12s ease, color 0.12s ease;
+  text-align: left;
+}
+
+.month-picker__item:hover {
+  background: var(--surface-hover, rgba(0, 0, 0, 0.04));
+}
+
+.month-picker__item--selected {
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.month-picker__item--selected:hover {
+  background: color-mix(in srgb, var(--primary-color) 18%, transparent);
+}
+
+.month-picker__item--today {
+  font-weight: 500;
+}
+
+/* Small dot indicator for "today's month" */
+.month-picker__today-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* ── Scrollbar styling ──────────────────────────────────────── */
+.month-picker__list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.month-picker__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.month-picker__list::-webkit-scrollbar-thumb {
+  background: var(--surface-border);
+  border-radius: 3px;
+}
+
+.month-picker__list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-color-secondary);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .month-picker__dropdown {
+    min-width: 180px;
+    max-height: 280px;
+  }
+}
