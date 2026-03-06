@@ -169,19 +169,15 @@ const MonthlyViewPage = () => {
   // Préférences d'affichage des sections
   const MONTHLY_SECTIONS = [
     { key: 'soldeDebut', label: 'Solde Début de Mois' },
-    { key: 'revenus', label: 'Total Revenus' },
-    { key: 'depenses', label: 'Total Dépenses' },
     { key: 'soldeFinMois', label: 'Solde Fin de Mois' },
-    { key: 'totalBudgets', label: 'Total Budgets' },
-    { key: 'soldePrev', label: 'Solde Prév. avec Budgets' },
+    { key: 'revenusDepenses', label: 'Revenus & Dépenses' },
     { key: 'chartFlux', label: 'Flux Journalier' },
     { key: 'chartCumul', label: 'Progression Cumulée' },
     { key: 'chartPie', label: 'Répartition Revenus / Dépenses' },
     { key: 'chartBudgetProgress', label: 'Progression des Budgets' },
   ];
   const { visibility, toggleSection, isVisible } = useDisplayPreferences('monthlyView', {
-    soldeDebut: true, revenus: true, depenses: true,
-    soldeFinMois: true, totalBudgets: true, soldePrev: true,
+    soldeDebut: true, soldeFinMois: true, revenusDepenses: true,
     chartFlux: true, chartCumul: true, chartPie: true, chartBudgetProgress: true,
   });
 
@@ -477,14 +473,53 @@ const MonthlyViewPage = () => {
           <DisplaySettings sections={MONTHLY_SECTIONS} visibility={visibility} onToggle={toggleSection} />
         </div>
 
-        {(isVisible('soldeDebut') || isVisible('revenus') || isVisible('depenses') || isVisible('soldeFinMois') || isVisible('totalBudgets') || isVisible('soldePrev')) && (
-        <div className="grid text-center mb-4" data-tour-id="summary-cards">
-          {isVisible('soldeDebut') && <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Début de Mois"><h3 className="m-0">{formatCurrency(summary.startingBalance)}</h3></Card></div>}
-          {isVisible('revenus') && <div className="col-12 md:col-6 lg:col-4"><Card title="Total Revenus du Mois"><h3 className="m-0 text-green-400">{formatCurrency(summary.totalIncome)}</h3></Card></div>}
-          {isVisible('depenses') && <div className="col-12 md:col-6 lg:col-4"><Card title="Total Dépenses du Mois"><h3 className="m-0 text-red-400">{formatCurrency(summary.totalExpense)}</h3></Card></div>}
-          {isVisible('soldeFinMois') && <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Fin de Mois"><h3 className="m-0" style={{ color: endOfMonthBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(endOfMonthBalance)}</h3></Card></div>}
-          {isVisible('totalBudgets') && <div className="col-12 md:col-6 lg:col-4"><Card title="Total Budgets"><h3 className="m-0 text-blue-400">{formatCurrency(summary.totalBudgets)}</h3></Card></div>}
-          {isVisible('soldePrev') && <div className="col-12 md:col-6 lg:col-4"><Card title="Solde Prév. avec Budgets"><h3 className="m-0" style={{ color: (summary.projectedBalanceWithBudgets || 0) >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>{formatCurrency(summary.projectedBalanceWithBudgets)}</h3></Card></div>}
+        {(isVisible('soldeDebut') || isVisible('soldeFinMois') || isVisible('revenusDepenses')) && (
+        <div className="grid mt-2 mb-4" data-tour-id="summary-cards">
+          {isVisible('soldeDebut') && (
+          <div className="col-12 md:col-6 lg:col-4">
+            <div className="kpi-modern">
+              <div className="kpi-modern__icon" style={{ background: 'rgba(46, 204, 113, 0.12)', color: '#2ECC71' }}>
+                <i className="pi pi-wallet"></i>
+              </div>
+              <span className="kpi-modern__label">Solde Début de Mois</span>
+              <span className="kpi-modern__value" style={{ color: summary.startingBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>
+                {formatCurrency(summary.startingBalance)}
+              </span>
+              <span className="kpi-modern__sub">Au 1er {monthName} {year}</span>
+            </div>
+          </div>
+          )}
+          {isVisible('soldeFinMois') && (
+          <div className="col-12 md:col-6 lg:col-4">
+            <div className="kpi-modern">
+              <div className="kpi-modern__icon" style={{ background: 'rgba(52, 152, 219, 0.12)', color: '#3498DB' }}>
+                <i className="pi pi-chart-line"></i>
+              </div>
+              <span className="kpi-modern__label">Solde Fin de Mois</span>
+              <span className="kpi-modern__value" style={{ color: endOfMonthBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>
+                {formatCurrency(endOfMonthBalance)}
+              </span>
+              {summary.totalBudgets > 0 && (
+                <span className={`kpi-modern__sub ${(summary.projectedBalanceWithBudgets || 0) >= 0 ? 'kpi-modern__sub--positive' : 'kpi-modern__sub--negative'}`}>
+                  Si budgets remplis : {formatCurrency(summary.projectedBalanceWithBudgets)}
+                </span>
+              )}
+              {!summary.totalBudgets && <span className="kpi-modern__sub">Basé sur transactions</span>}
+            </div>
+          </div>
+          )}
+          {isVisible('revenusDepenses') && (
+          <div className="col-12 md:col-6 lg:col-4">
+            <div className="kpi-modern">
+              <div className="kpi-modern__icon" style={{ background: 'rgba(155, 89, 182, 0.12)', color: '#9B59B6' }}>
+                <i className="pi pi-sort-alt"></i>
+              </div>
+              <span className="kpi-modern__label">Revenus & Dépenses</span>
+              <span className="kpi-modern__value kpi-modern__sub--positive">{formatCurrency(summary.totalIncome)}</span>
+              <span className="kpi-modern__sub kpi-modern__sub--negative">Dépenses : {formatCurrency(summary.totalExpense)}</span>
+            </div>
+          </div>
+          )}
         </div>
         )}
 
