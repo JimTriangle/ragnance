@@ -18,6 +18,7 @@ import { MultiSelect } from 'primereact/multiselect';
 import useTransactionRefresh from '../hooks/useTransactionRefresh';
 import BudgetTracker from '../components/BudgetTracker';
 import DisplaySettings from '../components/DisplaySettings';
+import MonthPicker from '../components/MonthPicker';
 import useTour from '../hooks/useTour';
 import TourButton from '../components/TourButton';
 import useChartTheme from '../hooks/useChartTheme';
@@ -296,6 +297,16 @@ const MonthlyViewPage = () => {
     });
   }, []);
 
+  const goToMonth = useCallback((newDate) => {
+    setCurrentDate(prevDate => {
+      const diff = (newDate.getFullYear() - prevDate.getFullYear()) * 12 + (newDate.getMonth() - prevDate.getMonth());
+      if (diff !== 0) {
+        setSlideDirection(diff > 0 ? 'left' : 'right');
+      }
+      return newDate;
+    });
+  }, []);
+
   // Clear slide animation class after it plays
   useEffect(() => {
     if (slideDirection) {
@@ -507,7 +518,9 @@ const MonthlyViewPage = () => {
       <TourButton onStartTour={startTour} tooltip="Revoir le guide de la Vue Mensuelle" />
       <div className="p-4">
         <div className="flex justify-content-center align-items-center mb-4">
-          <h1 className="text-2xl capitalize m-0" data-tour-id="monthly-title">{`Analyse de ${monthName} ${year}`}</h1>
+          <h1 className="text-2xl capitalize m-0" data-tour-id="monthly-title">
+            Analyse de <MonthPicker currentDate={currentDate} onMonthSelect={goToMonth} />
+          </h1>
           <DisplaySettings sections={MONTHLY_SECTIONS} visibility={visibility} onToggle={toggleSection} />
         </div>
 

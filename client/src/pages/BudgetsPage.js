@@ -6,6 +6,7 @@ import { Button } from 'primereact/button';
 import AmountInput from '../components/AmountInput';
 import useTour from '../hooks/useTour';
 import TourButton from '../components/TourButton';
+import MonthPicker from '../components/MonthPicker';
 import '../styles/tour.css';
 import '../styles/budgets.css';
 
@@ -167,6 +168,15 @@ const BudgetsPage = () => {
         });
     };
 
+    const goToMonth = (newDate) => {
+        Object.keys(debounceTimeouts.current).forEach(key => {
+            clearTimeout(debounceTimeouts.current[key]);
+            delete debounceTimeouts.current[key];
+        });
+        setBudgets({});
+        setCurrentDate(newDate);
+    };
+
     const copyFromPreviousMonth = async () => {
         setIsLoadingCopy(true);
         const year = currentDate.getFullYear();
@@ -224,7 +234,7 @@ const BudgetsPage = () => {
                     onClick={() => changeMonth(-1)}
                     aria-label="Mois précédent"
                 />
-                <span className="budgets-month-label">{monthName} {year}</span>
+                <MonthPicker currentDate={currentDate} onMonthSelect={goToMonth} className="budgets-month-label" />
                 <Button
                     icon="pi pi-chevron-right"
                     className="p-button-text"
