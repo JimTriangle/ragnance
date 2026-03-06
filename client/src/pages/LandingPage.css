@@ -16,8 +16,8 @@
     padding: 5rem 1.5rem 4rem;
     background: linear-gradient(
         160deg,
-        var(--surface-900, #1e1e2e) 0%,
-        var(--surface-800, #2a2a3e) 50%,
+        #1e1e2e 0%,
+        #2a2a3e 50%,
         var(--primary-color) 150%
     );
     color: #fff;
@@ -26,8 +26,8 @@
 html[data-theme="light"] .landing-hero {
     background: linear-gradient(
         160deg,
-        var(--surface-700, #4a4d56) 0%,
-        var(--surface-600, #5c5f6a) 50%,
+        #3b3e45 0%,
+        #555961 50%,
         var(--primary-color) 150%
     );
 }
