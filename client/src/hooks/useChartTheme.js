@@ -23,11 +23,6 @@ const useChartTheme = () => {
     }
   }), [colors]);
 
-  const pieChartOptions = useMemo(() => ({
-    maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: colors.legendColor } } }
-  }), [colors]);
-
   const barChartOptions = useMemo(() => ({
     maintainAspectRatio: false,
     plugins: { legend: { labels: { color: colors.legendColor, font: { size: 10 } } } },
@@ -37,7 +32,7 @@ const useChartTheme = () => {
     }
   }), [colors]);
 
-  return { colors, lineChartOptions, pieChartOptions, barChartOptions, isDark };
+  return { colors, lineChartOptions, barChartOptions, isDark };
 };
 
 export default useChartTheme;
