@@ -125,7 +125,7 @@ const MonthlyViewPage = () => {
       element: '[data-tour-id="chart-pie"]',
       popover: {
         title: 'Répartition Revenus/Dépenses 🎯',
-        description: 'Ce graphique circulaire compare rapidement le total de vos revenus et dépenses du mois.',
+        description: 'Ce graphique en barres compare rapidement le total de vos revenus et dépenses du mois.',
         side: 'top',
         align: 'center'
       }
@@ -168,7 +168,7 @@ const MonthlyViewPage = () => {
   const { startTour } = useTour('monthly-view', tourSteps, true);
 
   // Options des graphiques (adaptées au thème clair/sombre)
-  const { barChartOptions: chartOptions, pieChartOptions } = useChartTheme();
+  const { barChartOptions: chartOptions } = useChartTheme();
 
   // Préférences d'affichage des sections
   const MONTHLY_SECTIONS = [
@@ -221,6 +221,7 @@ const MonthlyViewPage = () => {
       setPieChartData({
         labels: ['Revenus', 'Dépenses'],
         datasets: [{
+          label: 'Montant',
           data: [summaryResponse.data.totalIncome, summaryResponse.data.totalExpense],
           backgroundColor: ['#10B981', '#EF4444'],
         }]
@@ -603,7 +604,7 @@ const MonthlyViewPage = () => {
           <div className="col-12 lg:col-6" data-tour-id="chart-pie">
             <Card title="Répartition Revenus / Dépenses">
               <div style={{ position: 'relative', height: '300px' }}>
-                <Chart type="pie" data={pieChartData} options={pieChartOptions} aria-label="Graphique de répartition revenus et dépenses" />
+                <Chart type="bar" data={pieChartData} options={chartOptions} aria-label="Graphique de répartition revenus et dépenses" />
               </div>
             </Card>
           </div>

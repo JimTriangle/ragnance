@@ -88,7 +88,7 @@ const DashboardPage = () => {
             element: '[data-tour-id="chart-category"]',
             popover: {
                 title: 'Dépenses par Catégorie 🎯',
-                description: 'Identifiez rapidement où va votre argent grâce à ce graphique circulaire. Chaque couleur représente une catégorie de dépense.',
+                description: 'Identifiez rapidement où va votre argent grâce à ce graphique en barres. Chaque couleur représente une catégorie de dépense.',
                 side: 'left',
                 align: 'center'
             }
@@ -132,7 +132,7 @@ const DashboardPage = () => {
     const { startTour } = useTour('dashboard', tourSteps, true);
 
     // Options des graphiques (adaptées au thème clair/sombre)
-    const { lineChartOptions, pieChartOptions } = useChartTheme();
+    const { lineChartOptions, barChartOptions } = useChartTheme();
 
     // Préférences d'affichage des sections
     const DASHBOARD_SECTIONS = [
@@ -186,7 +186,7 @@ const DashboardPage = () => {
                 if (categories.length > 0) {
                     setCategoryChartData({
                         labels: categories.map(c => c.categoryName),
-                        datasets: [{ data: categories.map(c => c.total), backgroundColor: categories.map(c => c.categoryColor) }]
+                        datasets: [{ label: 'Dépenses', data: categories.map(c => c.total), backgroundColor: categories.map(c => c.categoryColor) }]
                     });
                 } else {
                     setCategoryChartData(null);
@@ -436,11 +436,11 @@ const DashboardPage = () => {
                         </div>
                         {categoryChartData && categoryChartData.labels.length > 0 ? (
                             <div style={{ position: 'relative', height: '300px' }}>
-                                <Chart type="pie" data={categoryChartData} options={pieChartOptions} aria-label="Graphique des dépenses par catégorie" />
+                                <Chart type="bar" data={categoryChartData} options={barChartOptions} aria-label="Graphique des dépenses par catégorie" />
                             </div>
                         ) : (
                             <div className="card-empty" style={{ height: '300px' }}>
-                                <i className="pi pi-chart-pie card-empty__icon"></i>
+                                <i className="pi pi-chart-bar card-empty__icon"></i>
                                 <p className="card-empty__text">Aucune dépense catégorisée</p>
                                 <p className="card-empty__text" style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>Ajoutez des transactions avec des catégories pour visualiser la répartition.</p>
                             </div>
