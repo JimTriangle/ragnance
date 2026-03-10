@@ -80,8 +80,8 @@ const PurchaseForecast = ({ onUpdate }) => {
                         <div className="flex sm:flex-column align-items-center sm:align-items-end gap-2 sm:gap-2">
                             <span className="font-semibold text-sm">{item.price.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
                             <div className='flex gap-2'>
-                                <Button icon="pi pi-check" className="p-button-rounded p-button-success p-button-sm" onClick={() => handlePurchase(item.id)} title="Acheter" />
-                                <Button icon="pi pi-times" className="p-button-rounded p-button-danger p-button-sm" onClick={() => handleDelete(item.id)} title="Supprimer" />
+                                <Button icon="pi pi-check" className="btn-icon-modern btn-icon-modern--success" onClick={() => handlePurchase(item.id)} tooltip="Acheter" tooltipOptions={{ position: 'top' }} />
+                                <Button icon="pi pi-times" className="btn-icon-modern btn-icon-modern--danger" onClick={() => handleDelete(item.id)} tooltip="Supprimer" tooltipOptions={{ position: 'top' }} />
                             </div>
                         </div>
                     </div>
@@ -110,7 +110,7 @@ const PurchaseForecast = ({ onUpdate }) => {
                     <InputText value={url} onChange={(e) => setUrl(e.target.value)} placeholder="URL" className="p-inputtext-sm w-full" />
                 </div>
                 <div className="col-1">
-                    <Button type="submit" icon="pi pi-plus" className="p-button-sm w-full" />
+                    <Button type="submit" icon="pi pi-plus" className="btn-icon-modern btn-icon-modern--success" style={{ width: '100%' }} />
                 </div>
             </form>
         </div>

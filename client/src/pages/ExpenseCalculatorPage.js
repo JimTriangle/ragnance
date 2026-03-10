@@ -393,7 +393,7 @@ const ExpenseCalculatorPage = () => {
             <Button
               icon="pi pi-chevron-left"
               onClick={goToPreviousMonth}
-              className="p-button-rounded"
+              className="btn-icon-modern"
               tooltip="Mois précédent"
             />
             <h2 className="text-xl font-bold m-0" style={{ minWidth: '200px', textAlign: 'center' }}>
@@ -402,7 +402,7 @@ const ExpenseCalculatorPage = () => {
             <Button
               icon="pi pi-chevron-right"
               onClick={goToNextMonth}
-              className="p-button-rounded"
+              className="btn-icon-modern"
               tooltip="Mois suivant"
             />
             {selectedMonth !== getCurrentMonth() && (
@@ -410,7 +410,7 @@ const ExpenseCalculatorPage = () => {
                 label="Aujourd'hui"
                 icon="pi pi-calendar"
                 onClick={goToCurrentMonth}
-                className="p-button-outlined"
+                className="btn-modern btn-modern--outlined"
               />
             )}
           </div>
@@ -419,7 +419,7 @@ const ExpenseCalculatorPage = () => {
               label="Copier du mois précédent"
               icon="pi pi-copy"
               onClick={copyFromPreviousMonth}
-              className="p-button-outlined p-button-secondary"
+              className="btn-modern btn-modern--outlined"
               tooltip={`Copier les données de ${formatMonthDisplay(getPreviousMonth(selectedMonth))}`}
             />
           )}
@@ -434,7 +434,7 @@ const ExpenseCalculatorPage = () => {
             label="Ajouter une personne"
             icon="pi pi-plus"
             onClick={openPersonDialog}
-            className="mb-2"
+            className="btn-modern btn-modern--success mb-2"
             data-tour-id="add-person-btn"
           />
 
@@ -462,13 +462,13 @@ const ExpenseCalculatorPage = () => {
                     <Button
                       icon="pi pi-pencil"
                       onClick={() => editPerson(rowData)}
-                      className="p-button-rounded p-button-text p-button-info"
+                      className="btn-icon-modern btn-icon-modern--info"
                       tooltip="Modifier"
                     />
                     <Button
                       icon="pi pi-trash"
                       onClick={() => removePerson(rowData.id)}
-                      className="p-button-rounded p-button-text p-button-danger"
+                      className="btn-icon-modern btn-icon-modern--danger"
                       tooltip="Supprimer"
                     />
                   </div>
@@ -490,7 +490,7 @@ const ExpenseCalculatorPage = () => {
             label="Ajouter une charge"
             icon="pi pi-plus"
             onClick={openExpenseDialog}
-            className="mb-2"
+            className="btn-modern btn-modern--success mb-2"
             data-tour-id="add-expense-btn"
           />
 
@@ -509,13 +509,13 @@ const ExpenseCalculatorPage = () => {
                       <Button
                         icon="pi pi-pencil"
                         onClick={() => editExpense(rowData)}
-                        className="p-button-rounded p-button-text p-button-info"
+                        className="btn-icon-modern btn-icon-modern--info"
                         tooltip="Modifier"
                       />
                       <Button
                         icon="pi pi-trash"
                         onClick={() => removeExpense(rowData.id)}
-                        className="p-button-rounded p-button-text p-button-danger"
+                        className="btn-icon-modern btn-icon-modern--danger"
                         tooltip="Supprimer"
                       />
                     </div>

@@ -22,6 +22,8 @@ import './index.css';
 import './styles/cards.css';
 // 6. Modernisation du sidebar
 import './styles/sidebar.css';
+// 7. Modernisation des boutons, dialogs et TabView
+import './styles/buttons.css';
 
 // Configuration de la locale française pour PrimeReact (calendriers, etc.)
 addLocale('fr', {

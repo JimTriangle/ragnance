@@ -31,7 +31,7 @@ const ProjectBudgetTracker = ({ budgets = [] }) => {
                 <div className="card-empty">
                     <i className="pi pi-folder-open card-empty__icon"></i>
                     <p className="card-empty__text">Aucun budget de projet.</p>
-                    <Link to="/budget/project-budgets" className="p-button p-button-sm p-button-text mt-2">En créer un</Link>
+                    <Link to="/budget/project-budgets" className="btn-modern btn-modern--ghost btn-modern--sm mt-2">En créer un</Link>
                 </div>
             )}
         </div>

@@ -454,8 +454,8 @@ const MonthlyViewPage = () => {
 
   const actionBodyTemplate = (rowData) => (
     <div className="txn-actions">
-      <Button icon="pi pi-pencil" className="p-button-text p-button-sm" onClick={() => handleEditClick(rowData)} aria-label="Modifier la transaction" />
-      <Button icon="pi pi-trash" className="p-button-text p-button-danger p-button-sm" onClick={() => confirmDelete(rowData.id)} aria-label="Supprimer la transaction" />
+      <Button icon="pi pi-pencil" className="btn-icon-modern" onClick={() => handleEditClick(rowData)} aria-label="Modifier la transaction" />
+      <Button icon="pi pi-trash" className="btn-icon-modern btn-icon-modern--danger" onClick={() => confirmDelete(rowData.id)} aria-label="Supprimer la transaction" />
     </div>
   );
 
@@ -679,7 +679,7 @@ const MonthlyViewPage = () => {
               <h2 className="txn-header__title">Transactions</h2>
               <span className="txn-header__count">{filteredTransactions.length}</span>
             </div>
-            <Button label="Ajouter" icon="pi pi-plus" className="p-button-success p-button-sm txn-add-btn" onClick={() => setIsNewModalVisible(true)} data-tour-id="add-transaction-btn" />
+            <Button label="Ajouter" icon="pi pi-plus" className="btn-modern btn-modern--success btn-modern--sm txn-add-btn" onClick={() => setIsNewModalVisible(true)} data-tour-id="add-transaction-btn" />
           </div>
 
           <div className="txn-toolbar">

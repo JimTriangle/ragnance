@@ -22,16 +22,17 @@ const TopBar = ({ onOpenSidebar, onAddTransaction, onShowAnnouncements, onShowRe
             <div className="flex align-items-center gap-2">
                 <Button
                     icon="pi pi-bars"
-                    className="p-button-text p-button-lg hamburger-button"
+                    className="btn-icon-modern hamburger-button"
                     onClick={onOpenSidebar}
                     aria-label="Ouvrir le menu"
+                    style={{ width: '2.5rem', height: '2.5rem', fontSize: '1.1rem' }}
                 />
                 <h2 className="m-0 text-primary">Budget</h2>
             </div>
             <div className="flex align-items-center gap-2">
                 <Button
                     icon="pi pi-bell"
-                    className="p-button-text p-button-rounded"
+                    className="btn-icon-modern"
                     onClick={onShowReminders}
                     tooltip="Voir les rappels"
                     tooltipOptions={{ position: 'bottom' }}
@@ -41,7 +42,7 @@ const TopBar = ({ onOpenSidebar, onAddTransaction, onShowAnnouncements, onShowRe
                 <Button
                     label="Ajouter une transaction"
                     icon="pi pi-plus"
-                    className="add-transaction-button p-button-sm p-button-primary"
+                    className="add-transaction-button btn-modern btn-modern--success btn-modern--sm"
                     onClick={onAddTransaction}
                     tooltip="Ajouter une transaction (N)"
                     tooltipOptions={{ position: 'bottom' }}
@@ -165,7 +166,7 @@ const BudgetLayout = () => {
             <Button
                 label="Ajouter une transaction (N)"
                 icon="pi pi-plus"
-                className="w-full p-button-primary"
+                className="w-full btn-modern btn-modern--success"
                 onClick={() => {
                     openModal();
                     closeSidebar();
@@ -239,7 +240,7 @@ const BudgetLayout = () => {
                 <Outlet />
             </main>
             <Footer />
-            <Button icon="pi pi-plus" className="fab-button p-button-rounded p-button-primary" onClick={openModal} aria-label="Ajouter une transaction" />
+            <Button icon="pi pi-plus" className="fab-button btn-modern btn-modern--success" onClick={openModal} aria-label="Ajouter une transaction" />
             <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '50vw' }} breakpoints={{ '960px': '75vw', '641px': '95vw' }} onHide={handleModalHide}>
                 <TransactionForm onComplete={handleComplete} onDirtyChange={handleFormDirtyChange} />
             </Dialog>

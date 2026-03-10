@@ -46,7 +46,7 @@ const AppSidebar = ({
                 <div className="sidebar-mobile-close">
                     <Button
                         icon="pi pi-times"
-                        className="p-button-text p-button-rounded p-button-sm"
+                        className="btn-icon-modern"
                         onClick={onHide}
                         aria-label="Fermer le menu"
                     />
@@ -130,7 +130,7 @@ const AppSidebar = ({
                         <Button
                             label="Passer au Budget"
                             icon="pi pi-wallet"
-                            className="w-full mb-2 p-button-secondary p-button-outlined p-button-sm"
+                            className="w-full mb-2 btn-modern btn-modern--outlined btn-modern--sm"
                             onClick={() => handleSectionSwitch('budget')}
                         />
                     </div>
@@ -154,13 +154,13 @@ const AppSidebar = ({
                         <Button
                             label="Profil"
                             icon="pi pi-user-edit"
-                            className="p-button-outlined p-button-sm"
+                            className="btn-modern btn-modern--outlined btn-modern--sm"
                             onClick={() => handleNavigation(section === 'budget' ? '/budget/profile' : '/trading/profile')}
                         />
                         <Button
                             label="Déconnexion"
                             icon="pi pi-sign-out"
-                            className="p-button-danger p-button-outlined p-button-sm"
+                            className="btn-modern btn-modern--outlined btn-modern--danger btn-modern--sm"
                             onClick={logoutUser}
                         />
                     </div>

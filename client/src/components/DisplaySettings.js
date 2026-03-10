@@ -16,7 +16,7 @@ const DisplaySettings = ({ sections, visibility, onToggle }) => {
     <>
       <Button
         icon="pi pi-eye"
-        className="p-button-rounded p-button-text p-button-sm"
+        className="btn-icon-modern"
         onClick={(e) => overlayRef.current.toggle(e)}
         tooltip="Configurer l'affichage"
         tooltipOptions={{ position: 'left' }}

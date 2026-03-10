@@ -84,7 +84,7 @@ const ExchangeKeyForm = ({ initialData = {}, onSave, onCancel }) => {
           <label>API Secret</label>
           <div className="flex align-items-center">
             <span>{initialData.secretMask}</span>
-            <Button label="Remplacer le secret" className="p-button-text ml-2" onClick={() => setReplaceSecret(true)} />
+            <Button label="Remplacer le secret" className="btn-modern btn-modern--ghost ml-2" onClick={() => setReplaceSecret(true)} />
           </div>
         </div>
       )}
@@ -94,10 +94,10 @@ const ExchangeKeyForm = ({ initialData = {}, onSave, onCancel }) => {
       </div>
       {error && <small className="p-error" aria-live="polite">{error}</small>}
       {info && !error && <small className="p-success" aria-live="polite">{info}</small>}
-      <div className="flex mt-4">
-        <Button label="Tester la connexion" onClick={handleTest} disabled={loadingTest || cooldown} className="mr-2" />
-        <Button label="Enregistrer" onClick={() => onSave(form)} disabled={!canSave()} />
-        <Button label="Annuler" className="p-button-text ml-2" onClick={onCancel} />
+      <div className="flex mt-4 gap-2">
+        <Button label="Tester la connexion" icon="pi pi-bolt" onClick={handleTest} disabled={loadingTest || cooldown} className="btn-modern btn-modern--info" />
+        <Button label="Enregistrer" icon="pi pi-check" onClick={() => onSave(form)} disabled={!canSave()} className="btn-modern btn-modern--success" />
+        <Button label="Annuler" className="btn-modern btn-modern--ghost" onClick={onCancel} />
       </div>
     </div>
   );

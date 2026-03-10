@@ -33,7 +33,7 @@ const AnnouncementBadge = ({ onClick }) => {
     return (
         <Button
             icon="pi pi-bell"
-            className="p-button-rounded p-button-text p-button-warning"
+            className="btn-notification"
             onClick={onClick}
             tooltip="Nouvelles annonces"
             tooltipOptions={{ position: 'bottom' }}

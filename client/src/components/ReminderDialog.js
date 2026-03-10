@@ -59,7 +59,7 @@ const ReminderDialog = ({ visible, onHide }) => {
 
   const footer = (
     <div>
-      <Button label="Fermer" icon="pi pi-times" onClick={onHide} className="p-button-text" />
+      <Button label="Fermer" icon="pi pi-times" onClick={onHide} className="btn-modern btn-modern--ghost" />
     </div>
   );
 

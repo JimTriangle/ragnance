@@ -62,8 +62,8 @@ const StrategyEditPage = () => {
         }
       }} />
       <div className="mt-4">
-        <button className="p-button" onClick={handleSave}>Enregistrer</button>
-        <button className="p-button p-button-text" onClick={() => navigate('/trading/strategies')}>Annuler</button>
+        <button className="btn-modern btn-modern--success" onClick={handleSave}>Enregistrer</button>
+        <button className="btn-modern btn-modern--ghost ml-2" onClick={() => navigate('/trading/strategies')}>Annuler</button>
       </div>
       <div className="mt-4">
         <StrategyPreview kind={strategy.kind} params={strategy.params} />

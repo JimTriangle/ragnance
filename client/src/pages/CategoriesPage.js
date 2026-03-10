@@ -162,8 +162,8 @@ const CategoriesPage = () => {
 
     const dialogFooter = (
         <div>
-            <Button label="Annuler" icon="pi pi-times" className="p-button-text" onClick={hideDialog} />
-            <Button label="Sauvegarder" icon="pi pi-check" onClick={saveCategory} />
+            <Button label="Annuler" icon="pi pi-times" className="btn-modern btn-modern--ghost" onClick={hideDialog} />
+            <Button label="Sauvegarder" icon="pi pi-check" className="btn-modern" onClick={saveCategory} />
         </div>
     );
 
@@ -182,7 +182,7 @@ const CategoriesPage = () => {
                 <Button
                     label="Nouvelle Catégorie"
                     icon="pi pi-plus"
-                    className="p-button-sm"
+                    className="btn-modern btn-modern--success btn-modern--sm"
                     onClick={openNew}
                     data-tour-id="add-category-btn"
                 />
@@ -222,13 +222,13 @@ const CategoriesPage = () => {
                             <div className="category-buttons">
                                 <Button
                                     icon="pi pi-pencil"
-                                    className="p-button-rounded p-button-text p-button-sm"
+                                    className="btn-icon-modern"
                                     onClick={() => editCategory(category)}
                                     aria-label="Modifier la catégorie"
                                 />
                                 <Button
                                     icon="pi pi-trash"
-                                    className="p-button-rounded p-button-text p-button-danger p-button-sm"
+                                    className="btn-icon-modern btn-icon-modern--danger"
                                     onClick={() => deleteCategory(category.id)}
                                     aria-label="Supprimer la catégorie"
                                 />

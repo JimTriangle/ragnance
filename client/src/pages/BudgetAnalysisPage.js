@@ -76,7 +76,7 @@ const BudgetAnalysisPage = () => {
 
     const suggestionCard = (suggestion) => {
         const icon = suggestion.type === 'increase' ? 'pi pi-arrow-up' : 'pi pi-arrow-down';
-        const color = suggestion.type === 'increase' ? 'p-button-warning' : 'p-button-info';
+        const color = suggestion.type === 'increase' ? 'btn-modern--warning' : 'btn-modern--info';
 
         return (
             <div key={suggestion.categoryId} className="col-12 md:col-6 lg:col-4">
@@ -92,7 +92,7 @@ const BudgetAnalysisPage = () => {
                     <Button
                         label="Gérer les budgets"
                         icon="pi pi-pencil"
-                        className={`p-button-sm w-full ${color}`}
+                        className={`btn-modern btn-modern--sm w-full ${color}`}
                         onClick={() => navigate('/budget/budgets')}
                     />
                 </Card>
