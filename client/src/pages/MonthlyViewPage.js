@@ -41,6 +41,7 @@ const COLUMN_VISIBILITY_STORAGE_KEY = 'monthlyView_visibleColumns';
 const MonthlyViewPage = () => {
   const [transactions, setTransactions] = useState([]);
   const [summary, setSummary] = useState({ startingBalance: 0, totalIncome: 0, totalExpense: 0, projectedBalanceWithBudgets: 0, totalBudgets: 0 });
+  const [currentBalance, setCurrentBalance] = useState(0);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -172,6 +173,7 @@ const MonthlyViewPage = () => {
 
   // Préférences d'affichage des sections
   const MONTHLY_SECTIONS = [
+    { key: 'soldeActuel', label: 'Solde Actuel' },
     { key: 'soldeDebut', label: 'Solde Début de Mois' },
     { key: 'soldeFinMois', label: 'Solde Fin de Mois' },
     { key: 'revenusDepenses', label: 'Revenus & Dépenses' },
@@ -181,7 +183,7 @@ const MonthlyViewPage = () => {
     { key: 'chartBudgetProgress', label: 'Progression des Budgets' },
   ];
   const { visibility, toggleSection, isVisible } = useDisplayPreferences('monthlyView', {
-    soldeDebut: true, soldeFinMois: true, revenusDepenses: true,
+    soldeActuel: true, soldeDebut: true, soldeFinMois: true, revenusDepenses: true,
     chartFlux: true, chartCumul: true, chartPie: true, chartBudgetProgress: true,
   });
 
@@ -195,11 +197,12 @@ const MonthlyViewPage = () => {
     const month = currentDate.getMonth() + 1;
     
     try {
-      const [transacResponse, summaryResponse, dailyFlowResponse, budgetProgressResponse] = await Promise.all([
+      const [transacResponse, summaryResponse, dailyFlowResponse, budgetProgressResponse, globalSummaryResponse] = await Promise.all([
         api.get(`/transactions?year=${year}&month=${month}`),
         api.get(`/transactions/summary/${year}/${month}`),
         api.get(`/analysis/daily-flow/${year}/${month}`),
-        api.get(`/budgets/progress/${year}/${month}`)
+        api.get(`/budgets/progress/${year}/${month}`),
+        api.get('/transactions/summary')
       ]);
 
       if (!isMountedRef.current) return;
@@ -207,6 +210,7 @@ const MonthlyViewPage = () => {
       setTransactions(transacResponse.data);
       setSummary(summaryResponse.data);
       setBudgetProgress(budgetProgressResponse.data);
+      setCurrentBalance(globalSummaryResponse.data.currentBalance || 0);
 
       const dailyFlowData = dailyFlowResponse.data;
 
@@ -530,10 +534,24 @@ const MonthlyViewPage = () => {
           <DisplaySettings sections={MONTHLY_SECTIONS} visibility={visibility} onToggle={toggleSection} />
         </div>
 
-        {(isVisible('soldeDebut') || isVisible('soldeFinMois') || isVisible('revenusDepenses')) && (
+        {(isVisible('soldeActuel') || isVisible('soldeDebut') || isVisible('soldeFinMois') || isVisible('revenusDepenses')) && (
         <div className="grid mt-2 mb-4" data-tour-id="summary-cards">
+          {isVisible('soldeActuel') && (
+          <div className="col-12 md:col-6 lg:col-3">
+            <div className="kpi-modern">
+              <div className="kpi-modern__icon" style={{ background: 'rgba(241, 196, 15, 0.12)', color: '#F1C40F' }}>
+                <i className="pi pi-wallet"></i>
+              </div>
+              <span className="kpi-modern__label">Solde Actuel</span>
+              <span className="kpi-modern__value" style={{ color: currentBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>
+                {formatCurrency(currentBalance)}
+              </span>
+              <span className="kpi-modern__sub">Au {new Date().toLocaleDateString('fr-FR')}</span>
+            </div>
+          </div>
+          )}
           {isVisible('soldeDebut') && (
-          <div className="col-12 md:col-6 lg:col-4">
+          <div className="col-12 md:col-6 lg:col-3">
             <div className="kpi-modern">
               <div className="kpi-modern__icon" style={{ background: 'rgba(46, 204, 113, 0.12)', color: '#2ECC71' }}>
                 <i className="pi pi-wallet"></i>
@@ -547,7 +565,7 @@ const MonthlyViewPage = () => {
           </div>
           )}
           {isVisible('soldeFinMois') && (
-          <div className="col-12 md:col-6 lg:col-4">
+          <div className="col-12 md:col-6 lg:col-3">
             <div className="kpi-modern">
               <div className="kpi-modern__icon" style={{ background: 'rgba(52, 152, 219, 0.12)', color: '#3498DB' }}>
                 <i className="pi pi-chart-line"></i>
@@ -566,7 +584,7 @@ const MonthlyViewPage = () => {
           </div>
           )}
           {isVisible('revenusDepenses') && (
-          <div className="col-12 md:col-6 lg:col-4">
+          <div className="col-12 md:col-6 lg:col-3">
             <div className="kpi-modern">
               <div className="kpi-modern__icon" style={{ background: 'rgba(155, 89, 182, 0.12)', color: '#9B59B6' }}>
                 <i className="pi pi-sort-alt"></i>
