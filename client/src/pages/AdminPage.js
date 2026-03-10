@@ -13,6 +13,7 @@ import { TabView, TabPanel } from 'primereact/tabview';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Badge } from 'primereact/badge';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import '../styles/transactions.css';
 
 const AdminPage = () => {
     const [users, setUsers] = useState([]);
@@ -23,6 +24,7 @@ const AdminPage = () => {
     const toast = useRef(null);
     const [sqlQuery, setSqlQuery] = useState('');
     const [sqlResult, setSqlResult] = useState([]);
+    const [sqlGlobalFilter, setSqlGlobalFilter] = useState('');
     const [tables, setTables] = useState([]);
     const [selectedTable, setSelectedTable] = useState(null);
     const [tableSchema, setTableSchema] = useState(null);
@@ -219,11 +221,30 @@ const AdminPage = () => {
         if (!Array.isArray(sqlResult) || sqlResult.length === 0) return null;
         const columns = Object.keys(sqlResult[0]);
         return (
-            <DataTable value={sqlResult} className="mt-4">
-                {columns.map(col => (
-                    <Column key={col} field={col} header={col} />
-                ))}
-            </DataTable>
+            <div className="txn-section mt-4">
+                <div className="txn-header">
+                    <div className="txn-header__left">
+                        <h3 className="txn-header__title">Résultats</h3>
+                        <span className="txn-header__count">{sqlResult.length}</span>
+                    </div>
+                </div>
+                <div className="txn-toolbar">
+                    <div className="txn-toolbar__search">
+                        <i className="pi pi-search" />
+                        <InputText value={sqlGlobalFilter} onChange={(e) => setSqlGlobalFilter(e.target.value)} placeholder="Filtrer..." className="p-inputtext-sm" />
+                    </div>
+                </div>
+                <DataTable value={sqlResult} size="small" globalFilter={sqlGlobalFilter} globalFilterFields={columns} paginator rows={10} rowsPerPageOptions={[10, 25, 50, 100]} responsiveLayout="scroll" emptyMessage={
+                    <div className="txn-empty">
+                        <i className="pi pi-search txn-empty__icon"></i>
+                        <p className="txn-empty__text">Aucun résultat</p>
+                    </div>
+                }>
+                    {columns.map(col => (
+                        <Column key={col} field={col} header={col} sortable />
+                    ))}
+                </DataTable>
+            </div>
         );
     };
     const deleteUser = (userId) => {
