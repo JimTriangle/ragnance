@@ -4,7 +4,7 @@ import { Button } from 'primereact/button';
 import { AuthContext } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 
-const DesktopSidebar = ({ navItems = [], section = 'budget' }) => {
+const DesktopSidebar = ({ navItems = [] }) => {
     const { user, logoutUser } = useContext(AuthContext);
     const navigate = useNavigate();
 
@@ -17,10 +17,10 @@ const DesktopSidebar = ({ navItems = [], section = 'budget' }) => {
             {/* Brand */}
             <div className="sidebar-brand">
                 <div className="sidebar-brand__icon">
-                    <i className={`pi ${section === 'budget' ? 'pi-wallet' : 'pi-chart-line'}`}></i>
+                    <i className="pi pi-wallet"></i>
                 </div>
                 <h3 className="sidebar-brand__title">
-                    {section === 'budget' ? 'Budget' : 'Trading'}
+                    Budget
                 </h3>
             </div>
 
@@ -85,7 +85,7 @@ const DesktopSidebar = ({ navItems = [], section = 'budget' }) => {
                         label="Profil"
                         icon="pi pi-user-edit"
                         className="p-button-outlined p-button-sm"
-                        onClick={() => navigate(section === 'budget' ? '/budget/profile' : '/trading/profile')}
+                        onClick={() => navigate('/budget/profile')}
                     />
                     <Button
                         label="Déconnexion"

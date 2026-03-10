@@ -168,9 +168,6 @@ resetTour(); // Réinitialise le tour
 - ⏳ Categories
 - ⏳ Budgets
 - ⏳ Expense Calculator
-- ⏳ Trading Dashboard
-- ⏳ Strategies
-- ⏳ Backtests
 
 ## 📚 Ressources
 

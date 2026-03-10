@@ -50,7 +50,6 @@ router.post('/login', async (req, res) => {
       email: user.email,
       role: user.role,
       budgetAccess: user.budgetAccess,
-      tradingAccess: user.tradingAccess,
       rememberMe: !!rememberMe
     };
     const tokenExpiry = rememberMe ? '30d' : '6h';
@@ -92,7 +91,6 @@ router.post('/refresh', async (req, res) => {
       email: user.email,
       role: user.role,
       budgetAccess: user.budgetAccess,
-      tradingAccess: user.tradingAccess,
       rememberMe
     };
 

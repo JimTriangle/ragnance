@@ -21,8 +21,6 @@ require('./models/SavingsPart.model');
 require('./models/SavingsGoal.model');
 require('./models/SavingsGoalContribution.model');
 require('./models/TransactionCategory.model');
-require('./models/ExchangeKey.model');
-require('./models/Strategy.model');
 require('./models/Announcement.model');
 require('./models/UserAnnouncement.model');
 require('./models/ConfigEmail.model');
@@ -34,7 +32,6 @@ setupAssociations();
 
 const isAuth = require('./middleware/isAuth');
 const hasBudgetAccess = require('./middleware/hasBudgetAccess');
-const hasTradingAccess = require('./middleware/hasTradingAccess');
 
 const app = express();
 app.set('trust proxy', 1); // important derrière Nginx
@@ -87,7 +84,6 @@ const resolvePort = () => {
 };
 
 const PORT = resolvePort();
-const { setupBotLogWebSocket } = require('./services/botLogs.js');
 const defaultAllowedOrigins = ['https://ragnance.fr', 'https://www.ragnance.fr'];
 const envAllowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
@@ -128,19 +124,6 @@ sequelize.authenticate()
 // (ex: sequelize-cli) pour suivre et appliquer les changements de schéma
 // de manière contrôlée et sécurisée sans risquer de perdre des données.
 sequelize.sync({ force: false })
-  .then(async () => {
-    // seed minimal pour les clés d\'exchange
-    try {
-      await require('./seed/exchangeKeysSeed')();
-    } catch (e) {
-      console.error('Seed exchange keys failed:', e.message);
-    }
-    try {
-      await require('./seed/strategySeed')();
-    } catch (e) {
-      console.error('Seed strategies failed:', e.message);
-    }
-  })
   .catch(err => {
     console.error('Échec de la synchronisation des tables:', err);
   });
@@ -205,25 +188,12 @@ app.use('/api/savings', isAuth, hasBudgetAccess, require('./routes/Savings.route
 app.use('/api/savings-goals', isAuth, hasBudgetAccess, require('./routes/SavingsGoal.routes.js'));
 app.use('/api/analysis', isAuth, hasBudgetAccess, require('./routes/analysis.routes.js'));
 app.use('/api/expense-calculator', isAuth, hasBudgetAccess, require('./routes/expenseCalculator.routes.js'));
-app.use('/api/dashboard', isAuth, hasTradingAccess, require('./routes/dashboard.routes.js'));
-app.use('/api/portfolios', isAuth, hasTradingAccess, require('./routes/portfolio.routes'));
-app.use('/api/markets', isAuth, hasTradingAccess, require('./routes/market.routes'));
-app.use('/api/exchanges', isAuth, hasTradingAccess, require('./routes/exchange.routes'));
-app.use('/api/backtests', isAuth, hasTradingAccess, require('./routes/backtest.routes'));
-app.use('/api', isAuth, hasTradingAccess, require('./routes/strategy.routes'));
-app.use('/api', isAuth, hasTradingAccess, require('./routes/strategies.routes'));
-app.use('/api/bot', isAuth, hasTradingAccess, require('./routes/bot.routes'));
-app.use('/api/bots', isAuth, hasTradingAccess, require('./routes/bots.routes'));
-if (process.env.ADX_EMA_RSI_ENABLED === 'true') {
-  app.use('/api', isAuth, hasTradingAccess, require('./routes/strategyInstance.routes'));
-}
 
 
 const openapiDocument = yaml.load(path.join(__dirname, 'openapi.yaml'));
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
 
 const server = http.createServer(app);
-setupBotLogWebSocket(server);
 
 // 404 propre pour /api (si aucune route ne match)
 app.use('/api', (req, res, next) => {

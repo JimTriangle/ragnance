@@ -158,7 +158,6 @@ Vous pouvez facilement étendre ce système à d'autres pages :
 2. **Expense Calculator** - Guider dans l'utilisation du calculateur
 3. **Categories** - Expliquer la gestion des catégories
 4. **Budgets** - Tutoriel pour créer et suivre des budgets
-5. **Trading Dashboard** - Expliquer les KPIs et graphiques
 
 ### Avantages :
 - 🎓 Meilleure adoption des fonctionnalités

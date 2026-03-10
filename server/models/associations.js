@@ -14,8 +14,6 @@ const SavingsPart = require('./SavingsPart.model');
 const SavingsGoal = require('./SavingsGoal.model');
 const SavingsGoalContribution = require('./SavingsGoalContribution.model');
 const TransactionCategory = require('./TransactionCategory.model');
-const ExchangeKey = require('./ExchangeKey.model');
-const Strategy = require('./Strategy.model');
 const Announcement = require('./Announcement.model');
 const UserAnnouncement = require('./UserAnnouncement.model');
 const ConfigEmail = require('./ConfigEmail.model');
@@ -66,14 +64,6 @@ function setupAssociations() {
   // ShoppingItem associations
   ShoppingItem.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
   User.hasMany(ShoppingItem);
-
-  // ExchangeKey associations
-  ExchangeKey.belongsTo(User, { foreignKey: { name: 'userId', allowNull: false }, onDelete: 'CASCADE' });
-  User.hasMany(ExchangeKey, { foreignKey: { name: 'userId', allowNull: false } });
-
-  // Strategy associations
-  Strategy.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-  User.hasMany(Strategy);
 
   // Announcement and UserAnnouncement associations
   UserAnnouncement.belongsTo(User, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });

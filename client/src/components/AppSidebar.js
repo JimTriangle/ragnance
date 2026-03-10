@@ -9,7 +9,6 @@ const AppSidebar = ({
     visible,
     onHide,
     navItems = [],
-    section = 'budget',
     additionalActions = null
 }) => {
     const { user, logoutUser } = useContext(AuthContext);
@@ -20,14 +19,6 @@ const AppSidebar = ({
         onHide();
     };
 
-    const handleSectionSwitch = (targetSection) => {
-        if (targetSection === 'budget') {
-            navigate('/budget/dashboard');
-        } else if (targetSection === 'trading') {
-            navigate('/trading');
-        }
-        onHide();
-    };
 
     const initials = user?.email
         ? user.email.substring(0, 2)
@@ -55,10 +46,10 @@ const AppSidebar = ({
                 {/* Brand */}
                 <div className="sidebar-brand">
                     <div className="sidebar-brand__icon">
-                        <i className={`pi ${section === 'budget' ? 'pi-wallet' : 'pi-chart-line'}`}></i>
+                        <i className="pi pi-wallet"></i>
                     </div>
                     <h3 className="sidebar-brand__title">
-                        {section === 'budget' ? 'Budget' : 'Trading'}
+                        Budget
                     </h3>
                 </div>
 
@@ -124,18 +115,6 @@ const AppSidebar = ({
                     </>
                 )}
 
-                {/* Section switch */}
-                {section === 'trading' && user?.budgetAccess && (
-                    <div className="sidebar-switch-section">
-                        <Button
-                            label="Passer au Budget"
-                            icon="pi pi-wallet"
-                            className="w-full mb-2 p-button-secondary p-button-outlined p-button-sm"
-                            onClick={() => handleSectionSwitch('budget')}
-                        />
-                    </div>
-                )}
-
                 {/* Footer */}
                 <div className="sidebar-footer-section">
                     <div className="sidebar-theme-row">
@@ -155,7 +134,7 @@ const AppSidebar = ({
                             label="Profil"
                             icon="pi pi-user-edit"
                             className="p-button-outlined p-button-sm"
-                            onClick={() => handleNavigation(section === 'budget' ? '/budget/profile' : '/trading/profile')}
+                            onClick={() => handleNavigation('/budget/profile')}
                         />
                         <Button
                             label="Déconnexion"

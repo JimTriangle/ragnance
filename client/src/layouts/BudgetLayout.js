@@ -219,7 +219,7 @@ const BudgetLayout = () => {
 
     return (
         <div className="layout-with-sidebar">
-            <DesktopSidebar navItems={budgetNavItems} section="budget" />
+            <DesktopSidebar navItems={budgetNavItems} />
             <TopBar
                 onOpenSidebar={openSidebar}
                 onAddTransaction={openModal}
@@ -231,7 +231,6 @@ const BudgetLayout = () => {
                 visible={isSidebarVisible}
                 onHide={closeSidebar}
                 navItems={budgetNavItems}
-                section="budget"
                 additionalActions={sidebarActions}
             />
             <main>

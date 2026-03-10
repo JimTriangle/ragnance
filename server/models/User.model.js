@@ -26,10 +26,6 @@ const User = sequelize.define('User', {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-  tradingAccess: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  },
   lastLogin: {
     type: DataTypes.DATE,
     allowNull: true,

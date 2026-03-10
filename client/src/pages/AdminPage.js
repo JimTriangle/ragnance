@@ -19,7 +19,7 @@ const AdminPage = () => {
     const [loading, setLoading] = useState(true);
     const [isDialogVisible, setIsDialogVisible] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
-    const [userData, setUserData] = useState({ email: '', password: '', role: 'user', budgetAccess: false, tradingAccess: false });
+    const [userData, setUserData] = useState({ email: '', password: '', role: 'user', budgetAccess: false });
     const toast = useRef(null);
     const [sqlQuery, setSqlQuery] = useState('');
     const [sqlResult, setSqlResult] = useState([]);
@@ -101,7 +101,7 @@ const AdminPage = () => {
 
     const openNew = () => {
         setSelectedUser(null);
-        setUserData({ email: '', password: '', role: 'user', budgetAccess: false, tradingAccess: false });
+        setUserData({ email: '', password: '', role: 'user', budgetAccess: false });
         setIsDialogVisible(true);
     };
 
@@ -121,7 +121,7 @@ const AdminPage = () => {
     const saveUser = async () => {
         try {
             if (selectedUser) {
-                await api.put(`/admin/users/${selectedUser.id}`, { email: userData.email, role: userData.role, budgetAccess: userData.budgetAccess, tradingAccess: userData.tradingAccess });
+                await api.put(`/admin/users/${selectedUser.id}`, { email: userData.email, role: userData.role, budgetAccess: userData.budgetAccess });
             } else {
                 await api.post('/admin/users', userData);
                 toast.current.show({ severity: 'success', summary: 'Succès', detail: 'Utilisateur créé' });
@@ -271,7 +271,6 @@ const AdminPage = () => {
                             <Column field="email" header="Email" sortable />
                             <Column field="role" header="Rôle" sortable />
                             <Column field="budgetAccess" header="Budget" sortable />
-                            <Column field="tradingAccess" header="Trading" sortable />
                             <Column field="createdAt" header="Créé le" body={(rowData) => new Date(rowData.createdAt).toLocaleDateString('fr-FR')} sortable />
                             <Column field="lastLogin" header="Dernière connexion" body={(rowData) => rowData.lastLogin ? new Date(rowData.lastLogin).toLocaleString('fr-FR') : ''} sortable />
                             <Column body={actionBodyTemplate} header="Actions" />
@@ -285,10 +284,6 @@ const AdminPage = () => {
                         <div className="field mt-4 flex align-items-center">
                             <Checkbox inputId="budgetAccess" checked={userData.budgetAccess} onChange={(e) => setUserData({ ...userData, budgetAccess: e.checked })} />
                             <label htmlFor="budgetAccess" className="ml-2">Accès Budget</label>
-                        </div>
-                        <div className="field mt-2 flex align-items-center">
-                            <Checkbox inputId="tradingAccess" checked={userData.tradingAccess} onChange={(e) => setUserData({ ...userData, tradingAccess: e.checked })} />
-                            <label htmlFor="tradingAccess" className="ml-2">Accès Trading</label>
                         </div>
                     </Dialog>
                 </TabPanel>

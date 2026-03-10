@@ -15,12 +15,6 @@ const ROUTE_LABELS = {
   'calculator': 'Répartition de Charges',
   'profile': 'Profil',
   'admin': 'Administration',
-  'trading': 'Trading',
-  'portfolios': 'Portefeuilles',
-  'exchanges': 'Clés API',
-  'strategies': 'Stratégies',
-  'backtests': 'Backtests',
-  'bot-activity': 'Bot',
 };
 
 const Breadcrumbs = () => {

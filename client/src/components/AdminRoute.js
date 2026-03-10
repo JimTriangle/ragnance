@@ -25,9 +25,6 @@ const AdminRoute = () => {
     if (user?.budgetAccess) {
       return <Navigate to="/budget/dashboard" replace />;
     }
-    if (user?.tradingAccess) {
-      return <Navigate to="/trading" replace />;
-    }
     return <Navigate to="/" replace />;
   }
 

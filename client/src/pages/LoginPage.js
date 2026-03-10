@@ -41,7 +41,7 @@ const LoginPage = () => {
       const redirectTo = sessionStorage.getItem('postLoginRedirect');
       sessionStorage.removeItem('postLoginRedirect');
 
-      if (redirectTo && redirectTo !== '/trading') {
+      if (redirectTo) {
         window.location.href = redirectTo;
       } else if (decoded.budgetAccess) {
         window.location.href = '/budget/dashboard';

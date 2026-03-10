@@ -4,11 +4,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 // Logique d'authentification
 import AdminRoute from './components/AdminRoute';
 import BudgetRoute from './components/BudgetRoute';
-import TradingRoute from './components/TradingRoute';
 
 // Mises en page (Layouts)
 import BudgetLayout from './layouts/BudgetLayout';
-import TradingLayout from './layouts/TradingLayout';
 
 // Pages publiques
 import LandingPage from './pages/LandingPage';
@@ -29,18 +27,6 @@ import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
 import ExpenseCalculatorPage from './pages/ExpenseCalculatorPage';
 
-// Pages de la section Trading
-import TradingDashboardPage from './pages/trading/TradingDashboardPage';
-import PortfolioListPage from './pages/trading/PortfolioListPage';
-import PortfolioDetailPage from './pages/trading/PortfolioDetailPage';
-import ExchangesPage from './pages/trading/ExchangesPage';
-import StrategyListPage from './pages/trading/StrategyListPage';
-import StrategyEditPage from './pages/trading/StrategyEditPage';
-import BacktestsPage from './pages/trading/BacktestsPage';
-import BacktestNewPage from './pages/trading/BacktestNewPage';
-import BacktestDetailPage from './pages/trading/BacktestDetailPage';
-import BotActivityPage from './pages/trading/BotActivityPage';
-import BotsPage from './pages/trading/BotsPage';
 
 function App() {
     return (
@@ -70,30 +56,7 @@ function App() {
                     </Route>
                 </Route>
 
-                {/* --- SECTION TRADING PROTÉGÉE --- */}
-                <Route path="/trading" element={<TradingRoute />}>
-                    <Route element={<TradingLayout />}>
-                        <Route index element={<TradingDashboardPage />} />
-                        <Route path="portfolios" element={<PortfolioListPage />} />
-                        <Route path="portfolios/new" element={<PortfolioDetailPage />} />
-                        <Route path="portfolios/:id" element={<PortfolioDetailPage />} />
-                        <Route path="exchanges" element={<ExchangesPage />} />
-                        <Route path="strategies" element={<StrategyListPage />} />
-                        <Route path="strategies/new" element={<StrategyEditPage />} />
-                        <Route path="strategies/:id" element={<StrategyEditPage />} />
-                        <Route path="backtests" element={<BacktestsPage />} />
-                        <Route path="backtests/new" element={<BacktestNewPage />} />
-                        <Route path="backtests/:id" element={<BacktestDetailPage />} />
-                        <Route path="bot-activity" element={<BotActivityPage />} />
-                        <Route path="profile" element={<ProfilePage />} />
-                        <Route element={<AdminRoute />}><Route path="admin" element={<AdminPage />} /></Route>
-                    </Route>
-                </Route>
-                <Route path="/bots" element={<TradingRoute />}>
-                    <Route element={<TradingLayout />}>
-                        <Route index element={<BotsPage />} />
-                    </Route>
-                </Route>
+
                 {/* Si une URL ne correspond à rien, on renvoie vers l'accueil */}
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
