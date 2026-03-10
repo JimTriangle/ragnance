@@ -192,15 +192,15 @@ const SavingsGoalsPage = () => {
 
     const dialogFooter = (
         <div>
-            <Button label="Annuler" onClick={hideDialog} className="p-button-text" />
-            <Button label="Sauvegarder" onClick={saveGoal} />
+            <Button label="Annuler" onClick={hideDialog} className="btn-modern btn-modern--ghost" />
+            <Button label="Sauvegarder" icon="pi pi-check" onClick={saveGoal} className="btn-modern" />
         </div>
     );
 
     const contributionDialogFooter = (
         <div>
-            <Button label="Annuler" onClick={hideContributionDialog} className="p-button-text" />
-            <Button label="Ajouter" onClick={saveContribution} />
+            <Button label="Annuler" onClick={hideContributionDialog} className="btn-modern btn-modern--ghost" />
+            <Button label="Ajouter" icon="pi pi-plus" onClick={saveContribution} className="btn-modern btn-modern--success" />
         </div>
     );
 
@@ -217,7 +217,7 @@ const SavingsGoalsPage = () => {
                             onChange={(e) => setShowArchived(e.value)}
                         />
                     </div>
-                    <Button label="Nouvel Objectif" icon="pi pi-plus" onClick={openNew} />
+                    <Button label="Nouvel Objectif" icon="pi pi-plus" className="btn-modern btn-modern--success" onClick={openNew} />
                 </div>
             </div>
 
@@ -245,14 +245,14 @@ const SavingsGoalsPage = () => {
                                             <>
                                                 <Button
                                                     icon="pi pi-pencil"
-                                                    className="p-button-rounded p-button-text p-button-sm"
+                                                    className="btn-icon-modern"
                                                     onClick={() => editGoal(goal)}
                                                     tooltip="Modifier"
                                                     tooltipOptions={{ position: 'top' }}
                                                 />
                                                 <Button
                                                     icon="pi pi-plus"
-                                                    className="p-button-rounded p-button-text p-button-sm"
+                                                    className="btn-icon-modern btn-icon-modern--success"
                                                     onClick={() => openContributionDialog(goal)}
                                                     tooltip="Ajouter une contribution"
                                                     tooltipOptions={{ position: 'top' }}
@@ -261,14 +261,14 @@ const SavingsGoalsPage = () => {
                                         )}
                                         <Button
                                             icon={isArchived ? "pi pi-replay" : "pi pi-check"}
-                                            className="p-button-rounded p-button-text p-button-sm"
+                                            className="btn-icon-modern btn-icon-modern--warning"
                                             onClick={() => toggleArchive(goal.id, isArchived)}
                                             tooltip={isArchived ? "Désarchiver" : "Archiver"}
                                             tooltipOptions={{ position: 'top' }}
                                         />
                                         <Button
                                             icon="pi pi-trash"
-                                            className="p-button-rounded p-button-text p-button-danger p-button-sm"
+                                            className="btn-icon-modern btn-icon-modern--danger"
                                             onClick={() => confirmDelete(goal.id)}
                                             tooltip="Supprimer"
                                             tooltipOptions={{ position: 'top' }}
@@ -331,7 +331,7 @@ const SavingsGoalsPage = () => {
                                                         {!isArchived && (
                                                             <Button
                                                                 icon="pi pi-trash"
-                                                                className="p-button-text p-button-rounded p-button-sm p-button-danger"
+                                                                className="btn-icon-modern btn-icon-modern--danger"
                                                                 onClick={() => deleteContribution(goal.id, contribution.id)}
                                                             />
                                                         )}
@@ -361,7 +361,7 @@ const SavingsGoalsPage = () => {
                     <i className="pi pi-inbox card-empty__icon" style={{ fontSize: '3rem' }}></i>
                     <p className="card-empty__text" style={{ fontSize: '1.1rem', fontWeight: 500 }}>Aucun objectif d'épargne</p>
                     <p className="card-empty__text" style={{ marginTop: '0.25rem', marginBottom: '1rem' }}>Créez votre premier objectif pour commencer à épargner</p>
-                    <Button label="Créer un objectif" icon="pi pi-plus" className="p-button-sm" onClick={openNew} />
+                    <Button label="Créer un objectif" icon="pi pi-plus" className="btn-modern btn-modern--success btn-modern--sm" onClick={openNew} />
                 </div>
             )}
 

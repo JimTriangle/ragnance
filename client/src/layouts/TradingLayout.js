@@ -15,9 +15,10 @@ const TopBar = ({ onOpenSidebar }) => {
             <div className="flex align-items-center gap-2">
                 <Button
                     icon="pi pi-bars"
-                    className="p-button-text p-button-lg hamburger-button"
+                    className="btn-icon-modern hamburger-button"
                     onClick={onOpenSidebar}
                     aria-label="Ouvrir le menu"
+                    style={{ width: '2.5rem', height: '2.5rem', fontSize: '1.1rem' }}
                 />
                 <h2 className="m-0 text-primary">Trading</h2>
             </div>

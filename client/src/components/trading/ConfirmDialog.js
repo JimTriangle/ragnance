@@ -5,8 +5,8 @@ import { Button } from 'primereact/button';
 const ConfirmDialog = ({ visible, message, onConfirm, onHide }) => {
   const footer = (
     <div>
-      <Button label="Annuler" onClick={onHide} className="p-button-text" />
-      <Button label="Confirmer" onClick={onConfirm} autoFocus />
+      <Button label="Annuler" onClick={onHide} className="btn-modern btn-modern--ghost" />
+      <Button label="Confirmer" onClick={onConfirm} className="btn-modern btn-modern--danger" autoFocus />
     </div>
   );
   return (

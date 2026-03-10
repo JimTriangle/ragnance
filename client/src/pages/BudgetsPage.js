@@ -228,14 +228,14 @@ const BudgetsPage = () => {
             <div className="budgets-month-nav" data-tour-id="month-navigation">
                 <Button
                     icon="pi pi-chevron-left"
-                    className="p-button-text"
+                    className="btn-icon-modern"
                     onClick={() => changeMonth(-1)}
                     aria-label="Mois précédent"
                 />
                 <MonthPicker currentDate={currentDate} onMonthSelect={goToMonth} className="budgets-month-label" />
                 <Button
                     icon="pi pi-chevron-right"
-                    className="p-button-text"
+                    className="btn-icon-modern"
                     onClick={() => changeMonth(1)}
                     aria-label="Mois suivant"
                 />
@@ -250,7 +250,7 @@ const BudgetsPage = () => {
                     <Button
                         label="Copier"
                         icon="pi pi-copy"
-                        className="p-button-sm"
+                        className="btn-modern btn-modern--sm"
                         onClick={copyFromPreviousMonth}
                         loading={isLoadingCopy}
                     />

@@ -144,8 +144,8 @@ const SavingsPage = () => {
 
     const dialogFooter = (
         <div>
-            <Button label="Annuler" onClick={hideDialog} className="p-button-text" />
-            <Button label="Sauvegarder" onClick={saveSavings} />
+            <Button label="Annuler" onClick={hideDialog} className="btn-modern btn-modern--ghost" />
+            <Button label="Sauvegarder" icon="pi pi-check" onClick={saveSavings} className="btn-modern" />
         </div>
     );
 
@@ -162,7 +162,7 @@ const SavingsPage = () => {
                             onChange={(e) => setShowArchived(e.value)}
                         />
                     </div>
-                    <Button label="Nouvelle Épargne" icon="pi pi-plus" onClick={openNew} />
+                    <Button label="Nouvelle Épargne" icon="pi pi-plus" className="btn-modern btn-modern--success" onClick={openNew} />
                 </div>
             </div>
 
@@ -171,7 +171,7 @@ const SavingsPage = () => {
                     <i className="pi pi-money-bill card-empty__icon" style={{ fontSize: '3rem' }}></i>
                     <p className="card-empty__text" style={{ fontSize: '1.1rem', fontWeight: 500 }}>Aucune épargne</p>
                     <p className="card-empty__text" style={{ marginTop: '0.25rem', marginBottom: '1rem' }}>Commencez à épargner en créant votre premier compte.</p>
-                    <Button label="Créer une épargne" icon="pi pi-plus" className="p-button-sm" onClick={openNew} />
+                    <Button label="Créer une épargne" icon="pi pi-plus" className="btn-modern btn-modern--success btn-modern--sm" onClick={openNew} />
                 </div>
             )}
 
@@ -194,7 +194,7 @@ const SavingsPage = () => {
                                         {!isArchived && (
                                             <Button
                                                 icon="pi pi-pencil"
-                                                className="p-button-rounded p-button-text p-button-sm"
+                                                className="btn-icon-modern"
                                                 onClick={() => editSavings(saving)}
                                                 aria-label="Modifier l'épargne"
                                                 tooltip="Modifier"
@@ -203,7 +203,7 @@ const SavingsPage = () => {
                                         )}
                                         <Button
                                             icon={isArchived ? "pi pi-replay" : "pi pi-check"}
-                                            className="p-button-rounded p-button-text p-button-sm"
+                                            className="btn-icon-modern btn-icon-modern--warning"
                                             onClick={() => toggleArchive(saving.id, isArchived)}
                                             aria-label={isArchived ? "Désarchiver l'épargne" : "Archiver l'épargne"}
                                             tooltip={isArchived ? "Désarchiver" : "Archiver"}
@@ -211,7 +211,7 @@ const SavingsPage = () => {
                                         />
                                         <Button
                                             icon="pi pi-trash"
-                                            className="p-button-rounded p-button-text p-button-danger p-button-sm"
+                                            className="btn-icon-modern btn-icon-modern--danger"
                                             onClick={() => confirmDelete(saving.id)}
                                             aria-label="Supprimer l'épargne"
                                             tooltip="Supprimer"
@@ -299,7 +299,7 @@ const SavingsPage = () => {
                         <Button
                             label="Ajouter une part"
                             icon="pi pi-plus"
-                            className="p-button-sm"
+                            className="btn-modern btn-modern--sm"
                             onClick={addPart}
                         />
                     </div>
@@ -332,7 +332,7 @@ const SavingsPage = () => {
                                         </div>
                                         <Button
                                             icon="pi pi-trash"
-                                            className="p-button-danger p-button-sm"
+                                            className="btn-icon-modern btn-icon-modern--danger"
                                             onClick={() => removePart(index)}
                                         />
                                     </div>

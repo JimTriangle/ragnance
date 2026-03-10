@@ -182,6 +182,7 @@ const ProfilePage = () => {
                         <Button
                             label="Enregistrer mes coordonnées"
                             icon="pi pi-save"
+                            className="btn-modern"
                             onClick={handleSaveContact}
                             disabled={isLoadingContact}
                         />
@@ -218,6 +219,7 @@ const ProfilePage = () => {
                         <Button
                             label="Envoyer le message"
                             icon="pi pi-send"
+                            className="btn-modern"
                             onClick={handleSendContactMessage}
                         />
                     </div>
@@ -257,6 +259,7 @@ const ProfilePage = () => {
                             type="submit"
                             label="Modifier le mot de passe"
                             icon="pi pi-key"
+                            className="btn-modern"
                         />
                     </div>
                 </form>

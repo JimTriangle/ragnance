@@ -84,13 +84,13 @@ const DesktopSidebar = ({ navItems = [], section = 'budget' }) => {
                     <Button
                         label="Profil"
                         icon="pi pi-user-edit"
-                        className="p-button-outlined p-button-sm"
+                        className="btn-modern btn-modern--outlined btn-modern--sm"
                         onClick={() => navigate(section === 'budget' ? '/budget/profile' : '/trading/profile')}
                     />
                     <Button
                         label="Déconnexion"
                         icon="pi pi-sign-out"
-                        className="p-button-danger p-button-outlined p-button-sm"
+                        className="btn-modern btn-modern--outlined btn-modern--danger btn-modern--sm"
                         onClick={logoutUser}
                     />
                 </div>

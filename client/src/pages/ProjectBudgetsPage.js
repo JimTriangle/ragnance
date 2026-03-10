@@ -109,7 +109,7 @@ const ProjectBudgetsPage = () => {
     };
 
     const formatCurrency = (value) => (value || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
-    const dialogFooter = (<div><Button label="Annuler" onClick={hideDialog} className="p-button-text" /><Button label="Sauvegarder" onClick={saveBudget} /></div>);
+    const dialogFooter = (<div><Button label="Annuler" onClick={hideDialog} className="btn-modern btn-modern--ghost" /><Button label="Sauvegarder" icon="pi pi-check" onClick={saveBudget} className="btn-modern" /></div>);
 
     return (
         <div className="p-4">
@@ -124,7 +124,7 @@ const ProjectBudgetsPage = () => {
                             onChange={(e) => setShowArchived(e.value)}
                         />
                     </div>
-                    <Button label="Nouveau Budget" icon="pi pi-plus" onClick={openNew} />
+                    <Button label="Nouveau Budget" icon="pi pi-plus" className="btn-modern btn-modern--success" onClick={openNew} />
                 </div>
             </div>
             <div className="grid">
@@ -147,7 +147,7 @@ const ProjectBudgetsPage = () => {
                                     {!isArchived && (
                                         <Button
                                             icon="pi pi-pencil"
-                                            className="p-button-sm p-button-rounded p-button-success"
+                                            className="btn-icon-modern btn-icon-modern--success"
                                             onClick={() => editBudget(budget)}
                                             tooltip="Modifier"
                                             tooltipOptions={{ position: 'top' }}
@@ -155,14 +155,14 @@ const ProjectBudgetsPage = () => {
                                     )}
                                     <Button
                                         icon={isArchived ? "pi pi-replay" : "pi pi-check"}
-                                        className={`p-button-sm p-button-rounded ${isArchived ? 'p-button-info' : 'p-button-warning'}`}
+                                        className={`btn-icon-modern ${isArchived ? 'btn-icon-modern--info' : 'btn-icon-modern--warning'}`}
                                         onClick={() => toggleArchive(budget.id, isArchived)}
                                         tooltip={isArchived ? "Désarchiver" : "Archiver"}
                                         tooltipOptions={{ position: 'top' }}
                                     />
                                     <Button
                                         icon="pi pi-trash"
-                                        className="p-button-sm p-button-rounded p-button-danger"
+                                        className="btn-icon-modern btn-icon-modern--danger"
                                         onClick={() => confirmDelete(budget.id)}
                                         tooltip="Supprimer"
                                         tooltipOptions={{ position: 'top' }}

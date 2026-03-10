@@ -32,7 +32,7 @@ const PrivacyPolicyPage = () => {
                         icon="pi pi-arrow-left"
                         label="Retour"
                         onClick={() => navigate('/')}
-                        className="p-button-text"
+                        className="btn-modern btn-modern--ghost"
                     />
                     <ThemeToggle />
                 </div>

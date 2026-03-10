@@ -46,8 +46,8 @@ const BotActivityPage = () => {
                     </Card>
                 </div>
                 <div className="col-12 mt-3">
-                    <Button label="Démarrer" icon="pi pi-play" onClick={handleStart} disabled={loading || status === 'RUNNING'} className="mr-2" />
-                    <Button label="Arrêter" icon="pi pi-stop" onClick={handleStop} disabled={loading || status === 'STOPPED'} className="p-button-danger" />
+                    <Button label="Démarrer" icon="pi pi-play" onClick={handleStart} disabled={loading || status === 'RUNNING'} className="btn-modern btn-modern--success mr-2" />
+                    <Button label="Arrêter" icon="pi pi-stop" onClick={handleStop} disabled={loading || status === 'STOPPED'} className="btn-modern btn-modern--danger" />
                 </div>
             </div>
         </div>

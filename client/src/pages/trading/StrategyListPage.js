@@ -44,7 +44,7 @@ const StrategyListPage = () => {
     <div className="p-4 trading-page-container">
       <div className="flex justify-content-between mb-3">
         <h1 className="text-2xl font-bold">Stratégies</h1>
-        <Button label="Nouvelle stratégie" onClick={() => navigate('/trading/strategies/new')} />
+        <Button label="Nouvelle stratégie" icon="pi pi-plus" className="btn-modern btn-modern--success" onClick={() => navigate('/trading/strategies/new')} />
       </div>
       <Card>
         <StrategyList

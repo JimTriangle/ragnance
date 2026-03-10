@@ -18,6 +18,12 @@
     bottom: 1rem;
     right: 1rem;
     z-index: 1000;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    padding: 0;
+    justify-content: center;
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--green-500, #22c55e) 30%, transparent);
 }
 
 @media (min-width: 768px) {

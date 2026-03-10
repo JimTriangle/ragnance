@@ -270,7 +270,7 @@ const formatDateForAPI = (d) => {
       </div>
 
       <div className="field col-12 mt-3">{error && <Message severity="error" text={error} />}</div>
-      <div className="field col-12"><Button type="submit" label={transactionToEdit ? 'Enregistrer' : 'Ajouter'} icon="pi pi-check" /></div>
+      <div className="field col-12"><Button type="submit" label={transactionToEdit ? 'Enregistrer' : 'Ajouter'} icon="pi pi-check" className="btn-form-submit" /></div>
     </form>
   );
 };

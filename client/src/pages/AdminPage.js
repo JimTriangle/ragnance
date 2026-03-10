@@ -247,12 +247,12 @@ const AdminPage = () => {
 
     const actionBodyTemplate = (rowData) => (
         <div className="flex gap-2">
-            <Button icon="pi pi-pencil" className="p-button-rounded p-button-success p-button-sm" onClick={() => editUser(rowData)} />
-            <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-sm" onClick={() => deleteUser(rowData.id)} />
+            <Button icon="pi pi-pencil" className="btn-icon-modern btn-icon-modern--success" onClick={() => editUser(rowData)} tooltip="Modifier" tooltipOptions={{ position: 'top' }} />
+            <Button icon="pi pi-trash" className="btn-icon-modern btn-icon-modern--danger" onClick={() => deleteUser(rowData.id)} tooltip="Supprimer" tooltipOptions={{ position: 'top' }} />
         </div>
     );
 
-    const dialogFooter = (<div><Button label="Annuler" icon="pi pi-times" className="p-button-text" onClick={hideDialog} /><Button label="Sauvegarder" icon="pi pi-check" onClick={saveUser} /></div>);
+    const dialogFooter = (<div><Button label="Annuler" icon="pi pi-times" className="btn-modern btn-modern--ghost" onClick={hideDialog} /><Button label="Sauvegarder" icon="pi pi-check" className="btn-modern" onClick={saveUser} /></div>);
 
     return (
         <div className="p-4">
@@ -264,7 +264,7 @@ const AdminPage = () => {
                     <div className="card mt-4">
                         <div className="flex justify-content-between align-items-center mb-4">
                             <h2 className="text-xl m-0">Gestion des utilisateurs</h2>
-                            <Button label="Nouvel Utilisateur" icon="pi pi-plus" className="p-button-success" onClick={openNew} />
+                            <Button label="Nouvel Utilisateur" icon="pi pi-plus" className="btn-modern btn-modern--success" onClick={openNew} />
                         </div>
                         <DataTable value={users} loading={loading} size="small">
                             <Column field="id" header="ID" sortable />
@@ -318,7 +318,7 @@ const AdminPage = () => {
                         <div className="col-12 md:col-8">
                             <h2>Exécuter une requête</h2>
                             <InputTextarea value={sqlQuery} rows={5} className="w-full" onChange={(e) => setSqlQuery(e.target.value)} />
-                            <Button label="Exécuter" className="mt-2" onClick={executeSQL} />
+                            <Button label="Exécuter" icon="pi pi-play" className="btn-modern mt-2" onClick={executeSQL} />
                             {renderSqlResult()}
                         </div>
                     </div>
@@ -334,14 +334,14 @@ const AdminPage = () => {
                         <div className="field mt-4">
                             <InputTextarea value={newsletterMessage} rows={5} className="w-full" onChange={(e) => setNewsletterMessage(e.target.value)} />
                         </div>
-                        <Button label="Envoyer" className="mt-2" onClick={sendNewsletter} />
+                        <Button label="Envoyer" icon="pi pi-send" className="btn-modern mt-2" onClick={sendNewsletter} />
                     </div>
                 </TabPanel>
                 <TabPanel header="Annonces">
                     <div className="card mt-4">
                         <div className="flex justify-content-between align-items-center mb-4">
                             <h2 className="text-xl m-0">Gestion des annonces</h2>
-                            <Button label="Nouvelle Annonce" icon="pi pi-plus" className="p-button-success" onClick={openNewAnnouncement} />
+                            <Button label="Nouvelle Annonce" icon="pi pi-plus" className="btn-modern btn-modern--success" onClick={openNewAnnouncement} />
                         </div>
                         <DataTable value={announcements} size="small">
                             <Column field="id" header="ID" sortable style={{ width: '5%' }} />
@@ -358,11 +358,11 @@ const AdminPage = () => {
                             <Column field="createdAt" header="Créée le" body={(rowData) => new Date(rowData.createdAt).toLocaleDateString('fr-FR')} sortable />
                             <Column header="Actions" body={(rowData) => (
                                 <div className="flex gap-2">
-                                    <Button icon="pi pi-pencil" className="p-button-rounded p-button-success p-button-sm" onClick={() => editAnnouncement(rowData)} />
+                                    <Button icon="pi pi-pencil" className="btn-icon-modern btn-icon-modern--success" onClick={() => editAnnouncement(rowData)} tooltip="Modifier" tooltipOptions={{ position: 'top' }} />
                                     {!rowData.publishedAt && (
-                                        <Button icon="pi pi-send" className="p-button-rounded p-button-info p-button-sm" onClick={() => publishAnnouncement(rowData.id)} tooltip="Publier" tooltipOptions={{ position: 'top' }} />
+                                        <Button icon="pi pi-send" className="btn-icon-modern btn-icon-modern--info" onClick={() => publishAnnouncement(rowData.id)} tooltip="Publier" tooltipOptions={{ position: 'top' }} />
                                     )}
-                                    <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-sm" onClick={() => deleteAnnouncement(rowData.id)} />
+                                    <Button icon="pi pi-trash" className="btn-icon-modern btn-icon-modern--danger" onClick={() => deleteAnnouncement(rowData.id)} tooltip="Supprimer" tooltipOptions={{ position: 'top' }} />
                                 </div>
                             )} />
                         </DataTable>
@@ -376,8 +376,8 @@ const AdminPage = () => {
                         onHide={() => setIsAnnouncementDialogVisible(false)}
                         footer={
                             <div>
-                                <Button label="Annuler" icon="pi pi-times" className="p-button-text" onClick={() => setIsAnnouncementDialogVisible(false)} />
-                                <Button label="Sauvegarder" icon="pi pi-check" onClick={saveAnnouncement} />
+                                <Button label="Annuler" icon="pi pi-times" className="btn-modern btn-modern--ghost" onClick={() => setIsAnnouncementDialogVisible(false)} />
+                                <Button label="Sauvegarder" icon="pi pi-check" className="btn-modern" onClick={saveAnnouncement} />
                             </div>
                         }
                     >
@@ -461,7 +461,7 @@ const AdminPage = () => {
                         <Button
                             label="Sauvegarder"
                             icon="pi pi-check"
-                            className="mt-4"
+                            className="btn-modern mt-4"
                             onClick={saveConfigEmails}
                         />
                     </div>

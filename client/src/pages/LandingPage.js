@@ -38,7 +38,7 @@ const LandingPage = () => {
                         icon="pi pi-arrow-right"
                         iconPos="right"
                         onClick={() => handleAccessClick('/budget/dashboard')}
-                        className="p-button-raised p-button-lg landing-hero-cta"
+                        className="btn-modern landing-hero-cta"
                     />
                 </div>
             </header>
@@ -61,7 +61,7 @@ const LandingPage = () => {
                                 label="Accéder à Budget"
                                 icon="pi pi-arrow-right"
                                 iconPos="right"
-                                className="p-button-outlined landing-feature-highlight-btn"
+                                className="btn-modern btn-modern--outlined landing-feature-highlight-btn"
                             />
                         </div>
                     </div>

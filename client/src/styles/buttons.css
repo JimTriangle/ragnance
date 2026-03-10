@@ -1,0 +1,437 @@
+/* ===== Modern Button & Dialog Overrides ===== */
+/* Consistent with the flat, modern aesthetic used throughout the app
+   (export-excel button, month-nav arrows, KPI cards).                 */
+
+/* ── Primary action buttons ──────────────────────────────────────── */
+/* Used for main CTA: "Sauvegarder", "Ajouter", "Nouveau…", form submit */
+.btn-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border: 1px solid color-mix(in srgb, var(--primary-color) 30%, transparent);
+    border-radius: 10px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--primary-color) 10%, transparent), color-mix(in srgb, var(--primary-color) 5%, transparent));
+    color: var(--primary-color);
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-modern:hover:not(:disabled) {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--primary-color) 18%, transparent), color-mix(in srgb, var(--primary-color) 10%, transparent));
+    border-color: color-mix(in srgb, var(--primary-color) 45%, transparent);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--primary-color) 18%, transparent);
+    transform: translateY(-1px);
+}
+
+.btn-modern:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px color-mix(in srgb, var(--primary-color) 12%, transparent);
+}
+
+.btn-modern:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ── Success / green action buttons ──────────────────────────────── */
+/* "Nouvelle catégorie", "Nouvel utilisateur", etc. */
+.btn-modern--success {
+    border-color: rgba(16, 185, 129, 0.25);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.04));
+    color: var(--green-400);
+}
+
+.btn-modern--success:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(16, 185, 129, 0.08));
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow: 0 2px 12px rgba(16, 185, 129, 0.15);
+}
+
+.btn-modern--success:active:not(:disabled) {
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.1);
+}
+
+/* ── Danger / red action buttons ─────────────────────────────────── */
+/* Delete, logout, etc. */
+.btn-modern--danger {
+    border-color: rgba(239, 68, 68, 0.25);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.04));
+    color: var(--red-400);
+}
+
+.btn-modern--danger:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.16), rgba(239, 68, 68, 0.08));
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 2px 12px rgba(239, 68, 68, 0.15);
+}
+
+.btn-modern--danger:active:not(:disabled) {
+    box-shadow: 0 1px 4px rgba(239, 68, 68, 0.1);
+}
+
+/* ── Warning / orange action buttons ─────────────────────────────── */
+.btn-modern--warning {
+    border-color: rgba(245, 158, 11, 0.25);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.04));
+    color: #F59E0B;
+}
+
+.btn-modern--warning:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(245, 158, 11, 0.08));
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 2px 12px rgba(245, 158, 11, 0.15);
+}
+
+/* ── Info / blue action buttons ──────────────────────────────────── */
+.btn-modern--info {
+    border-color: rgba(59, 130, 246, 0.25);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(59, 130, 246, 0.04));
+    color: #3B82F6;
+}
+
+.btn-modern--info:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.16), rgba(59, 130, 246, 0.08));
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 2px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* ── Ghost / text buttons ────────────────────────────────────────── */
+/* "Annuler", "Ne plus afficher", secondary actions */
+.btn-modern--ghost {
+    border-color: transparent;
+    background: transparent;
+    color: var(--text-color-secondary);
+}
+
+.btn-modern--ghost:hover:not(:disabled) {
+    background: var(--surface-hover);
+    border-color: transparent;
+    color: var(--text-color);
+    box-shadow: none;
+    transform: none;
+}
+
+/* ── Outlined buttons ────────────────────────────────────────────── */
+/* "Profil", section switch, etc. */
+.btn-modern--outlined {
+    border-color: var(--surface-border);
+    background: transparent;
+    color: var(--text-color);
+}
+
+.btn-modern--outlined:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--primary-color) 50%, transparent);
+    background: color-mix(in srgb, var(--primary-color) 6%, transparent);
+    color: var(--primary-color);
+    box-shadow: none;
+    transform: none;
+}
+
+.btn-modern--outlined.btn-modern--danger {
+    border-color: rgba(239, 68, 68, 0.2);
+    background: transparent;
+    color: var(--red-400);
+}
+
+.btn-modern--outlined.btn-modern--danger:hover:not(:disabled) {
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.06);
+    color: var(--red-400);
+}
+
+/* ── Small buttons ───────────────────────────────────────────────── */
+.btn-modern--sm {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8rem;
+    border-radius: 8px;
+}
+
+/* ── Icon-only action buttons (table row actions) ────────────────── */
+/* Used for edit/delete/archive icons in data tables */
+.btn-icon-modern {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    padding: 0;
+}
+
+.btn-icon-modern:hover {
+    background: var(--surface-hover);
+    color: var(--text-color);
+    border-color: var(--surface-border);
+}
+
+.btn-icon-modern--success {
+    color: var(--green-400);
+}
+
+.btn-icon-modern--success:hover {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--green-400);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.btn-icon-modern--danger {
+    color: var(--red-400);
+}
+
+.btn-icon-modern--danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--red-400);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.btn-icon-modern--info {
+    color: #3B82F6;
+}
+
+.btn-icon-modern--info:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3B82F6;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.btn-icon-modern--warning {
+    color: #F59E0B;
+}
+
+.btn-icon-modern--warning:hover {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F59E0B;
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+/* ── PrimeReact Button overrides (scoped to .btn-modern) ─────────── */
+/* When using PrimeReact Button with className="btn-modern" */
+.btn-modern.p-button {
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.btn-modern--sm.p-button {
+    border-radius: 8px;
+    font-size: 0.8rem;
+}
+
+.btn-icon-modern.p-button {
+    width: 2.1rem;
+    height: 2.1rem;
+    padding: 0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+/* ── Modern Dialog overrides ─────────────────────────────────────── */
+.p-dialog {
+    border-radius: 14px;
+    border: 1px solid var(--surface-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.p-dialog .p-dialog-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--surface-border);
+    background: var(--surface-card);
+}
+
+.p-dialog .p-dialog-header .p-dialog-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.p-dialog .p-dialog-header .p-dialog-header-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    color: var(--text-color-secondary);
+    transition: all 0.15s ease;
+}
+
+.p-dialog .p-dialog-header .p-dialog-header-icon:hover {
+    background: var(--surface-hover);
+    color: var(--text-color);
+}
+
+.p-dialog .p-dialog-content {
+    padding: 1.25rem 1.5rem;
+    background: var(--surface-card);
+}
+
+.p-dialog .p-dialog-footer {
+    padding: 0.85rem 1.5rem;
+    border-top: 1px solid var(--surface-border);
+    background: var(--surface-card);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+/* ── ConfirmDialog modernisation ─────────────────────────────────── */
+.p-confirm-dialog .p-dialog-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.p-confirm-dialog .p-confirm-dialog-icon {
+    font-size: 1.5rem;
+    color: #F59E0B;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+}
+
+.p-confirm-dialog .p-confirm-dialog-message {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
+.p-confirm-dialog .p-dialog-footer .p-button {
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.p-confirm-dialog .p-dialog-footer .p-confirm-dialog-reject {
+    background: transparent;
+    border-color: transparent;
+    color: var(--text-color-secondary);
+}
+
+.p-confirm-dialog .p-dialog-footer .p-confirm-dialog-reject:hover {
+    background: var(--surface-hover);
+    color: var(--text-color);
+}
+
+.p-confirm-dialog .p-dialog-footer .p-confirm-dialog-accept.p-button-danger {
+    border-color: rgba(239, 68, 68, 0.25);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.04));
+    color: var(--red-400);
+}
+
+.p-confirm-dialog .p-dialog-footer .p-confirm-dialog-accept.p-button-danger:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.16), rgba(239, 68, 68, 0.08));
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 2px 12px rgba(239, 68, 68, 0.15);
+    transform: translateY(-1px);
+}
+
+/* ── Modern TabView overrides ────────────────────────────────────── */
+.p-tabview .p-tabview-nav {
+    background: transparent;
+    border-bottom: 1px solid var(--surface-border);
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link {
+    border-radius: 8px 8px 0 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    color: var(--text-color-secondary);
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link:hover {
+    color: var(--primary-color);
+    background: color-mix(in srgb, var(--primary-color) 6%, transparent);
+}
+
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.p-tabview .p-tabview-panels {
+    background: transparent;
+    padding: 1.25rem 0;
+}
+
+/* ── Modern form submit button ───────────────────────────────────── */
+.btn-form-submit.p-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.5rem;
+    border: 1px solid color-mix(in srgb, var(--primary-color) 30%, transparent);
+    border-radius: 10px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--primary-color) 12%, transparent), color-mix(in srgb, var(--primary-color) 6%, transparent));
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-form-submit.p-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--primary-color) 20%, transparent), color-mix(in srgb, var(--primary-color) 12%, transparent));
+    border-color: color-mix(in srgb, var(--primary-color) 45%, transparent);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--primary-color) 18%, transparent);
+    transform: translateY(-1px);
+}
+
+.btn-form-submit.p-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* ── Notification bell button ────────────────────────────────────── */
+.btn-notification.p-button {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 10px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    background: rgba(245, 158, 11, 0.06);
+    color: #F59E0B;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.btn-notification.p-button:hover {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.35);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+}
+
+.btn-notification .p-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: 0.65rem;
+    min-width: 1.1rem;
+    height: 1.1rem;
+    line-height: 1.1rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .btn-modern {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .btn-modern--sm {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.75rem;
+    }
+}

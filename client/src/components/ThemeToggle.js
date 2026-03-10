@@ -7,7 +7,7 @@ const ThemeToggle = () => {
   return (
     <Button
       icon={theme === 'saga-blue' ? 'pi pi-moon' : 'pi pi-sun'}
-      className="p-button-rounded p-button-text p-button-sm"
+      className="btn-icon-modern"
       onClick={toggleTheme}
       aria-label="Toggle theme"
     />

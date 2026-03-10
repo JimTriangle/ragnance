@@ -102,13 +102,14 @@ const AnnouncementDialog = ({ visible, onHide }) => {
         <div className="flex justify-content-between align-items-center">
             <Button
                 label="Ne plus afficher"
-                className="p-button-text p-button-secondary"
+                className="btn-modern btn-modern--ghost"
                 onClick={handleDismiss}
             />
             <Button
                 label={currentIndex < announcements.length - 1 ? 'Suivant' : 'Compris'}
                 icon={currentIndex < announcements.length - 1 ? 'pi pi-arrow-right' : 'pi pi-check'}
                 iconPos="right"
+                className="btn-modern"
                 onClick={handleNext}
             />
         </div>
