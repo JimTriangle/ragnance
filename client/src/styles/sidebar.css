@@ -36,10 +36,6 @@
         margin-left: 260px;
     }
 
-    .layout-with-sidebar .fab-button {
-        left: calc(260px + 1rem);
-    }
-
     .breadcrumb-bar {
         margin-left: 260px;
     }

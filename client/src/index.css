@@ -100,20 +100,9 @@ html[data-theme="light"] .p-datatable .p-datatable-tbody > tr:nth-child(even) {
   display: none;
 }
 
-/* FAB (Floating Action Button) - visible en mobile, masqué en desktop */
-.fab-button.btn-modern {
-  position: fixed;
-  bottom: 1rem;
-  right: 1rem;
-  z-index: 1000;
-}
-
 @media (min-width: 768px) {
   .add-transaction-button {
     display: inline-flex;
-  }
-  .fab-button {
-    display: none;
   }
 }
 

@@ -240,7 +240,6 @@ const BudgetLayout = () => {
                 <Outlet />
             </main>
             <Footer />
-            <Button icon="pi pi-plus" className="fab-button btn-modern btn-modern--success" onClick={openModal} aria-label="Ajouter une transaction" />
             <Dialog header="Ajouter une Transaction" visible={isModalVisible} style={{ width: '50vw' }} breakpoints={{ '960px': '75vw', '641px': '95vw' }} onHide={handleModalHide}>
                 <TransactionForm onComplete={handleComplete} onDirtyChange={handleFormDirtyChange} />
             </Dialog>
