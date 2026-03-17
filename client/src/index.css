@@ -101,7 +101,7 @@ html[data-theme="light"] .p-datatable .p-datatable-tbody > tr:nth-child(even) {
 }
 
 /* FAB (Floating Action Button) - visible en mobile, masqué en desktop */
-.fab-button {
+.fab-button.btn-modern {
   position: fixed;
   bottom: 1rem;
   right: 1rem;

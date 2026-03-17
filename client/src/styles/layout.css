@@ -13,7 +13,7 @@
 }
 
 /* FAB (Floating Action Button) - visible on mobile, hidden on desktop */
-.fab-button {
+.fab-button.btn-modern {
     position: fixed;
     bottom: 1rem;
     right: 1rem;
@@ -30,7 +30,7 @@
     .add-transaction-button {
         display: inline-flex;
     }
-    .fab-button {
+    .fab-button.btn-modern {
         display: none;
     }
 }
