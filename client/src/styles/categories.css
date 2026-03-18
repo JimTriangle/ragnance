@@ -20,13 +20,43 @@
     color: var(--text-color-secondary);
 }
 
-.categories-search {
+.categories-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
     margin-bottom: 1rem;
+}
+
+.categories-search {
     max-width: 400px;
+    flex: 1;
 }
 
 .categories-search .p-input-icon-left > .p-inputtext {
     padding-left: 2.5rem;
+}
+
+.categories-view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--surface-ground);
+    border-radius: 8px;
+    padding: 0.2rem;
+}
+
+.categories-view-toggle .p-button {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 6px;
+    color: var(--text-color-secondary);
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.categories-view-toggle .btn-icon-modern--active {
+    background: var(--primary-color) !important;
+    color: #ffffff !important;
 }
 
 /* Card grid */
@@ -109,6 +139,18 @@
 
 .category-buttons .p-button:hover {
     color: var(--text-color);
+}
+
+/* List view */
+.categories-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.category-card--list {
+    border-radius: 6px;
+    padding: 0.6rem 1rem;
 }
 
 /* Empty state */
