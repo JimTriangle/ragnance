@@ -35,6 +35,7 @@ setupAssociations();
 const isAuth = require('./middleware/isAuth');
 const hasBudgetAccess = require('./middleware/hasBudgetAccess');
 const hasTradingAccess = require('./middleware/hasTradingAccess');
+const { maintenanceMiddleware } = require('./middleware/maintenance');
 
 const app = express();
 app.set('trust proxy', 1); // important derrière Nginx
@@ -167,7 +168,10 @@ if (process.env.NODE_ENV !== 'production') {
 
 app.use(express.json());
 
-const publicApiRoutes = new Set(['/auth/login', '/auth/refresh', '/auth/register', '/auth/health', '/config/emails']);
+// Mode maintenance : bloque les requêtes non essentielles pendant les déploiements
+app.use('/api', maintenanceMiddleware);
+
+const publicApiRoutes = new Set(['/auth/login', '/auth/refresh', '/auth/register', '/auth/health', '/config/emails', '/maintenance/status']);
 const normalizeApiPath = path => {
   if (!path) {
     return '/';
@@ -195,6 +199,7 @@ app.use('/api', (req, res, next) => {
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/announcements', require('./routes/announcement.routes'));
 app.use('/api/config', require('./routes/config.routes'));
+app.use('/api/maintenance', require('./routes/maintenance.routes'));
 app.use('/api/transactions', isAuth, hasBudgetAccess, require('./routes/transaction.routes.js'));
 app.use('/api/shopping', isAuth, hasBudgetAccess, require('./routes/shopping.routes.js'));
 app.use('/api/admin', require('./routes/admin.routes.js'));

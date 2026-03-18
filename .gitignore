@@ -20,3 +20,6 @@ yarn-error.log*
 Thumbs.db
 
 /server/ragnance.sqlite
+
+# Flag de maintenance (créé automatiquement pendant les déploiements)
+/server/maintenance.flag

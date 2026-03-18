@@ -64,6 +64,22 @@ jobs:
             fi
             sudo chown -R $USER:$USER ${{ env.DEPLOY_PATH }}
 
+      # ---------- MAINTENANCE MODE ON ----------
+      - name: Enable maintenance mode
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script: |
+            set -e
+            FLAG="${{ env.DEPLOY_PATH }}/server/maintenance.flag"
+            echo "$(date -Iseconds)" | sudo tee "$FLAG" > /dev/null
+            sudo chown $USER:$USER "$FLAG"
+            echo "🔒 Mode maintenance activé"
+
       # ---------- FRONT: clean + upload ----------
       - name: Clean frontend dir (SSH)
         uses: appleboy/ssh-action@master
@@ -100,6 +116,7 @@ jobs:
               --exclude='server/.env' \
               --exclude='server/*.sqlite' \
               --exclude='server/var' \
+              --exclude='server/maintenance.flag' \
               -czf server-upload.tgz -C server .
 
       - name: Upload server bundle
@@ -126,12 +143,13 @@ jobs:
             set -e
             cd ${{ env.DEPLOY_PATH }}
             sudo mkdir -p server/var/data
-            # Supprime tout SAUF 'var', '.env', 'ecosystem.config.js' et '*.sqlite'
+            # Supprime tout SAUF 'var', '.env', 'ecosystem.config.js', '*.sqlite' et 'maintenance.flag'
             sudo find server -mindepth 1 -maxdepth 1 \
               ! -name 'var' \
               ! -name '.env' \
               ! -name 'ecosystem.config.js' \
               ! -name '*.sqlite' \
+              ! -name 'maintenance.flag' \
               -exec rm -rf {} +
             # Décompresse le bundle dans server/
             tar -xzf server-upload.tgz -C server
@@ -263,6 +281,22 @@ jobs:
           echo "🔍 Récupération des logs PM2..."
           exit 1
 
+      # ---------- MAINTENANCE MODE OFF ----------
+      - name: Disable maintenance mode
+        if: success()
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script: |
+            set -e
+            FLAG="${{ env.DEPLOY_PATH }}/server/maintenance.flag"
+            sudo rm -f "$FLAG"
+            echo "🔓 Mode maintenance désactivé"
+
       # ---------- ROLLBACK EN CAS D'ÉCHEC ----------
       - name: Rollback on failure
         if: failure()
@@ -295,6 +329,11 @@ jobs:
             if command -v pm2 >/dev/null 2>&1 && pm2 describe ${{ env.APP_NAME }} >/dev/null 2>&1; then
               pm2 restart ${{ env.APP_NAME }} || pm2 delete ${{ env.APP_NAME }}
             fi
+
+            # Désactiver le mode maintenance même en cas d'échec
+            FLAG="${{ env.DEPLOY_PATH }}/server/maintenance.flag"
+            sudo rm -f "$FLAG"
+            echo "🔓 Mode maintenance désactivé (rollback)"
 
             echo "⚠️ Rollback effectué, vérifiez les logs ci-dessus"
 
