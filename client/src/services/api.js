@@ -139,6 +139,14 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Mode maintenance : le serveur renvoie 503 pendant les déploiements
+    if (error?.response?.status === 503 && error.response.data?.maintenance) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('app:maintenance'));
+      }
+      return Promise.reject(error);
+    }
+
     if (error?.response?.status === 401) {
       try {
         if (typeof window !== 'undefined') {

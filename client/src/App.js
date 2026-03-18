@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import MaintenanceOverlay from './components/MaintenanceOverlay';
 
 // Logique d'authentification
 import AdminRoute from './components/AdminRoute';
@@ -45,6 +46,7 @@ import BotsPage from './pages/trading/BotsPage';
 function App() {
     return (
         <BrowserRouter>
+            <MaintenanceOverlay />
             <Routes>
                 {/* ROUTES PUBLIQUES */}
                 <Route path="/" element={<LandingPage />} />
