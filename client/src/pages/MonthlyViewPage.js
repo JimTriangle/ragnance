@@ -603,7 +603,7 @@ const MonthlyViewPage = () => {
           {isVisible('chartFlux') && (
           <div className="col-12 lg:col-6" data-tour-id="chart-daily-flow">
             <Card title="Flux Journalier">
-              <div style={{ position: 'relative', height: '300px' }}>
+              <div style={{ position: 'relative', height: '150px' }}>
                 <Chart type="line" data={lineChartData} options={chartOptions} aria-label="Graphique du flux journalier revenus et dépenses" />
               </div>
             </Card>
@@ -612,7 +612,7 @@ const MonthlyViewPage = () => {
           {isVisible('chartCumul') && (
           <div className="col-12 lg:col-6" data-tour-id="chart-cumulative">
             <Card title="Progression Cumulée du Mois">
-              <div style={{ position: 'relative', height: '300px' }}>
+              <div style={{ position: 'relative', height: '150px' }}>
                 <Chart type="line" data={cumulativeChartData} options={chartOptions} aria-label="Graphique de la progression cumulée des dépenses" />
               </div>
             </Card>
@@ -621,7 +621,7 @@ const MonthlyViewPage = () => {
           {isVisible('chartPie') && (
           <div className="col-12 lg:col-6" data-tour-id="chart-pie">
             <Card title="Répartition Revenus / Dépenses">
-              <div style={{ position: 'relative', height: '300px' }}>
+              <div style={{ position: 'relative', height: '150px' }}>
                 <Chart type="bar" data={pieChartData} options={chartOptions} aria-label="Graphique de répartition revenus et dépenses" />
               </div>
             </Card>
