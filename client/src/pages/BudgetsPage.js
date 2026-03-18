@@ -20,6 +20,7 @@ const BudgetsPage = () => {
     const [isLoadingCopy, setIsLoadingCopy] = useState(false);
     const [savingCategories, setSavingCategories] = useState({});
     const [savedCategories, setSavedCategories] = useState({});
+    const [viewMode, setViewMode] = useState('grid');
     const savedTimeouts = useRef({});
 
     // Ref pour toujours avoir accès à la date courante dans les closures
@@ -225,7 +226,8 @@ const BudgetsPage = () => {
                 </div>
             </div>
 
-            <div className="budgets-month-nav" data-tour-id="month-navigation">
+            <div className="budgets-toolbar">
+                <div className="budgets-month-nav" data-tour-id="month-navigation">
                 <Button
                     icon="pi pi-chevron-left"
                     className="btn-icon-modern"
@@ -239,6 +241,25 @@ const BudgetsPage = () => {
                     onClick={() => changeMonth(1)}
                     aria-label="Mois suivant"
                 />
+                </div>
+                <div className="budgets-view-toggle">
+                    <Button
+                        icon="pi pi-th-large"
+                        className={`btn-icon-modern ${viewMode === 'grid' ? 'btn-icon-modern--active' : ''}`}
+                        onClick={() => setViewMode('grid')}
+                        aria-label="Affichage en grille"
+                        tooltip="Grille"
+                        tooltipOptions={{ position: 'top' }}
+                    />
+                    <Button
+                        icon="pi pi-list"
+                        className={`btn-icon-modern ${viewMode === 'list' ? 'btn-icon-modern--active' : ''}`}
+                        onClick={() => setViewMode('list')}
+                        aria-label="Affichage en liste"
+                        tooltip="Liste"
+                        tooltipOptions={{ position: 'top' }}
+                    />
+                </div>
             </div>
 
             {!hasBudgets && trackedCategories.length > 0 && (
@@ -257,12 +278,12 @@ const BudgetsPage = () => {
                 </div>
             )}
 
-            <div className="budgets-grid" data-tour-id="budgets-grid">
+            <div className={viewMode === 'grid' ? 'budgets-grid' : 'budgets-list'} data-tour-id="budgets-grid">
                 {trackedCategories.map((category) => {
                     const isSaving = savingCategories[category.id];
                     const isSaved = savedCategories[category.id];
                     return (
-                        <div key={category.id} className="budget-card">
+                        <div key={category.id} className={viewMode === 'grid' ? 'budget-card' : 'budget-card budget-card--list'}>
                             <div className="budget-card__info">
                                 <span
                                     className="budget-card__color"

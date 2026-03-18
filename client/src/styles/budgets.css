@@ -20,12 +20,43 @@
     color: var(--text-color-secondary);
 }
 
+/* Toolbar */
+.budgets-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* View toggle */
+.budgets-view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--surface-ground);
+    border-radius: 8px;
+    padding: 0.2rem;
+}
+
+.budgets-view-toggle .p-button {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 6px;
+    color: var(--text-color-secondary);
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.budgets-view-toggle .btn-icon-modern--active {
+    background: var(--primary-color) !important;
+    color: #ffffff !important;
+}
+
 /* Month navigation */
 .budgets-month-nav {
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 1.5rem;
 }
 
 .budgets-month-nav .p-button {
@@ -157,6 +188,18 @@
 
 .budget-card__status--saved {
     color: var(--green-400);
+}
+
+/* List view */
+.budgets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.budget-card--list {
+    border-radius: 6px;
+    padding: 0.6rem 1rem;
 }
 
 /* Empty state */
