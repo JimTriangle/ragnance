@@ -418,7 +418,7 @@ const DashboardPage = () => {
                                 <p className="chart-card__subtitle">3 derniers mois + 6 mois de projection</p>
                             </div>
                         </div>
-                        <div style={{ position: 'relative', height: '300px' }}>
+                        <div style={{ position: 'relative', height: '150px' }}>
                             {monthlyBalanceData ? (
                                 <Chart type="line" data={monthlyBalanceData} options={lineChartOptions} aria-label="Graphique d'évolution du solde début de mois" />
                             ) : (
@@ -435,11 +435,11 @@ const DashboardPage = () => {
                             <h2 className="chart-card__title">Dépenses par Catégorie — {formattedMonth}</h2>
                         </div>
                         {categoryChartData && categoryChartData.labels.length > 0 ? (
-                            <div style={{ position: 'relative', height: '300px' }}>
+                            <div style={{ position: 'relative', height: '150px' }}>
                                 <Chart type="bar" data={categoryChartData} options={barChartOptions} aria-label="Graphique des dépenses par catégorie" />
                             </div>
                         ) : (
-                            <div className="card-empty" style={{ height: '300px' }}>
+                            <div className="card-empty" style={{ height: '150px' }}>
                                 <i className="pi pi-chart-bar card-empty__icon"></i>
                                 <p className="card-empty__text">Aucune dépense catégorisée</p>
                                 <p className="card-empty__text" style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>Ajoutez des transactions avec des catégories pour visualiser la répartition.</p>
