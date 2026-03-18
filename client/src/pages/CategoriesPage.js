@@ -22,6 +22,7 @@ const CategoriesPage = () => {
     const [color, setColor] = useState('CCCCCC');
     const [isTracked, setIsTracked] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
+    const [viewMode, setViewMode] = useState('grid');
     const toast = useRef(null);
 
     const tourSteps = [
@@ -188,22 +189,42 @@ const CategoriesPage = () => {
                 />
             </div>
 
-            <div className="categories-search">
-                <span className="p-input-icon-left" style={{ width: '100%' }}>
-                    <i className="pi pi-search" />
-                    <InputText
-                        value={globalFilter}
-                        onChange={(e) => setGlobalFilter(e.target.value)}
-                        placeholder="Rechercher une catégorie..."
-                        className="p-inputtext-sm"
-                        style={{ width: '100%' }}
+            <div className="categories-toolbar">
+                <div className="categories-search">
+                    <span className="p-input-icon-left" style={{ width: '100%' }}>
+                        <i className="pi pi-search" />
+                        <InputText
+                            value={globalFilter}
+                            onChange={(e) => setGlobalFilter(e.target.value)}
+                            placeholder="Rechercher une catégorie..."
+                            className="p-inputtext-sm"
+                            style={{ width: '100%' }}
+                        />
+                    </span>
+                </div>
+                <div className="categories-view-toggle">
+                    <Button
+                        icon="pi pi-th-large"
+                        className={`btn-icon-modern ${viewMode === 'grid' ? 'btn-icon-modern--active' : ''}`}
+                        onClick={() => setViewMode('grid')}
+                        aria-label="Affichage en grille"
+                        tooltip="Grille"
+                        tooltipOptions={{ position: 'top' }}
                     />
-                </span>
+                    <Button
+                        icon="pi pi-list"
+                        className={`btn-icon-modern ${viewMode === 'list' ? 'btn-icon-modern--active' : ''}`}
+                        onClick={() => setViewMode('list')}
+                        aria-label="Affichage en liste"
+                        tooltip="Liste"
+                        tooltipOptions={{ position: 'top' }}
+                    />
+                </div>
             </div>
 
-            <div className="categories-grid" data-tour-id="categories-grid">
+            <div className={viewMode === 'grid' ? 'categories-grid' : 'categories-list'} data-tour-id="categories-grid">
                 {filteredCategories.map((category) => (
-                    <div key={category.id} className="category-card">
+                    <div key={category.id} className={viewMode === 'grid' ? 'category-card' : 'category-card category-card--list'}>
                         <div className="category-card-main">
                             <span
                                 className="category-color-dot"
