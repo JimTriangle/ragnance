@@ -75,17 +75,53 @@ const api = axios.create({
 // IMPORTANT : Variable pour stocker le token actuel
 let currentAuthToken = null;
 
+// --- Helpers cookie pour le fallback mobile ---
+const TOKEN_COOKIE_NAME = 'authToken';
+
+const setTokenCookie = (token, maxAgeDays) => {
+  if (typeof document === 'undefined') return;
+  try {
+    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+    const maxAge = maxAgeDays ? `; Max-Age=${maxAgeDays * 86400}` : '';
+    document.cookie = `${TOKEN_COOKIE_NAME}=${encodeURIComponent(token)}; Path=/${maxAge}; SameSite=Lax${secure}`;
+  } catch (e) {
+    // Ignorer silencieusement
+  }
+};
+
+const getTokenCookie = () => {
+  if (typeof document === 'undefined') return null;
+  try {
+    const match = document.cookie.match(new RegExp(`(?:^|; )${TOKEN_COOKIE_NAME}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const removeTokenCookie = () => {
+  if (typeof document === 'undefined') return;
+  try {
+    document.cookie = `${TOKEN_COOKIE_NAME}=; Path=/; Max-Age=0`;
+  } catch (e) {
+    // Ignorer silencieusement
+  }
+};
+
 const readTokenFromStorage = () => {
   if (typeof window === 'undefined') {
     return null;
   }
 
   try {
-    return window.localStorage?.getItem('authToken') || null;
+    const token = window.localStorage?.getItem('authToken') || null;
+    if (token) return token;
   } catch (error) {
     console.warn('Impossible de lire le token dans le stockage local :', error);
-    return null;
   }
+
+  // Fallback : lire depuis le cookie (utile sur mobile quand localStorage est purgé)
+  return getTokenCookie();
 };
 
 // FONCTION CRITIQUE : Configuration du token
@@ -98,6 +134,8 @@ export const setAuthToken = (token) => {
     delete api.defaults.headers.common['Authorization'];
   }
 };
+
+export { setTokenCookie, removeTokenCookie };
 
 // Initialisation au chargement si un token existe
 if (typeof window !== 'undefined') {
@@ -156,6 +194,7 @@ api.interceptors.response.use(
         console.warn('Impossible de nettoyer le token du stockage local :', storageError);
       }
 
+      removeTokenCookie();
       setAuthToken(null);
 
       if (typeof window !== 'undefined') {

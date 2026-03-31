@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import api, { setAuthToken } from '../services/api';
+import api, { setAuthToken, setTokenCookie, removeTokenCookie } from '../services/api';
 
 export const AuthContext = createContext();
 
@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.warn('Impossible de supprimer le token du stockage local :', error);
     }
+    removeTokenCookie();
     delete api.defaults.headers.common.Authorization;
     setAuthToken(null);
     setIsLoggedIn(false);
@@ -94,6 +95,16 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('authToken', receivedToken);
     } catch (error) {
       console.warn('Impossible de sauvegarder le token :', error);
+    }
+
+    // Fallback cookie pour mobile (où localStorage peut être purgé par l'OS)
+    try {
+      const decoded = jwtDecode(receivedToken);
+      const maxAgeDays = decoded.rememberMe ? 30 : null;
+      setTokenCookie(receivedToken, maxAgeDays);
+    } catch (e) {
+      // En cas d'erreur de décodage, stocker quand même sans expiry spécifique
+      setTokenCookie(receivedToken, null);
     }
     
     const success = authenticateUser(receivedToken);
