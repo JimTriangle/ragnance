@@ -6,6 +6,7 @@ import { DataView } from 'primereact/dataview';
 import AmountInput from './AmountInput';
 import { ToastContext } from '../context/ToastContext';
 import '../styles/cards.css';
+import '../styles/product-image.css';
 
 const PurchaseForecast = ({ onUpdate }) => {
     const { showToast } = useContext(ToastContext);
@@ -66,6 +67,18 @@ const PurchaseForecast = ({ onUpdate }) => {
         return (
             <div className="col-12">
                 <div className="flex flex-column xl:flex-row xl:align-items-start p-2 gap-2">
+                    {item.imageUrl && (
+                        <div className="product-image-container">
+                            <a href={item.url} target="_blank" rel="noopener noreferrer">
+                                <img
+                                    src={item.imageUrl}
+                                    alt={item.itemName}
+                                    className="product-image-thumbnail"
+                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                />
+                            </a>
+                        </div>
+                    )}
                     <div className="flex flex-column sm:flex-row justify-content-between align-items-center xl:align-items-start flex-1 gap-2">
                         <div className="flex flex-column align-items-center sm:align-items-start gap-2">
                             <div className="font-bold text-sm">
