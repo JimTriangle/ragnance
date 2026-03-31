@@ -891,9 +891,9 @@ router.get('/stats/monthly-balances', isAuth, async (req, res) => {
             months.push({ year: d.getUTCFullYear(), month: d.getUTCMonth() }); // 0-indexed month
         }
 
-        // Fetch all one-time transactions for the user up to today
+        // Fetch all one-time transactions for the user (past and future)
         const allOneTimeTxs = await Transaction.findAll({
-            where: { UserId: userId, transactionType: 'one-time', date: { [Op.lte]: today } },
+            where: { UserId: userId, transactionType: 'one-time' },
             attributes: ['type', 'amount', 'date']
         });
 
