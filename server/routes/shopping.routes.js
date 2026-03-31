@@ -5,6 +5,32 @@ const ShoppingItem = require('../models/ShoppingItem.model');
 const Transaction = require('../models/Transaction.model');
 const Category = require('../models/Category.model'); // Importer Category
 const { Op } = require('sequelize');
+const axios = require('axios');
+const cheerio = require('cheerio');
+
+async function fetchProductImage(url) {
+  try {
+    const { data } = await axios.get(url, {
+      timeout: 8000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8'
+      },
+      maxRedirects: 5
+    });
+    const $ = cheerio.load(data);
+    const imageUrl =
+      $('meta[property="og:image"]').attr('content') ||
+      $('meta[name="og:image"]').attr('content') ||
+      $('meta[property="twitter:image"]').attr('content') ||
+      $('meta[name="twitter:image"]').attr('content');
+    return imageUrl || null;
+  } catch (error) {
+    console.warn('Impossible de récupérer l\'image produit:', error.message);
+    return null;
+  }
+}
 
 // ... (GET, POST, DELETE restent identiques, on ajoute le logging d'erreur)
 router.get('/', isAuth, async (req, res) => {
@@ -20,7 +46,11 @@ router.get('/', isAuth, async (req, res) => {
 router.post('/', isAuth, async (req, res) => {
   const { itemName, price, url } = req.body;
   try {
-    const newItem = await ShoppingItem.create({ itemName, price, url, UserId: req.user.id });
+    let imageUrl = null;
+    if (url) {
+      imageUrl = await fetchProductImage(url);
+    }
+    const newItem = await ShoppingItem.create({ itemName, price, url, imageUrl, UserId: req.user.id });
     res.status(201).json(newItem);
   } catch (error) {
     console.error("Erreur POST /shopping:", error);
