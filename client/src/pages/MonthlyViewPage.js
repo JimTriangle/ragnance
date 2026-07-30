@@ -37,6 +37,9 @@ const COLUMN_CONFIG = [
 ];
 const DEFAULT_VISIBLE_COLUMNS = COLUMN_CONFIG.map(c => c.key);
 const COLUMN_VISIBILITY_STORAGE_KEY = 'monthlyView_visibleColumns';
+const ROWS_PER_PAGE_STORAGE_KEY = 'monthlyView_rowsPerPage';
+const ROWS_PER_PAGE_OPTIONS = [5, 10, 25, 50, 100];
+const DEFAULT_ROWS_PER_PAGE = 10;
 
 const MonthlyViewPage = () => {
   const [transactions, setTransactions] = useState([]);
@@ -71,6 +74,20 @@ const MonthlyViewPage = () => {
     } catch (e) {}
     return DEFAULT_VISIBLE_COLUMNS;
   });
+
+  const [rowsPerPage, setRowsPerPage] = useState(() => {
+    try {
+      const stored = localStorage.getItem(ROWS_PER_PAGE_STORAGE_KEY);
+      if (stored) {
+        const parsed = parseInt(stored, 10);
+        if (ROWS_PER_PAGE_OPTIONS.includes(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    return DEFAULT_ROWS_PER_PAGE;
+  });
+  const [first, setFirst] = useState(0);
 
   const [slideDirection, setSlideDirection] = useState(null);
   const isMountedRef = useRef(true);
@@ -293,6 +310,12 @@ const MonthlyViewPage = () => {
       isMountedRef.current = false;
     };
   }, []);
+
+  // Revenir à la première page lorsque le mois ou le filtre de catégorie change,
+  // tout en conservant le nombre de lignes par page choisi par l'utilisateur.
+  useEffect(() => {
+    setFirst(0);
+  }, [currentDate, selectedCategoryId]);
 
   const changeMonth = useCallback((amount) => {
     setSlideDirection(amount > 0 ? 'left' : 'right');
@@ -691,7 +714,15 @@ const MonthlyViewPage = () => {
             </div>
           </div>
 
-          <DataTable value={filteredTransactions} loading={loading} size="small" globalFilter={globalFilter} globalFilterFields={['label', 'amount', 'type', 'date']} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50, 100]} responsiveLayout="scroll" emptyMessage={
+          <DataTable value={filteredTransactions} loading={loading} size="small" globalFilter={globalFilter} globalFilterFields={['label', 'amount', 'type', 'date']} paginator first={first} rows={rowsPerPage} rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS} onPage={(e) => {
+            setFirst(e.first);
+            if (e.rows !== rowsPerPage) {
+              setRowsPerPage(e.rows);
+              try {
+                localStorage.setItem(ROWS_PER_PAGE_STORAGE_KEY, String(e.rows));
+              } catch (err) {}
+            }
+          }} responsiveLayout="scroll" emptyMessage={
             <div className="txn-empty">
               <i className="pi pi-inbox txn-empty__icon"></i>
               <p className="txn-empty__text">Aucune transaction ce mois</p>
