@@ -6,52 +6,8 @@ const Category = require('../models/Category.model');
 const Transaction = require('../models/Transaction.model');
 const { Op } = require('sequelize');
 
-const calculateRecurringExpenses = (transactions, periodStart, periodEnd) => {
-    let total = 0;
-
-    transactions.forEach(r => {
-        if (!r.startDate) return;
-
-        let occurrences = 0;
-        const tStartDate = new Date(r.startDate);
-        const tEndDate = r.endDate ? new Date(r.endDate) : null;
-        let currentDate = periodStart > tStartDate ? new Date(periodStart) : new Date(tStartDate);
-        const loopEndDate = tEndDate && tEndDate < periodEnd ? tEndDate : periodEnd;
-
-        if (r.frequency === 'weekly') {
-            const targetDay = (r.dayOfWeek === null || r.dayOfWeek === undefined)
-                ? new Date(r.startDate).getUTCDay()
-                : r.dayOfWeek;
-            while (currentDate.getUTCDay() !== targetDay) {
-                currentDate.setUTCDate(currentDate.getUTCDate() + 1);
-                if (currentDate > loopEndDate) break;
-            }
-            while (currentDate <= loopEndDate) {
-                if (currentDate >= tStartDate) occurrences++;
-                currentDate.setUTCDate(currentDate.getUTCDate() + 7);
-            }
-        } else if (r.frequency === 'monthly' || r.frequency === 'yearly') {
-            if (!r.dayOfMonth) return;
-            for (let year = currentDate.getUTCFullYear(); year <= loopEndDate.getUTCFullYear(); year++) {
-                const startMonth = (year === currentDate.getUTCFullYear()) ? currentDate.getUTCMonth() : 0;
-                const endMonthLoop = (year === loopEndDate.getUTCFullYear()) ? loopEndDate.getUTCMonth() : 11;
-                for (let month = startMonth; month <= endMonthLoop; month++) {
-                    if (r.frequency === 'yearly' && month !== tStartDate.getUTCMonth()) continue;
-                    const occurrenceDate = new Date(Date.UTC(year, month, r.dayOfMonth));
-                    if (occurrenceDate.getUTCMonth() === month && occurrenceDate <= loopEndDate && occurrenceDate >= tStartDate) {
-                        occurrences++;
-                    }
-                }
-            }
-        }
-
-        if (occurrences > 0 && r.type === 'expense') {
-            total += occurrences * r.amount;
-        }
-    });
-
-    return total;
-};
+// Helper partagé : voir server/utils/recurrence.js
+const { sumRecurringExpenses: calculateRecurringExpenses, toDateOnlyString } = require('../utils/recurrence');
 
 router.get('/progress/:year/:month', isAuth, async (req, res) => {
     const { year, month } = req.params;
@@ -75,7 +31,7 @@ router.get('/progress/:year/:month', isAuth, async (req, res) => {
                     UserId: userId,
                     type: 'expense',
                     transactionType: 'one-time',
-                    date: { [Op.gte]: startDate, [Op.lt]: startOfNextMonth }
+                    date: { [Op.gte]: toDateOnlyString(startDate), [Op.lt]: toDateOnlyString(startOfNextMonth) }
                 },
                 include: [{
                     model: Category,
@@ -90,8 +46,8 @@ router.get('/progress/:year/:month', isAuth, async (req, res) => {
                     UserId: userId,
                     type: 'expense',
                     transactionType: 'recurring',
-                    startDate: { [Op.lt]: startOfNextMonth },
-                    [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDate } }]
+                    startDate: { [Op.lt]: toDateOnlyString(startOfNextMonth) },
+                    [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: toDateOnlyString(startDate) } }]
                 },
                 include: [{
                     model: Category,

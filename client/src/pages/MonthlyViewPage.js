@@ -116,7 +116,7 @@ const MonthlyViewPage = () => {
       element: '[data-tour-id="summary-cards"]',
       popover: {
         title: 'Résumé Mensuel 💰',
-        description: 'Ces cartes résument votre situation financière du mois : solde de début, total des revenus et dépenses, solde de fin, et l\'impact de vos budgets.',
+        description: 'Ces cartes résument votre situation financière du mois : solde de début, total des revenus et dépenses, solde de fin, et l\'impact de vos budgets. Attention : le "Solde Actuel" est un cumul de toutes vos transactions arrêté à la date du jour, il ne dépend pas du mois affiché.',
         side: 'bottom',
         align: 'start'
       }
@@ -485,6 +485,14 @@ const MonthlyViewPage = () => {
   const monthName = currentDate.toLocaleString('fr-FR', { month: 'long' });
   const year = currentDate.getFullYear();
   const endOfMonthBalance = (summary.startingBalance || 0) + (summary.totalIncome || 0) - (summary.totalExpense || 0);
+  const today = new Date();
+  const todayLabel = today.toLocaleDateString('fr-FR');
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === currentDate.getMonth();
+  // Le solde actuel est un cumul de TOUTES les périodes arrêté à la date du jour :
+  // il ne dépend pas du mois affiché et n'inclut pas les échéances postérieures à aujourd'hui.
+  const currentBalanceHint = isCurrentMonth
+    ? `Cumul de toutes vos transactions jusqu'au ${todayLabel} inclus. Les échéances de la fin du mois ne sont pas encore comptées : elles apparaissent dans le solde de fin de mois.`
+    : `Cumul de toutes vos transactions jusqu'au ${todayLabel} inclus. Ce montant ne dépend pas du mois affiché ; pour ${monthName} ${year}, référez-vous au solde de début et de fin de mois.`;
   const categoryOptions = allCategories.map(c => ({ label: c.name, value: c.id }));
 
   const filteredTransactions = selectedCategoryId
@@ -561,7 +569,7 @@ const MonthlyViewPage = () => {
         <div className="grid mt-2 mb-4" data-tour-id="summary-cards">
           {isVisible('soldeActuel') && (
           <div className="col-12 md:col-6 lg:col-3">
-            <div className="kpi-modern">
+            <div className="kpi-modern" title={currentBalanceHint}>
               <div className="kpi-modern__icon" style={{ background: 'rgba(241, 196, 15, 0.12)', color: '#F1C40F' }}>
                 <i className="pi pi-wallet"></i>
               </div>
@@ -569,7 +577,10 @@ const MonthlyViewPage = () => {
               <span className="kpi-modern__value" style={{ color: currentBalance >= 0 ? 'var(--green-400)' : 'var(--red-400)' }}>
                 {formatCurrency(currentBalance)}
               </span>
-              <span className="kpi-modern__sub">Au {new Date().toLocaleDateString('fr-FR')}</span>
+              <span className="kpi-modern__sub">Toutes périodes, au {todayLabel}</span>
+              {!isCurrentMonth && (
+                <span className="kpi-modern__sub">Indépendant du mois affiché</span>
+              )}
             </div>
           </div>
           )}
