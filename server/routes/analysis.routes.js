@@ -5,6 +5,12 @@ const Transaction = require('../models/Transaction.model');
 const Category = require('../models/Category.model');
 const Budget = require('../models/Budget.model');
 const { Op, fn, col, literal } = require('sequelize');
+const {
+    getRecurringOccurrenceDates,
+    countRecurringOccurrences,
+    sumRecurringExpenses,
+    toDateOnlyString
+} = require('../utils/recurrence');
 
 router.get('/daily-flow/:year/:month', isAuth, async (req, res) => {
     const { year, month } = req.params;
@@ -24,7 +30,7 @@ router.get('/daily-flow/:year/:month', isAuth, async (req, res) => {
             expenseData: new Array(daysInMonth).fill(0)
         };
 
-        const oneTimeTransactions = await Transaction.findAll({ where: { UserId: userId, transactionType: 'one-time', date: { [Op.gte]: startDate, [Op.lt]: startOfNextMonth } } });
+        const oneTimeTransactions = await Transaction.findAll({ where: { UserId: userId, transactionType: 'one-time', date: { [Op.gte]: toDateOnlyString(startDate), [Op.lt]: toDateOnlyString(startOfNextMonth) } } });
         oneTimeTransactions.forEach(t => {
             const dayIndex = new Date(t.date).getUTCDate() - 1;
             if (t.type === 'income') flowData.incomeData[dayIndex] += t.amount;
@@ -35,32 +41,24 @@ router.get('/daily-flow/:year/:month', isAuth, async (req, res) => {
             where: {
                 UserId: userId,
                 transactionType: 'recurring',
-                startDate: { [Op.lt]: startOfNextMonth },
-                [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDate } }]
+                startDate: { [Op.lt]: toDateOnlyString(startOfNextMonth) },
+                [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: toDateOnlyString(startDate) } }]
             }
         });
 
+        // Toutes les fréquences (dont hebdomadaire) passent par le helper partagé, qui
+        // respecte startDate/endDate au jour près et ramène une échéance qui déborde
+        // du mois (le 31 en février) au dernier jour du mois.
         recurringTransactions.forEach(r => {
-            let shouldApply = false;
-            const transactionStartDate = new Date(r.startDate);
-
-            if (r.frequency === 'monthly') {
-                shouldApply = true;
-            } else if (r.frequency === 'yearly') {
-                const transactionStartMonth = transactionStartDate.getUTCMonth() + 1; // 0-indexed -> 1-indexed
-                if (transactionStartMonth === currentMonth) {
-                    shouldApply = true;
-                }
-            }
-
-            if (shouldApply && r.dayOfMonth >= 1 && r.dayOfMonth <= daysInMonth) {
-                const dayIndex = r.dayOfMonth - 1;
+            getRecurringOccurrenceDates(r, startDate, endDate).forEach(occurrence => {
+                const dayIndex = occurrence.getUTCDate() - 1;
+                if (dayIndex < 0 || dayIndex >= daysInMonth) return;
                 if (r.type === 'income') {
                     flowData.incomeData[dayIndex] += r.amount;
                 } else {
                     flowData.expenseData[dayIndex] += r.amount;
                 }
-            }
+            });
         });
 
         res.status(200).json(flowData);
@@ -80,7 +78,7 @@ router.get('/category-breakdown', isAuth, async (req, res) => {
 
     try {
         const finalBreakdown = new Map();
-        const oneTimeExpenses = await Transaction.findAll({ where: { UserId: userId, type: 'expense', transactionType: 'one-time', date: { [Op.between]: [start, end] } }, include: [Category] });
+        const oneTimeExpenses = await Transaction.findAll({ where: { UserId: userId, type: 'expense', transactionType: 'one-time', date: { [Op.between]: [toDateOnlyString(start), toDateOnlyString(end)] } }, include: [Category] });
 
         oneTimeExpenses.forEach(t => {
             t.Categories.forEach(cat => {
@@ -94,43 +92,14 @@ router.get('/category-breakdown', isAuth, async (req, res) => {
         const recurringExpenses = await Transaction.findAll({
             where: {
                 UserId: userId, type: 'expense', transactionType: 'recurring',
-                startDate: { [Op.lte]: end },
-                [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: start } }]
+                startDate: { [Op.lte]: toDateOnlyString(end) },
+                [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: toDateOnlyString(start) } }]
             },
             include: [Category]
         });
 
         recurringExpenses.forEach(r => {
-            let occurrences = 0;
-            const [startYear, startMonth, startDay] = r.startDate.split('-').map(Number);
-            const finalEndDateStr = r.endDate || endDate;
-            const startPeriodStr = startDate;
-
-            // --- CORRECTION DÉFINITIVE DE LA BOUCLE POUR ÉVITER LE DÉCALAGE DE DATE ---
-            for (let i = 0; ; i++) {
-                let nextYear = startYear;
-                let nextMonth = startMonth;
-
-                if (r.frequency === 'monthly') {
-                    nextMonth += i;
-                    nextYear += Math.floor((nextMonth - 1) / 12);
-                    nextMonth = ((nextMonth - 1) % 12) + 1;
-                } else if (r.frequency === 'yearly') {
-                    nextYear += i;
-                } else {
-                    break;
-                }
-
-                const nextOccurrenceStr = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`;
-
-                if (nextOccurrenceStr > finalEndDateStr || nextOccurrenceStr > endDate) {
-                    break;
-                }
-
-                if (nextOccurrenceStr >= startPeriodStr) {
-                    occurrences++;
-                }
-            }
+            const occurrences = countRecurringOccurrences(r, start, end);
 
             if (occurrences > 0) {
                 const recurringTotal = occurrences * r.amount;
@@ -161,7 +130,7 @@ router.get('/income-category-breakdown', isAuth, async (req, res) => {
 
     try {
         const finalBreakdown = new Map();
-        const oneTimeIncomes = await Transaction.findAll({ where: { UserId: userId, type: 'income', transactionType: 'one-time', date: { [Op.between]: [start, end] } }, include: [Category] });
+        const oneTimeIncomes = await Transaction.findAll({ where: { UserId: userId, type: 'income', transactionType: 'one-time', date: { [Op.between]: [toDateOnlyString(start), toDateOnlyString(end)] } }, include: [Category] });
 
         oneTimeIncomes.forEach(t => {
             t.Categories.forEach(cat => {
@@ -175,42 +144,14 @@ router.get('/income-category-breakdown', isAuth, async (req, res) => {
         const recurringIncomes = await Transaction.findAll({
             where: {
                 UserId: userId, type: 'income', transactionType: 'recurring',
-                startDate: { [Op.lte]: end },
-                [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: start } }]
+                startDate: { [Op.lte]: toDateOnlyString(end) },
+                [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: toDateOnlyString(start) } }]
             },
             include: [Category]
         });
 
         recurringIncomes.forEach(r => {
-            let occurrences = 0;
-            const [startYear, startMonth, startDay] = r.startDate.split('-').map(Number);
-            const finalEndDateStr = r.endDate || endDate;
-            const startPeriodStr = startDate;
-
-            for (let i = 0; ; i++) {
-                let nextYear = startYear;
-                let nextMonth = startMonth;
-
-                if (r.frequency === 'monthly') {
-                    nextMonth += i;
-                    nextYear += Math.floor((nextMonth - 1) / 12);
-                    nextMonth = ((nextMonth - 1) % 12) + 1;
-                } else if (r.frequency === 'yearly') {
-                    nextYear += i;
-                } else {
-                    break;
-                }
-
-                const nextOccurrenceStr = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`;
-
-                if (nextOccurrenceStr > finalEndDateStr || nextOccurrenceStr > endDate) {
-                    break;
-                }
-
-                if (nextOccurrenceStr >= startPeriodStr) {
-                    occurrences++;
-                }
-            }
+            const occurrences = countRecurringOccurrences(r, start, end);
 
             if (occurrences > 0) {
                 const recurringTotal = occurrences * r.amount;
@@ -284,8 +225,8 @@ router.get('/budget-history', isAuth, async (req, res) => {
         for (const categoryId in budgetsByCategory) {
             for (const historyItem of budgetsByCategory[categoryId].history) {
                 const { year, month } = historyItem;
-                const startDate = new Date(year, month - 1, 1);
-                const endDate = new Date(year, month, 0, 23, 59, 59);
+                const startDate = new Date(Date.UTC(year, month - 1, 1));
+                const endDate = new Date(Date.UTC(year, month, 0));
 
                 // Dépenses ponctuelles
                 const oneTimeExpenses = await Transaction.sum('amount', {
@@ -293,7 +234,7 @@ router.get('/budget-history', isAuth, async (req, res) => {
                         UserId: userId,
                         type: 'expense',
                         transactionType: 'one-time',
-                        date: { [Op.between]: [startDate, endDate] },
+                        date: { [Op.between]: [toDateOnlyString(startDate), toDateOnlyString(endDate)] },
                     },
                     include: [{ model: Category, where: { id: categoryId }, attributes: [] }]
                 });
@@ -304,24 +245,13 @@ router.get('/budget-history', isAuth, async (req, res) => {
                         UserId: userId,
                         type: 'expense',
                         transactionType: 'recurring',
-                        startDate: { [Op.lte]: endDate },
-                        [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: startDate } }]
+                        startDate: { [Op.lte]: toDateOnlyString(endDate) },
+                        [Op.or]: [{ endDate: { [Op.is]: null } }, { endDate: { [Op.gte]: toDateOnlyString(startDate) } }]
                     },
                     include: [{ model: Category, where: { id: categoryId } }]
                 });
 
-                let recurringTotal = 0;
-                recurringExpenses.forEach(r => {
-                    if (r.frequency === 'monthly') {
-                        recurringTotal += r.amount;
-                    } else if (r.frequency === 'yearly') {
-                        const transactionMonth = new Date(r.startDate).getUTCMonth(); // 0-11
-                        const currentMonth = month - 1; // 0-11
-                        if (transactionMonth === currentMonth) {
-                            recurringTotal += r.amount;
-                        }
-                    }
-                });
+                const recurringTotal = sumRecurringExpenses(recurringExpenses, startDate, endDate);
 
                 historyItem.spent = (oneTimeExpenses || 0) + recurringTotal;
             }
